@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MySpace - Mi Hogar</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/Residente.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="brand"><i class="fa-solid fa-city"></i> MySpace</div>
+        <div style="display:flex; gap:20px; align-items:center;">
+            <span class="user-name">Hola, Familia González</span>
+            <a href="Login.html" class="logout-link">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <div class="hero-card">
+            <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80" class="hero-image">
+            <div class="hero-content">
+                <div class="unit-header">
+                    <div>
+                        <span class="unit-badge">Torre A • Depto 304</span>
+                        <h1 style="margin: 10px 0 5px 0; font-size: 1.8rem;">Mi Departamento</h1>
+                        <p style="color: #6B7280; margin: 0;">Titular: Juan Pérez González</p>
+                    </div>
+                    <div class="status-pill"><i class="fa-solid fa-circle-check"></i> Al corriente</div>
+                </div>
+
+                <div class="detail-features">
+                    <div class="feature"><i class="fa-solid fa-bed"></i><span>3 Rec</span></div>
+                    <div class="feature"><i class="fa-solid fa-bath"></i><span>2 Baños</span></div>
+                    <div class="feature"><i class="fa-solid fa-kitchen-set"></i><span>Integral</span></div>
+                    <div class="feature"><i class="fa-solid fa-tree"></i><span>Balcón</span></div>
+                </div>
+
+                <div class="services-section">
+                    <h4>Servicios y Amenidades Incluidas:</h4>
+                    <ul class="services-active-list">
+                        <li><i class="fa-solid fa-circle-check"></i> Mantenimiento de Áreas Comunes (Pagado)</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Recolección de Basura</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Seguridad 24/7</li>
+                        <li><i class="fa-solid fa-circle-check"></i> 2 Cajones de Estacionamiento</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-grid">
+            <div class="action-btn" onclick="openModal('modal-pago')">
+                <i class="fa-solid fa-credit-card action-icon"></i><b>Pagar Cuota</b>
+            </div>
+            <div class="action-btn" onclick="openModal('modal-reserva')">
+                <i class="fa-solid fa-calendar-days action-icon" style="color: #4338ca;"></i><b>Reservar Área</b>
+            </div>
+            <div class="action-btn" onclick="openModal('modal-visita')">
+                <i class="fa-solid fa-qrcode action-icon" style="color: #111;"></i><b>Acceso Visita</b>
+            </div>
+            <div class="action-btn" onclick="openModal('modal-falla')">
+                <i class="fa-solid fa-triangle-exclamation action-icon" style="color: #F59E0B;"></i><b>Reportar Falla</b>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 15px;">Movimientos Recientes</h3>
+        <div class="activity-list">
+            <div class="activity-item">
+                <div><b>Fuga en lavabo</b><br><small style="color:#666">Ticket #890</small></div>
+                <span style="color:#F59E0B; font-weight:bold;">En Revisión</span>
+            </div>
+            <div class="activity-item">
+                <div><b>Pago Enero</b><br><small style="color:#666">Hace 2 semanas</small></div>
+                <span style="color:#00C853; font-weight:bold;">-$1,500.00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="fab-resident" onclick="toggleChat()"><i class="fa-regular fa-comment-dots"></i> Ayuda</div>
+
+    <div id="modal-pago" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-box">
+            <span class="close-modal" onclick="closeAllModals()">&times;</span>
+            <h2 class="modal-title"><i class="fa-solid fa-credit-card"></i> Realizar Pago</h2>
+            <p style="color: #666; margin-bottom: 20px;">Cuota de Mantenimiento: <b style="color:var(--text-dark);">$1,500.00 MXN</b></p>
+
+            <div style="margin-bottom: 20px;">
+                <label class="payment-option">
+                    <input type="radio" name="metodoPago" checked onchange="togglePaymentMethod('saved')">
+                    <i class="fa-brands fa-cc-visa" style="color:#1a1f71; font-size:1.2rem;"></i>
+                    <span>Tarjeta Guardada (** 4242)</span>
+                </label>
+                <label class="payment-option">
+                    <input type="radio" name="metodoPago" onchange="togglePaymentMethod('new')">
+                    <i class="fa-regular fa-credit-card" style="font-size:1.1rem;"></i>
+                    <span>Nueva Tarjeta</span>
+                </label>
+                <label class="payment-option">
+                    <input type="radio" name="metodoPago" onchange="togglePaymentMethod('cash')">
+                    <i class="fa-solid fa-money-bill-wave" style="color:green; font-size:1.1rem;"></i>
+                    <span>Efectivo / Transferencia</span>
+                </label>
+            </div>
+
+            <hr style="border:0; border-top:1px solid #eee; margin-bottom:20px;">
+
+            <div id="pay-saved" class="payment-method-view">
+                <div class="card-preview">
+                    <div>
+                        <div style="font-size:0.8rem; opacity:0.8;">VISA Débito</div>
+                        <div style="font-size:1.1rem; letter-spacing:2px; margin:5px 0;">**** **** **** 4242</div>
+                        <div style="font-size:0.8rem;">Juan Pérez G.</div>
+                    </div>
+                    <i class="fa-brands fa-cc-visa" style="font-size:2rem; opacity:0.8;"></i>
+                </div>
+                <button class="primary-btn" onclick="alert('✅ Pago de $1,500 procesado con tarjeta terminación 4242.')">Pagar Ahora</button>
+            </div>
+
+            <div id="pay-new" class="payment-method-view" style="display:none;">
+                <input type="text" class="form-input" placeholder="Nombre en la tarjeta">
+                <input type="text" class="form-input" placeholder="Número de tarjeta">
+                <div style="display:flex; gap:10px;">
+                    <input type="text" class="form-input" placeholder="MM/AA">
+                    <input type="text" class="form-input" placeholder="CVV">
+                </div>
+                <button class="primary-btn" onclick="alert('✅ Nueva tarjeta guardada y pago procesado.')">Pagar Ahora</button>
+            </div>
+
+            <div id="pay-cash" class="payment-method-view" style="display:none;">
+                <p style="font-size:0.95rem; color:#555; text-align:center; margin-bottom:20px; line-height:1.5;">
+                    Genera una referencia única para realizar tu pago en ventanilla bancaria, tiendas de conveniencia o en la oficina de Administración.
+                </p>
+                <div style="background:#f3f4f6; padding:15px; border-radius:10px; text-align:center; margin-bottom:20px;">
+                    <i class="fa-solid fa-barcode" style="font-size:3rem; color:#333;"></i>
+                    <div style="font-family:monospace; margin-top:5px;">1234 5678 9012 3456</div>
+                </div>
+                <button class="primary-btn" style="background:#333;" onclick="alert('📩 Ficha de pago enviada a tu correo.')">Enviar Ficha al Correo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-reserva" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-box">
+            <span class="close-modal" onclick="closeAllModals()">&times;</span>
+            <h2 class="modal-title"><i class="fa-solid fa-umbrella-beach"></i> Reservar Espacio</h2>
+            <p style="color: #666; margin-bottom: 20px;">Agenda el uso de amenidades.</p>
+            <label class="form-label">Selecciona el Área</label>
+            <select class="form-select">
+                <option>Terraza / Roof Garden (Cap: 50)</option>
+                <option>Salón de Usos Múltiples (Cap: 80)</option>
+                <option>Alberca - Carril Nado (Cap: 5)</option>
+                <option>Asador Zona A (Cap: 10)</option>
+            </select>
+            <label class="form-label">Fecha y Hora</label>
+            <input type="datetime-local" class="form-input">
+            <label class="form-label">Número de Personas</label>
+            <input type="number" class="form-input" placeholder="Ej. 15">
+            <button class="primary-btn" onclick="alert('✅ Solicitud enviada al Administrador.\nRecibirás confirmación pronto.')">Solicitar Reserva</button>
+        </div>
+    </div>
+
+    <div id="modal-visita" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-box">
+            <span class="close-modal" onclick="closeAllModals()">&times;</span>
+            <h2 class="modal-title"><i class="fa-solid fa-qrcode"></i> Nuevo Acceso</h2>
+            <input type="text" class="form-input" placeholder="Nombre del Visitante">
+            <button class="primary-btn" onclick="alert('QR Generado')">Generar QR</button>
+        </div>
+    </div>
+
+    <div id="modal-falla" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-box">
+            <span class="close-modal" onclick="closeAllModals()">&times;</span>
+            <h2 class="modal-title"><i class="fa-solid fa-triangle-exclamation"></i> Reportar Problema</h2>
+            <select class="form-select"><option>Fuga de Agua</option><option>Gas</option><option>Luz</option></select>
+            <textarea class="form-textarea" placeholder="Describe el problema..."></textarea>
+            <button class="primary-btn" onclick="alert('Reporte Enviado')">Enviar Reporte</button>
+        </div>
+    </div>
+
+    <div id="chat-window" class="chat-window">
+        <div class="chat-header"><span>Asistente Virtual</span><i class="fa-solid fa-xmark" onclick="toggleChat()" style="cursor:pointer"></i></div>
+        <div class="chat-body">
+            <div class="chat-search"><input type="text" placeholder="Buscar ayuda..."></div>
+            <p style="font-weight:bold; font-size:0.9rem; color:#666;">Preguntas Frecuentes:</p>
+            <div class="faq-item" onclick="alert('La clave es: WIFI_CONDO_2026')">¿Cuál es la clave del Wifi?</div>
+            <div class="faq-item" onclick="alert('La basura se saca de 8pm a 10pm')">¿Horario de basura?</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" class="chat-input" placeholder="Escribe tu duda...">
+            <button class="chat-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="../js/Residente.js"></script>
+</body>
+</html>

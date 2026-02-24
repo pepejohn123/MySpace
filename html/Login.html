@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>MySpace - Acceso</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../css/Login.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="split-screen">
+  <div class="left-panel">
+    <div class="logo">
+      <i class="fa-solid fa-city"></i> MySpace
+    </div>
+
+    <h1>Bienvenido</h1>
+    <p class="subtitle">Tu comunidad, gestionada en un solo lugar.</p>
+
+    <form id="loginForm">
+      <div class="input-group">
+        <label>Correo Electrónico</label>
+        <input type="email" id="emailInput" class="input-field" placeholder="Correo@gmail.com" required>
+      </div>
+
+      <div class="input-group">
+        <label>Contraseña</label>
+        <input type="password" class="input-field" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        <span id="btnText">Iniciar Sesión</span>
+        <div class="loader" id="loader"></div>
+      </button>
+
+      <div class="divider">o continúa con</div>
+
+      <button type="button" class="btn btn-google" id="googleBtn">
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo" width="20" height="20"> Continuar con Google
+      </button>
+    </form>
+  </div>
+
+  <div class="right-panel"></div>
+</div>
+
+<script src="../js/Login.js"></script>
+</body>
+</html>
