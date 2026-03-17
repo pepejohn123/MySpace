@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>MySpace - Admin</title>
+
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../../css/Admin.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="logo-container">
+        <div class="logo"><i class="fa-solid fa-city"></i> MySpace</div>
+        <span class="badge-role">ADMIN</span>
+      </div>
+
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="changeTab('propiedades')">Propiedades</button>
+        <button class="nav-tab" onclick="changeTab('reservas')">Reservas</button>
+        <button class="nav-tab" onclick="changeTab('servicios')">Servicios</button>
+        <button class="nav-tab" onclick="changeTab('mensajes')">Mensajes</button>
+        <button class="nav-tab" onclick="changeTab('finanzas')">Finanzas</button>
+      </div>
+
+      <div class="nav-right">
+        <button class="logout-btn" onclick="window.location.href = '../login/Login.html'">
+          Salir
+        </button>
+      </div>
+    </nav>
+    
+    <div class="main-content">
+      <section>
+        <h2 class="page-title">Gestión de Inmuebles</h2>
+
+        <div class="grid" id="propiedades-container">
+          <!-- JS inserta propiedades -->
+        </div>
+      </section>
+    </div>
+
+    <script src="../../js/Admin.js"></script>
+  </body>
+</html>

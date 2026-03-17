@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>MySpace - Mi Hogar</title>
+
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../../css/Residente.css" />
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="brand"><i class="fa-solid fa-city"></i> MySpace</div>
+
+      <div style="display: flex; gap: 20px; align-items: center">
+        <span class="user-name" id="user-name">Cargando...</span>
+        <a href="../login/Login.html" class="logout-link">Cerrar Sesión</a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="hero-card">
+        <img id="dept-image" src="" class="hero-image" />
+
+        <div class="hero-content">
+          <div class="unit-header">
+            <div>
+              <span class="unit-badge" id="dept-name">
+                Cargando departamento...
+              </span>
+
+              <h1 style="margin: 10px 0 5px 0; font-size: 1.8rem">
+                Mi Departamento
+              </h1>
+
+              <p style="color: #6b7280; margin: 0" id="dept-owner">
+                Cargando propietario...
+              </p>
+            </div>
+
+            <div class="status-pill" id="payment-status">Cargando...</div>
+          </div>
+
+          <div class="detail-features" id="features-container"></div>
+
+          <div class="services-section">
+            <h4>Servicios y Amenidades Incluidas:</h4>
+
+            <ul class="services-active-list" id="services-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions-grid">
+        <div class="action-btn" onclick="openModal('modal-pago')">
+          <i class="fa-solid fa-credit-card action-icon"></i>
+          <b>Pagar Cuota</b>
+        </div>
+
+        <div class="action-btn" onclick="openModal('modal-reserva')">
+          <i class="fa-solid fa-calendar-days action-icon"></i>
+          <b>Reservar Área</b>
+        </div>
+
+        <div class="action-btn" onclick="openModal('modal-visita')">
+          <i class="fa-solid fa-qrcode action-icon"></i>
+          <b>Acceso Visita</b>
+        </div>
+
+        <div class="action-btn" onclick="openModal('modal-falla')">
+          <i class="fa-solid fa-triangle-exclamation action-icon"></i>
+          <b>Reportar Falla</b>
+        </div>
+      </div>
+
+      <h3 style="margin-bottom: 15px">Movimientos Recientes</h3>
+
+      <div class="activity-list" id="activity-list"></div>
+    </div>
+
+    <div class="fab-resident" onclick="toggleChat()">
+      <i class="fa-regular fa-comment-dots"></i> Ayuda
+    </div>
+
+    <div id="chat-window" class="chat-window">
+
+      <div class="chat-header">
+        <span>Asistente Virtual</span>
+
+        <i
+          class="fa-solid fa-xmark"
+          onclick="toggleChat()"
+          style="cursor:pointer"
+        ></i>
+      </div>
+
+      <div class="chat-body">
+
+        <div class="chat-search">
+          <input type="text" placeholder="Buscar ayuda..." />
+        </div>
+
+        <p style="font-weight:bold; font-size:0.9rem; color:#666;">
+          Preguntas Frecuentes:
+        </p>
+
+        <div class="faq-item" onclick="mostrarRespuesta('wifi')">
+          ¿Cuál es la clave del Wifi?
+        </div>
+
+        <div class="faq-item" onclick="mostrarRespuesta('basura')">
+          ¿Horario de basura?
+        </div>
+
+      </div>
+
+      <div class="chat-footer">
+        <input type="text" class="chat-input" placeholder="Escribe tu duda..." />
+        <button class="chat-send-btn">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+
+    </div>
+    <script src="../../js/Residente.js"></script>
+  </body>
+</html>
