@@ -76,7 +76,12 @@
     text-align: center;
 }
 
+.admin-hidden {
+    display: none !important;
+}
+
 .grid.admin-hidden,
+.visits-wrapper.admin-hidden,
 .messages-wrapper.admin-hidden,
 .history-wrapper.admin-hidden {
     display: none !important;
@@ -266,6 +271,110 @@
     gap: 10px;
 }
 
+.conversation-admin-modal {
+    max-width: 760px;
+}
+
+.admin-conversation-card {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+    display: grid;
+    gap: 12px;
+}
+
+.admin-conversation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.admin-conversation-title-text {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #111827;
+}
+
+.admin-conversation-meta {
+    display: grid;
+    gap: 6px;
+    color: #6B7280;
+    font-size: 0.9rem;
+}
+
+.admin-conversation-preview {
+    margin: 0;
+    color: #374151;
+}
+
+.admin-conversation-status-row {
+    margin: 10px 0 14px 0;
+}
+
+.conversation-messages {
+    display: grid;
+    gap: 12px;
+    max-height: 340px;
+    overflow-y: auto;
+    margin-bottom: 18px;
+}
+
+.conversation-message {
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    background: #F9FAFB;
+}
+
+.conversation-message.mine {
+    background: #EEF2FF;
+    border-color: #C7D2FE;
+}
+
+.conversation-message-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    color: #6B7280;
+}
+
+.conversation-message-body {
+    margin: 0;
+    color: #111827;
+    line-height: 1.45;
+}
+
+.conversation-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.conversation-status-abierta {
+    background: #FFFBEB;
+    color: #D97706;
+}
+
+.conversation-status-respondida {
+    background: #EEF2FF;
+    color: #4F46E5;
+}
+
+.conversation-status-cerrada {
+    background: #F3F4F6;
+    color: #4B5563;
+}
+
 .admin-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -301,9 +410,22 @@
     gap: 24px;
 }
 
+.visits-wrapper {
+    display: grid;
+    gap: 24px;
+}
+
 .history-wrapper {
     display: grid;
     gap: 24px;
+}
+
+.page-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
 }
 
 .messages-section {
@@ -338,6 +460,151 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
     margin-bottom: 20px;
+}
+
+.finance-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.finance-summary-section,
+.finance-filters-section,
+.finance-results-section {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+    margin-bottom: 22px;
+}
+
+.finance-dashboard-layout {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(260px, 1fr));
+    gap: 24px;
+    align-items: start;
+}
+
+.finance-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.secondary-summary-grid {
+    margin-bottom: 0;
+}
+
+.fin-card.compact {
+    padding: 18px;
+}
+
+.finance-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.finance-filter-hint {
+    margin-bottom: 14px;
+    font-size: 0.9rem;
+    color: #6B7280;
+}
+
+.finance-filters-grid .modal-input:disabled {
+    background: #F3F4F6;
+    color: #9CA3AF;
+    cursor: not-allowed;
+}
+
+.finance-payment-card {
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+}
+
+.finance-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.visit-validation-form {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.visit-validation-form .modal-input {
+    flex: 1;
+}
+
+.visit-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.visit-card-meta {
+    display: grid;
+    gap: 6px;
+    color: #6B7280;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+.visit-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    margin-top: 14px;
+}
+
+.visit-status-pendiente {
+    background: #FFFBEB;
+    color: #D97706;
+}
+
+.visit-status-validada {
+    background: #ECFDF5;
+    color: #059669;
+}
+
+.visit-status-expirada {
+    background: #FEF2F2;
+    color: #DC2626;
+}
+
+.visit-validation-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+}
+
+.visit-validation-validada {
+    border-left: 4px solid #059669;
+}
+
+.visit-validation-expirada {
+    border-left: 4px solid #DC2626;
+}
+
+.visit-card-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
 }
 
 .history-ticket-meta {
@@ -924,6 +1191,16 @@
 /* Responsivo */
 @media (max-width: 900px) {
     .finance-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .finance-dashboard-layout {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .finance-dashboard-layout {
         grid-template-columns: 1fr;
     }
 }

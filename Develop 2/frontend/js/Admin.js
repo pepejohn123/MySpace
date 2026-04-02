@@ -2,6 +2,42 @@ const DEFAULT_PROPERTY_IMAGE = 'https://images.unsplash.com/photo-1560448204?aut
 let amenityModalMode = 'create';
 let selectedAmenityId = null;
 let ticketsHistoryCache = [];
+let visitsCache = [];
+let paymentsFinanzasCache = [];
+let conversationsAdminCache = [];
+let currentFinanceFilters = {
+  property: 'all',
+  resident: 'all',
+  status: 'all',
+  search: ''
+};
+let financeShellRendered = false;
+const exportConfigByTab = {
+  reservas: {
+    label: 'Exportar reservas',
+    endpoint: '/api/exports/reservations.xlsx',
+    filename: 'reservations.xlsx',
+    getFilters: () => ({})
+  },
+  visitas: {
+    label: 'Exportar visitas',
+    endpoint: '/api/exports/visits.xlsx',
+    filename: 'visits.xlsx',
+    getFilters: getVisitsExportFilters
+  },
+  historial: {
+    label: 'Exportar tickets',
+    endpoint: '/api/exports/tickets.xlsx',
+    filename: 'tickets.xlsx',
+    getFilters: getHistoryExportFilters
+  },
+  finanzas: {
+    label: 'Exportar pagos',
+    endpoint: '/api/exports/payments.xlsx',
+    filename: 'payments.xlsx',
+    getFilters: getFinanceExportFilters
+  }
+};
 
 function getAmenityStatusClass(status) {
   return `service-status-${status || 'inactiva'}`;
@@ -9,6 +45,192 @@ function getAmenityStatusClass(status) {
 
 function getTicketPriorityClass(priority) {
   return `ticket-priority-${priority || 'media'}`;
+}
+
+function getConversationStatusClass(status) {
+  return `conversation-status-${status || 'abierta'}`;
+}
+
+async function cargarConversacionesAdminDesdeApi() {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/conversations`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'No se pudieron cargar las conversaciones');
+  }
+
+  const data = await response.json();
+  return data.conversations || [];
+}
+
+async function cargarDetalleConversacionAdmin(conversationId) {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/conversations/${encodeURIComponent(conversationId)}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'No se pudo cargar la conversación');
+  }
+
+  const data = await response.json();
+  return data.conversation;
+}
+
+async function responderConversacionAdmin(conversationId, payload) {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/conversations/${encodeURIComponent(conversationId)}/messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'No se pudo responder la conversación');
+  }
+
+  const data = await response.json();
+  return data.conversation;
+}
+
+async function cerrarConversacionAdmin(conversationId) {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/conversations/${encodeURIComponent(conversationId)}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ status: 'cerrada' })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'No se pudo cerrar la conversación');
+  }
+
+  const data = await response.json();
+  return data.conversation;
+}
+
+function renderAdminConversations(conversations) {
+  const container = document.getElementById('admin-conversations-container');
+
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = '';
+
+  if (!conversations.length) {
+    container.innerHTML = '<div class="admin-empty-state">No hay consultas de residentes todavía.</div>';
+    return;
+  }
+
+  conversations.forEach((conversation) => {
+    const lastMessage = conversation.messages?.[conversation.messages.length - 1];
+
+    container.innerHTML += `
+      <div class="admin-conversation-card">
+        <div class="admin-conversation-header">
+          <div>
+            <h4 class="admin-conversation-title-text">${conversation.subject}</h4>
+            <div class="admin-conversation-meta">
+              <span><strong>Residente:</strong> ${conversation.residentName}</span>
+              <span><strong>Actualizado:</strong> ${conversation.updatedAt || conversation.createdAt}</span>
+            </div>
+          </div>
+          <span class="conversation-status-badge ${getConversationStatusClass(conversation.status)}">${conversation.status}</span>
+        </div>
+        <p class="admin-conversation-preview">${lastMessage?.body || 'Sin mensajes'}</p>
+        <div class="service-card-actions">
+          <button class="admin-action-btn admin-toolbar-btn" onclick="openAdminConversationModal('${conversation.id}')">Ver conversación</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function renderAdminConversationDetail(conversation) {
+  const title = document.getElementById('admin-conversation-title');
+  const status = document.getElementById('admin-conversation-status');
+  const messages = document.getElementById('admin-conversation-messages');
+  const closeButton = document.getElementById('admin-conversation-close-btn');
+  const replyForm = document.getElementById('admin-conversation-reply-form');
+  const replyInput = document.getElementById('adminConversationReplyInput');
+
+  window.__adminConversationDetail = conversation;
+
+  if (title) {
+    title.textContent = conversation.subject;
+  }
+
+  if (status) {
+    status.innerHTML = `<span class="conversation-status-badge ${getConversationStatusClass(conversation.status)}">${conversation.status}</span>`;
+  }
+
+  if (messages) {
+    messages.innerHTML = '';
+    conversation.messages.forEach((message) => {
+      const isMine = message.senderRole === 'admin';
+      messages.innerHTML += `
+        <div class="conversation-message ${isMine ? 'mine' : ''}">
+          <div class="conversation-message-header">
+            <strong>${message.senderName}</strong>
+            <span>${message.createdAt}</span>
+          </div>
+          <p class="conversation-message-body">${message.body}</p>
+        </div>
+      `;
+    });
+  }
+
+  if (replyInput) {
+    replyInput.value = '';
+  }
+
+  if (closeButton) {
+    closeButton.style.display = conversation.status === 'cerrada' ? 'none' : 'inline-flex';
+  }
+
+  if (replyForm) {
+    replyForm.style.display = conversation.status === 'cerrada' ? 'none' : 'block';
+  }
+}
+
+async function openAdminConversationModal(conversationId) {
+  try {
+    const conversation = await cargarDetalleConversacionAdmin(conversationId);
+    renderAdminConversationDetail(conversation);
+    document.getElementById('admin-conversation-modal').style.display = 'flex';
+  } catch (error) {
+    showFeedback(error.message, 'error');
+  }
+}
+
+function closeAdminConversationModal(event, overlay) {
+  if (!event || event.target === overlay) {
+    const modal = document.getElementById('admin-conversation-modal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  }
 }
 
 function cargarTickets(data) {
@@ -391,6 +613,18 @@ function mapReservationToCard(reservation) {
   };
 }
 
+function mapVisitToAdminCard(visit) {
+  return {
+    id: visit.id,
+    visitante: visit.visitorName,
+    fecha: visit.visitDate,
+    codigo: visit.accessCode,
+    estado: visit.status,
+    propiedad: visit.propertyId || 'Sin propiedad',
+    residente: visit.residentName || visit.residentId || 'Sin residente'
+  };
+}
+
 function mapPaymentToCard(payment) {
   const statusTransitions = {
     pendiente: { next: 'pagado', label: 'Pagado' },
@@ -406,9 +640,361 @@ function mapPaymentToCard(payment) {
     concepto: payment.concept,
     monto: payment.amount,
     estado: payment.status,
+    propiedadId: payment.propertyId || null,
+    propiedadNombre: payment.propertyName || payment.propertyId || 'Sin propiedad',
+    residenteId: payment.residentId || null,
+    residenteNombre: payment.residentName || payment.residentId || 'Sin residente',
+    fecha: payment.paymentDate || payment.createdAt || 'Sin fecha',
     siguienteEstado: transition.next,
     siguienteEstadoLabel: transition.label
   };
+}
+
+function getFinanceExportFilters() {
+  return {
+    property: document.getElementById('finance-property-filter')?.value || 'all',
+    resident: document.getElementById('finance-resident-filter')?.value || 'all',
+    status: document.getElementById('finance-status-filter')?.value || 'all',
+    search: document.getElementById('finance-search-filter')?.value || ''
+  };
+}
+
+function getHistoryExportFilters() {
+  return {
+    status: document.getElementById('history-status-filter')?.value || 'all',
+    priority: document.getElementById('history-priority-filter')?.value || 'all',
+    period: document.getElementById('history-period-filter')?.value || 'all',
+    search: document.getElementById('history-search-filter')?.value || ''
+  };
+}
+
+function getVisitsExportFilters() {
+  return {
+    status: document.getElementById('visit-status-filter')?.value || 'all',
+    search: document.getElementById('visit-search-filter')?.value || ''
+  };
+}
+
+async function descargarExcel(endpoint, filename, filters = {}) {
+  const token = getToken();
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value && value !== 'all') {
+      params.set(key, value);
+    }
+  });
+
+  const requestUrl = params.toString() ? `${API_BASE_URL}${endpoint}?${params.toString()}` : `${API_BASE_URL}${endpoint}`;
+
+  const response = await fetch(requestUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'No se pudo descargar el archivo');
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(url);
+}
+
+function updateExportButtonForTab(tabName) {
+  const exportButton = document.getElementById('export-context-btn');
+
+  if (!exportButton) {
+    return;
+  }
+
+  const exportConfig = exportConfigByTab[tabName];
+
+  if (!exportConfig) {
+    exportButton.classList.add('admin-hidden');
+    exportButton.textContent = 'Exportar';
+    delete exportButton.dataset.endpoint;
+    delete exportButton.dataset.filename;
+    return;
+  }
+
+  exportButton.textContent = exportConfig.label;
+  exportButton.dataset.endpoint = exportConfig.endpoint;
+  exportButton.dataset.filename = exportConfig.filename;
+  exportButton.classList.remove('admin-hidden');
+}
+
+function filtrarPagosFinanzas(payments, filters) {
+  return payments.filter((payment) => {
+    const matchesProperty = filters.property === 'all' || payment.propiedadId === filters.property;
+    const matchesResident = filters.resident === 'all' || payment.residenteId === filters.resident;
+    const matchesStatus = filters.status === 'all' || payment.estado === filters.status;
+    const matchesSearch = !filters.search || payment.concepto.toLowerCase().includes(filters.search.toLowerCase());
+
+    return matchesProperty && matchesResident && matchesStatus && matchesSearch;
+  });
+}
+
+function renderFinanceSummarySection(summary) {
+  return `
+    <section class="finance-summary-section">
+      <div class="finance-section-header">
+        <div>
+          <h3 class="messages-section-title">Resumen financiero</h3>
+          <p class="messages-section-copy">Vista general de montos acumulados del condominio.</p>
+        </div>
+      </div>
+      <div class="finance-summary-grid">
+        <div class="fin-card"><p class="fin-label">Total registrado</p><p class="fin-amount">$${summary.total}</p></div>
+        <div class="fin-card"><p class="fin-label">Pagado</p><p class="fin-amount text-success">$${summary.pagado}</p></div>
+        <div class="fin-card"><p class="fin-label">En revisión</p><p class="fin-amount text-dark">$${summary.enRevision}</p></div>
+        <div class="fin-card"><p class="fin-label">Por cobrar</p><p class="fin-amount text-danger">$${summary.porCobrar}</p></div>
+      </div>
+    </section>
+  `;
+}
+
+function renderFinanceIndicatorsSection(payments) {
+  return `
+    <section class="finance-summary-section secondary-summary-section">
+      <div class="finance-section-header">
+        <div>
+          <h3 class="messages-section-title">Indicadores rápidos</h3>
+          <p class="messages-section-copy">Conteo de pagos según su situación actual.</p>
+        </div>
+      </div>
+      <div class="finance-summary-grid secondary-summary-grid">
+        <div class="fin-card compact"><p class="fin-label">Pagos listados</p><p class="fin-amount">${payments.length}</p></div>
+        <div class="fin-card compact"><p class="fin-label">Pagados</p><p class="fin-amount text-success">${payments.filter((payment) => payment.estado === 'pagado').length}</p></div>
+        <div class="fin-card compact"><p class="fin-label">En revisión</p><p class="fin-amount">${payments.filter((payment) => payment.estado === 'en_revision').length}</p></div>
+        <div class="fin-card compact"><p class="fin-label">Pendientes/Rechazados</p><p class="fin-amount text-danger">${payments.filter((payment) => payment.estado === 'pendiente' || payment.estado === 'rechazado').length}</p></div>
+      </div>
+    </section>
+  `;
+}
+
+function renderFiltrosFinanzas() {
+  return `
+    <section class="finance-filters-section">
+      <div class="finance-section-header">
+        <div>
+          <h3 class="messages-section-title">Filtros de pagos</h3>
+          <p class="messages-section-copy">Filtra por propiedad o por residente, además de estado y concepto.</p>
+        </div>
+      </div>
+      <div class="finance-filter-hint">Solo puedes filtrar por <strong>propiedad</strong> o por <strong>residente</strong> a la vez.</div>
+      <div class="finance-filters-grid">
+        <select id="finance-property-filter" class="modal-input"></select>
+        <select id="finance-resident-filter" class="modal-input"></select>
+        <select id="finance-status-filter" class="modal-input">
+          <option value="all">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="en_revision">En revisión</option>
+          <option value="pagado">Pagado</option>
+          <option value="rechazado">Rechazado</option>
+        </select>
+        <input id="finance-search-filter" class="modal-input" type="text" placeholder="Buscar por concepto" />
+      </div>
+    </section>
+  `;
+}
+
+function renderResultadosFinanzasShell() {
+  return `
+    <section class="finance-results-section">
+      <div class="finance-section-header finance-results-header">
+        <div>
+          <h3 class="messages-section-title">Resultados de pagos</h3>
+          <p class="messages-section-copy" id="finance-results-copy">0 pago(s) encontrados con los filtros actuales.</p>
+        </div>
+      </div>
+      <div class="finance-results-grid" id="finance-results-grid"></div>
+    </section>
+  `;
+}
+
+function populateFinanceFilters() {
+  const propertyFilter = document.getElementById('finance-property-filter');
+  const residentFilter = document.getElementById('finance-resident-filter');
+  const statusFilter = document.getElementById('finance-status-filter');
+  const searchFilter = document.getElementById('finance-search-filter');
+
+  if (propertyFilter) {
+    const propertyOptions = [...new Map(paymentsFinanzasCache.map((payment) => [payment.propiedadId, payment.propiedadNombre])).entries()];
+    propertyFilter.innerHTML = '<option value="all">Todas las propiedades</option>';
+    propertyOptions.forEach(([id, name]) => {
+      propertyFilter.innerHTML += `<option value="${id}">${name}</option>`;
+    });
+    propertyFilter.value = currentFinanceFilters.property;
+  }
+
+  if (residentFilter) {
+    const residentOptions = [...new Map(paymentsFinanzasCache.map((payment) => [payment.residenteId, payment.residenteNombre])).entries()];
+    residentFilter.innerHTML = '<option value="all">Todos los residentes</option>';
+    residentOptions.forEach(([id, name]) => {
+      residentFilter.innerHTML += `<option value="${id}">${name}</option>`;
+    });
+    residentFilter.value = currentFinanceFilters.resident;
+  }
+
+  if (statusFilter) {
+    statusFilter.value = currentFinanceFilters.status;
+  }
+
+  if (searchFilter) {
+    searchFilter.value = currentFinanceFilters.search;
+  }
+
+  syncFinanceFilterLock();
+}
+
+function syncFinanceFilterLock() {
+  const propertyFilter = document.getElementById('finance-property-filter');
+  const residentFilter = document.getElementById('finance-resident-filter');
+
+  if (!propertyFilter || !residentFilter) {
+    return;
+  }
+
+  const propertySelected = currentFinanceFilters.property !== 'all';
+  const residentSelected = currentFinanceFilters.resident !== 'all';
+
+  residentFilter.disabled = propertySelected;
+  propertyFilter.disabled = residentSelected;
+}
+
+function getCurrentFinanceFiltersFromDom() {
+  return {
+    property: document.getElementById('finance-property-filter')?.value || 'all',
+    resident: document.getElementById('finance-resident-filter')?.value || 'all',
+    status: document.getElementById('finance-status-filter')?.value || 'all',
+    search: document.getElementById('finance-search-filter')?.value || ''
+  };
+}
+
+function renderFinanceResults(filteredPayments) {
+  const resultsGrid = document.getElementById('finance-results-grid');
+  const resultsCopy = document.getElementById('finance-results-copy');
+
+  if (!resultsGrid || !resultsCopy) {
+    return;
+  }
+
+  resultsGrid.innerHTML = '';
+  resultsCopy.textContent = `${filteredPayments.length} pago(s) encontrados con los filtros actuales.`;
+
+  if (!filteredPayments.length) {
+    resultsCopy.textContent = 'No se encontraron coincidencias con los filtros seleccionados.';
+    resultsGrid.innerHTML = '<div class="admin-empty-state">No hay pagos que coincidan con los filtros seleccionados.</div>';
+    return;
+  }
+
+  filteredPayments.forEach((pago) => {
+    resultsGrid.innerHTML += `
+      <div class="card finance-payment-card">
+        <div class="card-info">
+          <h3>${pago.concepto}</h3>
+          <p><strong>Propiedad:</strong> ${pago.propiedadNombre}</p>
+          <p><strong>Residente:</strong> ${pago.residenteNombre}</p>
+          <p><strong>Fecha:</strong> ${pago.fecha}</p>
+          <p><strong>Monto:</strong> $${pago.monto}</p>
+          <p><strong>Estado:</strong> ${pago.estado}</p>
+          <button class="admin-action-btn" onclick="actualizarEstadoPago('${pago.id}', '${pago.siguienteEstado}')">
+            Marcar como ${pago.siguienteEstadoLabel}
+          </button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function applyFinanceFilters() {
+  currentFinanceFilters = getCurrentFinanceFiltersFromDom();
+  const filteredPayments = filtrarPagosFinanzas(paymentsFinanzasCache, currentFinanceFilters);
+  const summaryContainer = document.getElementById('finance-summary-wrapper');
+  const indicatorsContainer = document.getElementById('finance-indicators-wrapper');
+
+  if (summaryContainer) {
+    summaryContainer.innerHTML = renderFinanceSummarySection(window.__financeSummaryCache || { total: 0, pagado: 0, enRevision: 0, porCobrar: 0 });
+  }
+
+  if (indicatorsContainer) {
+    indicatorsContainer.innerHTML = renderFinanceIndicatorsSection(filteredPayments);
+  }
+
+  syncFinanceFilterLock();
+  renderFinanceResults(filteredPayments);
+}
+
+function bindFinanceFilters() {
+  const propertyFilter = document.getElementById('finance-property-filter');
+  const residentFilter = document.getElementById('finance-resident-filter');
+  const statusFilter = document.getElementById('finance-status-filter');
+  const searchFilter = document.getElementById('finance-search-filter');
+
+  if (propertyFilter) {
+    propertyFilter.addEventListener('change', () => {
+      if (propertyFilter.value !== 'all') {
+        currentFinanceFilters.resident = 'all';
+        if (residentFilter) {
+          residentFilter.value = 'all';
+        }
+      }
+      applyFinanceFilters();
+    });
+  }
+
+  if (residentFilter) {
+    residentFilter.addEventListener('change', () => {
+      if (residentFilter.value !== 'all') {
+        currentFinanceFilters.property = 'all';
+        if (propertyFilter) {
+          propertyFilter.value = 'all';
+        }
+      }
+      applyFinanceFilters();
+    });
+  }
+
+  if (statusFilter) {
+    statusFilter.addEventListener('change', applyFinanceFilters);
+  }
+
+  if (searchFilter) {
+    searchFilter.addEventListener('input', applyFinanceFilters);
+  }
+}
+
+function actualizarVistaFinanzas() {
+  const finanzasContainer = document.getElementById('finanzas-container');
+
+  if (!finanzasContainer) {
+    return;
+  }
+
+  if (!financeShellRendered) {
+    finanzasContainer.innerHTML = `
+      <div class="finance-dashboard-layout">
+        <div id="finance-summary-wrapper"></div>
+        <div id="finance-indicators-wrapper"></div>
+        <div id="finance-filters-wrapper">${renderFiltrosFinanzas()}</div>
+        <div id="finance-results-wrapper">${renderResultadosFinanzasShell()}</div>
+      </div>
+    `;
+    populateFinanceFilters();
+    bindFinanceFilters();
+    financeShellRendered = true;
+  }
+
+  applyFinanceFilters();
 }
 
 function mapNoticeToCard(notice) {
@@ -476,6 +1062,138 @@ async function cargarPagosDesdeApi() {
     payments: (data.payments || []).map(mapPaymentToCard),
     summary: data.summary || { total: 0, pagado: 0, enRevision: 0, porCobrar: 0 }
   };
+}
+
+async function cargarVisitasDesdeApi() {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/visits`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'No se pudieron cargar las visitas');
+  }
+
+  const data = await response.json();
+  return (data.visits || []).map(mapVisitToAdminCard);
+}
+
+async function validarVisitaPorCodigo(accessCode) {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/visits/${encodeURIComponent(accessCode)}/validate`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'No se pudo validar la visita');
+  }
+
+  const data = await response.json();
+  return mapVisitToAdminCard(data.visit);
+}
+
+function renderVisitas(visits) {
+  const visitsContainer = document.getElementById('visits-container');
+
+  if (!visitsContainer) {
+    return;
+  }
+
+  visitsContainer.innerHTML = '';
+
+  if (!visits.length) {
+    visitsContainer.innerHTML = '<div class="admin-empty-state">No hay visitas registradas todavía.</div>';
+    return;
+  }
+
+  visits.forEach((visit) => {
+    visitsContainer.innerHTML += `
+      <div class="card visit-card">
+        <div class="card-info">
+          <h3>${visit.visitante}</h3>
+          <div class="visit-card-meta">
+            <span><strong>Fecha:</strong> ${visit.fecha}</span>
+            <span><strong>Código:</strong> ${visit.codigo}</span>
+            <span><strong>Propiedad:</strong> ${visit.propiedad}</span>
+            <span><strong>Residente:</strong> ${visit.residente}</span>
+          </div>
+          <span class="visit-status-badge visit-status-${visit.estado}">${visit.estado}</span>
+          ${visit.estado === 'pendiente' ? `
+            <div class="visit-card-actions">
+              <button class="admin-action-btn" onclick="validarVisitaDesdeCard('${visit.codigo}')">Validar visita</button>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  });
+}
+
+function filtrarVisitas(visits, filters) {
+  return visits.filter((visit) => {
+    const matchesStatus = filters.status === 'all' || visit.estado === filters.status;
+    const searchTarget = `${visit.visitante} ${visit.codigo}`.toLowerCase();
+    const matchesSearch = !filters.search || searchTarget.includes(filters.search.toLowerCase());
+
+    return matchesStatus && matchesSearch;
+  });
+}
+
+function actualizarVistaVisitas() {
+  const filters = {
+    status: document.getElementById('visit-status-filter')?.value || 'all',
+    search: document.getElementById('visit-search-filter')?.value || ''
+  };
+
+  const filteredVisits = filtrarVisitas(visitsCache, filters);
+  renderVisitas(filteredVisits);
+}
+
+async function validarVisitaDesdeCard(accessCode) {
+  try {
+    const visit = await validarVisitaPorCodigo(accessCode);
+    renderVisitValidationResult(visit);
+    visitsCache = await cargarVisitasDesdeApi();
+    actualizarVistaVisitas();
+    showFeedback('Acceso validado correctamente', 'success');
+  } catch (error) {
+    renderVisitValidationResult(error.message, true);
+    showFeedback(error.message, 'error');
+  }
+}
+
+function renderVisitValidationResult(visit, isError = false) {
+  const resultContainer = document.getElementById('visit-validation-result');
+
+  if (!resultContainer) {
+    return;
+  }
+
+  if (isError) {
+    resultContainer.innerHTML = `<div class="admin-error-state">${visit}</div>`;
+    return;
+  }
+
+  resultContainer.innerHTML = `
+    <div class="visit-validation-card visit-validation-${visit.estado}">
+      <h4>${visit.visitante}</h4>
+      <div class="visit-card-meta">
+        <span><strong>Fecha:</strong> ${visit.fecha}</span>
+        <span><strong>Código:</strong> ${visit.codigo}</span>
+        <span><strong>Propiedad:</strong> ${visit.propiedad}</span>
+        <span><strong>Residente:</strong> ${visit.residente}</span>
+      </div>
+      <span class="visit-status-badge visit-status-${visit.estado}">${visit.estado}</span>
+    </div>
+  `;
 }
 
 async function cargarAvisosDesdeApi() {
@@ -756,21 +1474,26 @@ function changeTab(tabName) {
   const ticketsContainer = document.getElementById('tickets-container');
   const reservasContainer = document.getElementById('reservas-container');
   const finanzasContainer = document.getElementById('finanzas-container');
+  const visitsWrapper = document.getElementById('visits-wrapper');
   const avisosContainer = document.getElementById('avisos-container');
   const serviciosContainer = document.getElementById('servicios-container');
   const archivedAvisosContainer = document.getElementById('archived-avisos-container');
+  const conversationsContainer = document.getElementById('admin-conversations-container');
   const messagesWrapper = document.getElementById('messages-wrapper');
   const closedTicketsContainer = document.getElementById('closed-tickets-container');
   const ticketsHistoryWrapper = document.getElementById('tickets-history-wrapper');
 
-  if (!title || !propertyContainer || !ticketsContainer || !reservasContainer || !finanzasContainer || !avisosContainer || !serviciosContainer || !archivedAvisosContainer || !messagesWrapper || !closedTicketsContainer || !ticketsHistoryWrapper) {
+  if (!title || !propertyContainer || !ticketsContainer || !reservasContainer || !finanzasContainer || !visitsWrapper || !avisosContainer || !serviciosContainer || !archivedAvisosContainer || !conversationsContainer || !messagesWrapper || !closedTicketsContainer || !ticketsHistoryWrapper) {
     return;
   }
+
+  updateExportButtonForTab(tabName);
 
   propertyContainer.classList.add('admin-hidden');
   ticketsContainer.classList.add('admin-hidden');
   reservasContainer.classList.add('admin-hidden');
   finanzasContainer.classList.add('admin-hidden');
+  visitsWrapper.classList.add('admin-hidden');
   avisosContainer.classList.add('admin-hidden');
   serviciosContainer.classList.add('admin-hidden');
   archivedAvisosContainer.classList.add('admin-hidden');
@@ -808,18 +1531,21 @@ function changeTab(tabName) {
     setLoadingState('tickets-container', 'Cargando tickets...');
     setLoadingState('avisos-container', 'Cargando avisos...');
     setLoadingState('archived-avisos-container', 'Cargando avisos archivados...');
-    Promise.all([cargarTicketsDesdeApi(), cargarAvisosDesdeApi()])
-      .then(([tickets, avisos]) => {
+    Promise.all([cargarTicketsDesdeApi(), cargarAvisosDesdeApi(), cargarConversacionesAdminDesdeApi()])
+      .then(([tickets, avisos, conversations]) => {
+        conversationsAdminCache = conversations;
         cargarTickets(tickets);
         cargarTicketsCerradosRecientes(tickets);
         cargarAvisos(avisos);
         cargarAvisosArchivados(avisos);
+        renderAdminConversations(conversations);
       })
       .catch((error) => {
         ticketsContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
         closedTicketsContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
         avisosContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
         archivedAvisosContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
+        conversationsContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
       });
     return;
   }
@@ -836,12 +1562,37 @@ function changeTab(tabName) {
     return;
   }
 
+  if (tabName === 'visitas') {
+    title.textContent = 'Control de Visitas';
+    visitsWrapper.classList.remove('admin-hidden');
+    const visitsContainer = document.getElementById('visits-container');
+    if (visitsContainer) {
+      setLoadingState('visits-container', 'Cargando visitas...');
+    }
+
+    cargarVisitasDesdeApi()
+      .then((visits) => {
+        visitsCache = visits;
+        actualizarVistaVisitas();
+      })
+      .catch((error) => {
+        if (visitsContainer) {
+          visitsContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
+        }
+      });
+    return;
+  }
+
   if (tabName === 'finanzas') {
     title.textContent = 'Panel Financiero';
     finanzasContainer.classList.remove('admin-hidden');
     setLoadingState('finanzas-container', 'Cargando finanzas...');
     cargarPagosDesdeApi()
-      .then(({ payments, summary }) => cargarPagos(payments, summary))
+      .then(({ payments, summary }) => {
+        paymentsFinanzasCache = payments;
+        window.__financeSummaryCache = summary;
+        actualizarVistaFinanzas();
+      })
       .catch((error) => {
         finanzasContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
       });
@@ -1120,9 +1871,83 @@ document.addEventListener("DOMContentLoaded", async () => {
   const historyPriorityFilter = document.getElementById('history-priority-filter');
   const historyPeriodFilter = document.getElementById('history-period-filter');
   const historySearchFilter = document.getElementById('history-search-filter');
+  const validateVisitButton = document.getElementById('validate-visit-btn');
+  const visitAccessCodeInput = document.getElementById('visit-access-code-input');
+  const visitStatusFilter = document.getElementById('visit-status-filter');
+  const visitSearchFilter = document.getElementById('visit-search-filter');
+  const exportContextButton = document.getElementById('export-context-btn');
+  const adminConversationReplyForm = document.getElementById('admin-conversation-reply-form');
+  const adminConversationCloseButton = document.getElementById('admin-conversation-close-btn');
 
   if (logoutButton) {
     logoutButton.addEventListener('click', logout);
+  }
+
+  if (exportContextButton) {
+    exportContextButton.addEventListener('click', async () => {
+      const { endpoint, filename } = exportContextButton.dataset;
+
+      if (!endpoint || !filename) {
+        return;
+      }
+
+      try {
+        const activeTab = Array.from(document.querySelectorAll('.nav-tab')).find((tab) => tab.classList.contains('active'))?.textContent.trim().toLowerCase();
+        const exportConfig = exportConfigByTab[activeTab];
+        const filters = exportConfig?.getFilters ? exportConfig.getFilters() : {};
+        await descargarExcel(endpoint, filename, filters);
+        showFeedback('Archivo exportado correctamente', 'success');
+      } catch (error) {
+        showFeedback(error.message, 'error');
+      }
+    });
+  }
+
+  if (adminConversationReplyForm) {
+    adminConversationReplyForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const activeConversation = window.__adminConversationDetail;
+      const message = document.getElementById('adminConversationReplyInput').value.trim();
+
+      if (!activeConversation || !message) {
+        return;
+      }
+
+      try {
+        setButtonLoadingState(adminConversationReplyForm.querySelector('button[type="submit"]'), true, 'Enviando...');
+        const updatedConversation = await responderConversacionAdmin(activeConversation.id, { message });
+        renderAdminConversationDetail(updatedConversation);
+        conversationsAdminCache = await cargarConversacionesAdminDesdeApi();
+        renderAdminConversations(conversationsAdminCache);
+        showFeedback('Respuesta enviada correctamente', 'success');
+      } catch (error) {
+        showFeedback(error.message, 'error');
+      } finally {
+        setButtonLoadingState(adminConversationReplyForm.querySelector('button[type="submit"]'), false);
+      }
+    });
+  }
+
+  if (adminConversationCloseButton) {
+    adminConversationCloseButton.addEventListener('click', async () => {
+      const activeConversation = window.__adminConversationDetail;
+
+      if (!activeConversation) {
+        return;
+      }
+
+      try {
+        await cerrarConversacionAdmin(activeConversation.id);
+        const updatedConversation = await cargarDetalleConversacionAdmin(activeConversation.id);
+        renderAdminConversationDetail(updatedConversation);
+        conversationsAdminCache = await cargarConversacionesAdminDesdeApi();
+        renderAdminConversations(conversationsAdminCache);
+        showFeedback('Conversación cerrada correctamente', 'success');
+      } catch (error) {
+        showFeedback(error.message, 'error');
+      }
+    });
   }
 
   try {
@@ -1190,5 +2015,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (historySearchFilter) {
     historySearchFilter.addEventListener('input', actualizarHistorialTickets);
+  }
+
+  if (validateVisitButton && visitAccessCodeInput) {
+    validateVisitButton.addEventListener('click', async () => {
+      const accessCode = visitAccessCodeInput.value.trim();
+
+      if (!accessCode) {
+        renderVisitValidationResult('Ingresa un código de acceso válido.', true);
+        return;
+      }
+
+      try {
+        setButtonLoadingState(validateVisitButton, true, 'Validando...');
+        const visit = await validarVisitaPorCodigo(accessCode);
+        renderVisitValidationResult(visit);
+        visitsCache = await cargarVisitasDesdeApi();
+        actualizarVistaVisitas();
+        showFeedback('Acceso validado correctamente', 'success');
+      } catch (error) {
+        renderVisitValidationResult(error.message, true);
+        showFeedback(error.message, 'error');
+      } finally {
+        setButtonLoadingState(validateVisitButton, false);
+      }
+    });
+  }
+
+  if (visitStatusFilter) {
+    visitStatusFilter.addEventListener('change', actualizarVistaVisitas);
+  }
+
+  if (visitSearchFilter) {
+    visitSearchFilter.addEventListener('input', actualizarVistaVisitas);
   }
 });

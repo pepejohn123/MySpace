@@ -53,10 +53,292 @@
 
 .section-block {
     margin-top: 32px;
+    margin-bottom: 36px;
+}
+
+.resident-finance-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.resident-finance-card {
+    background: var(--white);
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.accent-neutral { border-top: 4px solid #111827; }
+.accent-success { border-top: 4px solid #059669; }
+.accent-review { border-top: 4px solid #4F46E5; }
+.accent-danger { border-top: 4px solid #DC2626; }
+
+.resident-finance-copy {
+    margin: 0;
+    color: #6B7280;
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.resident-finance-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #6B7280;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.resident-finance-amount {
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.resident-finance-amount.success { color: #059669; }
+.resident-finance-amount.review { color: #4F46E5; }
+.resident-finance-amount.danger { color: #DC2626; }
+
+.resident-payments-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 8px;
+}
+
+.resident-visits-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 8px;
+}
+
+
+.resident-conversations-list {
+    display: grid;
+    gap: 12px;
+}
+
+.resident-conversation-card {
+    background: var(--white);
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px 18px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+    display: grid;
+    gap: 10px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.resident-conversation-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.resident-conversation-subject {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #111827;
+}
+
+.resident-conversation-meta {
+    color: #6B7280;
+    font-size: 0.9rem;
+}
+
+.resident-conversation-preview {
+    color: #374151;
+    margin: 0;
+    font-size: 0.92rem;
+}
+
+.resident-conversation-status-row {
+    margin-bottom: 12px;
+}
+
+.conversation-messages {
+    display: grid;
+    gap: 12px;
+    max-height: 320px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+
+.conversation-message {
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    background: #F9FAFB;
+}
+
+.conversation-message.mine {
+    background: #EEF2FF;
+    border-color: #C7D2FE;
+}
+
+.conversation-message-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    color: #6B7280;
+}
+
+.conversation-message-body {
+    margin: 0;
+    color: #111827;
+    line-height: 1.45;
+}
+
+.conversation-actions-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.modal-card-wide {
+    width: min(92%, 680px);
+}
+
+.conversation-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.conversation-status-abierta {
+    background: #FFFBEB;
+    color: #D97706;
+}
+
+.conversation-status-respondida {
+    background: #EEF2FF;
+    color: #4F46E5;
+}
+
+.conversation-status-cerrada {
+    background: #F3F4F6;
+    color: #4B5563;
+}
+
+.resident-payment-card {
+    background: var(--white);
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px 22px;
+    display: block;
+    gap: 16px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.resident-payment-card h4 {
+    margin: 0;
+    font-size: 1.08rem;
+    color: #111827;
+}
+
+.resident-payment-main {
+    display: grid;
+    gap: 12px;
+}
+
+.resident-payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.resident-payment-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: #6B7280;
+    font-size: 0.9rem;
+}
+
+.resident-payment-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.resident-visit-card {
+    background: var(--white);
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px 22px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.resident-visit-main {
+    display: grid;
+    gap: 12px;
+}
+
+.resident-visit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.resident-visit-header h4 {
+    margin: 0;
+    font-size: 1.08rem;
+    color: #111827;
+}
+
+.resident-visit-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: #6B7280;
+    font-size: 0.9rem;
+}
+
+.resident-visit-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.resident-payment-helper {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #6B7280;
+    line-height: 1.5;
 }
 
 .section-title {
     margin-bottom: 15px;
+    font-size: 1.4rem;
+    color: #111827;
 }
 
 .resident-empty-state {
@@ -83,6 +365,31 @@
     font-weight: 700;
     color: #4F46E5;
     margin-bottom: 4px;
+}
+
+.resident-activity-item {
+    padding: 18px 20px;
+}
+
+.resident-activity-main {
+    display: grid;
+    gap: 6px;
+}
+
+.resident-activity-date {
+    color: #6B7280;
+    font-size: 0.85rem;
+}
+
+.resident-activity-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 .notice-meta {
@@ -146,6 +453,67 @@
 .visit-result {
     margin-top: 16px;
     color: #111827;
+}
+
+.visit-pass-card {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    display: grid;
+    gap: 14px;
+}
+
+.visit-pass-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.visit-pass-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #4F46E5;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.visit-pass-title {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #111827;
+}
+
+.visit-pass-meta {
+    display: grid;
+    gap: 6px;
+    color: #4B5563;
+    font-size: 0.9rem;
+}
+
+.visit-pass-qr {
+    display: grid;
+    gap: 8px;
+    justify-items: center;
+    text-align: center;
+    color: #6B7280;
+    font-size: 0.8rem;
+}
+
+.visit-pass-qr-box {
+    width: 110px;
+    height: 110px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 6px solid white;
+    box-shadow: 0 0 0 1px #d1d5db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .loading-state {
@@ -216,7 +584,7 @@
 /* CHAT */
 .fab-resident { position: fixed; bottom: 30px; right: 30px; background: var(--text-dark); color: white; padding: 15px 25px; border-radius: 50px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer; display: flex; gap: 10px; z-index: 100; transition: 0.3s; }
 .fab-resident:hover { transform: scale(1.05); }
-.chat-window { position: fixed; bottom: 100px; right: 30px; width: 350px; height: 500px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999; display: none; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; }
+.chat-window { position: fixed; bottom: 100px; right: 30px; width: 380px; height: 560px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999; display: none; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; }
 .chat-header { background: var(--brand); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
 .chat-body { flex: 1; padding: 15px; overflow-y: auto; background: #f9fafb; }
 .chat-search input { width: 100%; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none; margin-bottom: 10px; }
@@ -234,4 +602,114 @@
 
 .chat-close-icon {
     cursor: pointer;
+}
+
+.assistant-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: #F3F4F6;
+    padding: 6px;
+    gap: 6px;
+}
+
+.assistant-tab-btn {
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-weight: 700;
+    color: #6B7280;
+    cursor: pointer;
+}
+
+.assistant-tab-btn.active {
+    background: white;
+    color: #1F2937;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.assistant-tab-panel {
+    display: none;
+    flex: 1;
+    min-height: 0;
+}
+
+.assistant-tab-panel.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.assistant-messages-body {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 12px;
+    padding: 14px;
+    background: #F9FAFB;
+}
+
+.assistant-messages-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.assistant-messages-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #374151;
+}
+
+.assistant-new-conversation-btn {
+    border: none;
+    background: #4F46E5;
+    color: white;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.resident-conversations-compact {
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+@media (max-width: 900px) {
+    .resident-finance-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .resident-finance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .resident-payment-card {
+        padding: 18px;
+    }
+
+    .resident-payment-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .resident-visit-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .resident-payment-meta {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .resident-visit-meta {
+        flex-direction: column;
+        gap: 6px;
+    }
 }

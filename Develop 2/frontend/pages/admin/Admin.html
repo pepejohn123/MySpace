@@ -21,6 +21,7 @@
       <div class="nav-tabs">
         <button class="nav-tab active" onclick="changeTab('propiedades')">Propiedades</button>
         <button class="nav-tab" onclick="changeTab('reservas')">Reservas</button>
+        <button class="nav-tab" onclick="changeTab('visitas')">Visitas</button>
         <button class="nav-tab" onclick="changeTab('servicios')">Servicios</button>
         <button class="nav-tab" onclick="changeTab('mensajes')">Mensajes</button>
         <button class="nav-tab" onclick="changeTab('historial')">Historial</button>
@@ -36,7 +37,10 @@
     
     <div class="main-content">
       <section>
-        <h2 class="page-title">Gestión de Inmuebles</h2>
+        <div class="page-header-actions">
+          <h2 class="page-title">Gestión de Inmuebles</h2>
+          <button id="export-context-btn" class="admin-action-btn admin-toolbar-btn admin-hidden">Exportar</button>
+        </div>
 
         <div class="grid" id="propiedades-container">
           <!-- JS inserta propiedades -->
@@ -91,10 +95,55 @@
               <!-- JS inserta avisos archivados -->
             </div>
           </section>
+
+          <section class="messages-section">
+            <div class="messages-section-header">
+              <div>
+                <h3 class="messages-section-title">Consultas de residentes</h3>
+                <p class="messages-section-copy">Responde conversaciones internas enviadas por los residentes.</p>
+              </div>
+            </div>
+            <div class="messages-grid" id="admin-conversations-container"></div>
+          </section>
         </div>
 
         <div class="grid admin-hidden" id="reservas-container">
           <!-- JS inserta reservas -->
+        </div>
+
+        <div class="admin-hidden visits-wrapper" id="visits-wrapper">
+          <section class="messages-section">
+            <div class="messages-section-header">
+              <div>
+                <h3 class="messages-section-title">Validar acceso</h3>
+                <p class="messages-section-copy">Ingresa un código de acceso para validar el pase de visita.</p>
+              </div>
+            </div>
+            <div class="visit-validation-form">
+              <input id="visit-access-code-input" class="modal-input" type="text" placeholder="ACCESS-4001" />
+              <button id="validate-visit-btn" class="admin-action-btn admin-toolbar-btn">Validar acceso</button>
+            </div>
+            <div id="visit-validation-result"></div>
+          </section>
+
+          <section class="messages-section">
+            <div class="messages-section-header">
+              <div>
+                <h3 class="messages-section-title">Visitas registradas</h3>
+                <p class="messages-section-copy">Consulta las visitas registradas en el condominio y su estado.</p>
+              </div>
+            </div>
+            <div class="visit-filters">
+              <select id="visit-status-filter" class="modal-input">
+                <option value="all">Todos los estados</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="validada">Validada</option>
+                <option value="expirada">Expirada</option>
+              </select>
+              <input id="visit-search-filter" class="modal-input" type="text" placeholder="Buscar por visitante o código" />
+            </div>
+            <div class="messages-grid" id="visits-container"></div>
+          </section>
         </div>
 
         <div class="grid admin-hidden" id="finanzas-container">
@@ -196,6 +245,22 @@
             <option value="residentes">Residentes</option>
           </select>
           <button type="submit" class="admin-action-btn">Publicar aviso</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="admin-conversation-modal" class="modal-overlay" onclick="closeAdminConversationModal(event, this)">
+      <div class="modal-box property-detail-modal conversation-admin-modal">
+        <span class="close-btn" onclick="closeAdminConversationModal()">&times;</span>
+        <h3 class="property-detail-title" id="admin-conversation-title">Conversación</h3>
+        <div id="admin-conversation-status" class="admin-conversation-status-row"></div>
+        <div id="admin-conversation-messages" class="conversation-messages"></div>
+        <form id="admin-conversation-reply-form" class="modal-form">
+          <textarea id="adminConversationReplyInput" class="modal-textarea" placeholder="Responder conversación" rows="3"></textarea>
+          <div class="modal-actions-row">
+            <button type="button" class="admin-secondary-btn" id="admin-conversation-close-btn">Cerrar conversación</button>
+            <button type="submit" class="admin-action-btn">Responder</button>
+          </div>
         </form>
       </div>
     </div>

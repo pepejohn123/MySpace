@@ -5,6 +5,8 @@ const { PORT } = require('./config/env');
 const errorHandler = require('./middlewares/errorHandler');
 const authRoutes = require('./routes/auth.routes');
 const amenityRoutes = require('./routes/amenity.routes');
+const conversationRoutes = require('./routes/conversation.routes');
+const exportRoutes = require('./routes/export.routes');
 const noticeRoutes = require('./routes/notice.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const propertyRoutes = require('./routes/property.routes');
@@ -23,6 +25,8 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api', authRoutes);
 app.use('/api/amenities', amenityRoutes);
+app.use('/api/conversations', conversationRoutes);
+app.use('/api/exports', exportRoutes);
 app.use('/api/notices', noticeRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/properties', propertyRoutes);

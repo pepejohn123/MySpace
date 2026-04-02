@@ -1,4 +1,5 @@
 const paymentRepository = require('../repositories/payment.repository');
+const propertyRepository = require('../repositories/property.repository');
 const userRepository = require('../repositories/user.repository');
 const createHttpError = require('../utils/httpError');
 const ROLES = require('../constants/roles');
@@ -51,9 +52,20 @@ function calculateSummary(payments) {
   );
 }
 
+function enrichPayment(payment) {
+  const resident = payment.residentId ? userRepository.findById(payment.residentId) : null;
+  const property = payment.propertyId ? propertyRepository.findById(payment.propertyId) : null;
+
+  return {
+    ...payment,
+    residentName: resident?.name || payment.residentId || 'Sin residente asignado',
+    propertyName: property?.name || payment.propertyId || 'Sin propiedad asignada'
+  };
+}
+
 function listPayments(currentUser) {
   if (currentUser.role === ROLES.ADMIN) {
-    const payments = paymentRepository.findByCondominioId(currentUser.condominioId);
+    const payments = paymentRepository.findByCondominioId(currentUser.condominioId).map(enrichPayment);
     return {
       payments,
       summary: calculateSummary(payments)
@@ -61,7 +73,7 @@ function listPayments(currentUser) {
   }
 
   if (currentUser.role === ROLES.RESIDENTE) {
-    const payments = paymentRepository.findByResidentId(currentUser.sub);
+    const payments = paymentRepository.findByResidentId(currentUser.sub).map(enrichPayment);
     return {
       payments,
       summary: calculateSummary(payments)
@@ -79,11 +91,11 @@ function getPaymentById(id, currentUser) {
   }
 
   if (currentUser.role === ROLES.ADMIN && payment.condominioId === currentUser.condominioId) {
-    return payment;
+      return enrichPayment(payment);
   }
 
   if (currentUser.role === ROLES.RESIDENTE && payment.residentId === currentUser.sub) {
-    return payment;
+      return enrichPayment(payment);
   }
 
   throw createHttpError(403, 'No tienes permisos para consultar este pago');

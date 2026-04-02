@@ -86,6 +86,16 @@ function mapPaymentsToMovimientos(payments) {
   }));
 }
 
+function mapPaymentToResidentCard(payment) {
+  return {
+    concepto: payment.concept,
+    fecha: payment.paymentDate || payment.createdAt || 'Sin fecha',
+    monto: payment.amount,
+    estado: payment.status,
+    color: buildPaymentColor(payment.status)
+  };
+}
+
 function mapReservationsToMovimientos(reservations) {
   return reservations.map((reservation) => ({
     tipo: 'Reserva',
@@ -106,6 +116,16 @@ function mapVisitsToMovimientos(visits) {
   }));
 }
 
+function mapVisitToResidentCard(visit) {
+  return {
+    visitorName: visit.visitorName,
+    visitDate: visit.visitDate,
+    accessCode: visit.accessCode,
+    status: visit.status,
+    color: buildVisitColor(visit.status)
+  };
+}
+
 function mapNoticeToCard(notice) {
   return {
     titulo: notice.title,
@@ -113,6 +133,197 @@ function mapNoticeToCard(notice) {
     audiencia: notice.audience,
     fecha: notice.createdAt || ''
   };
+}
+
+function getConversationStatusClass(status) {
+  return `conversation-status-${status || 'abierta'}`;
+}
+
+async function cargarConversacionesDesdeApi() {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/conversations`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'No se pudieron cargar las conversaciones');
+  }
+
+  const data = await response.json();
+  return data.conversations || [];
+}
+
+async function crearConversacion(payload) {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/conversations`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'No se pudo crear la conversación');
+  }
+
+  const data = await response.json();
+  return data.conversation;
+}
+
+async function cargarDetalleConversacion(conversationId) {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/conversations/${encodeURIComponent(conversationId)}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'No se pudo cargar la conversación');
+  }
+
+  const data = await response.json();
+  return data.conversation;
+}
+
+async function responderConversacion(conversationId, payload) {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/conversations/${encodeURIComponent(conversationId)}/messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'No se pudo responder la conversación');
+  }
+
+  const data = await response.json();
+  return data.conversation;
+}
+
+function renderResidentConversations(conversations) {
+  const container = document.getElementById('resident-conversations-list');
+
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = '';
+
+  if (!conversations.length) {
+    container.innerHTML = '<div class="resident-empty-state">Todavía no has enviado consultas a administración.</div>';
+    return;
+  }
+
+  conversations.forEach((conversation) => {
+    const lastMessage = conversation.messages?.[conversation.messages.length - 1];
+
+    container.innerHTML += `
+      <button class="resident-conversation-card" onclick="openConversationDetail('${conversation.id}')">
+        <div class="resident-conversation-header">
+          <div>
+            <h4 class="resident-conversation-subject">${conversation.subject}</h4>
+            <div class="resident-conversation-meta">Actualizado: ${conversation.updatedAt || conversation.createdAt}</div>
+          </div>
+          <span class="conversation-status-badge ${getConversationStatusClass(conversation.status)}">${conversation.status}</span>
+        </div>
+        <p class="resident-conversation-preview">${lastMessage?.body || 'Sin mensajes'}</p>
+      </button>
+    `;
+  });
+}
+
+function renderConversationDetail(conversation) {
+  const title = document.getElementById('conversation-detail-title');
+  const status = document.getElementById('conversation-detail-status');
+  const messages = document.getElementById('conversation-detail-messages');
+  const replyInput = document.getElementById('conversationReplyInput');
+  const replyForm = document.getElementById('conversation-reply-form');
+
+  window.__residentConversationDetail = conversation;
+
+  if (title) {
+    title.textContent = conversation.subject;
+  }
+
+  if (status) {
+    status.innerHTML = `<span class="conversation-status-badge ${getConversationStatusClass(conversation.status)}">${conversation.status}</span>`;
+  }
+
+  if (messages) {
+    messages.innerHTML = '';
+    conversation.messages.forEach((message) => {
+      const isMine = message.senderRole === 'residente';
+      messages.innerHTML += `
+        <div class="conversation-message ${isMine ? 'mine' : ''}">
+          <div class="conversation-message-header">
+            <strong>${message.senderName}</strong>
+            <span>${message.createdAt}</span>
+          </div>
+          <p class="conversation-message-body">${message.body}</p>
+        </div>
+      `;
+    });
+  }
+
+  if (replyInput) {
+    replyInput.value = '';
+  }
+
+  if (replyForm) {
+    replyForm.style.display = conversation.status === 'cerrada' ? 'none' : 'flex';
+  }
+}
+
+async function refrescarConversacionesResidente() {
+  try {
+    const conversations = await cargarConversacionesDesdeApi();
+    renderResidentConversations(conversations);
+  } catch (error) {
+    const container = document.getElementById('resident-conversations-list');
+    if (container) {
+      container.innerHTML = `<div class="resident-error-state">${error.message}</div>`;
+    }
+  }
+}
+
+async function openConversationDetail(conversationId) {
+  try {
+    const conversation = await cargarDetalleConversacion(conversationId);
+    renderConversationDetail(conversation);
+    document.getElementById('conversation-detail-modal').style.display = 'flex';
+  } catch (error) {
+    showFeedback(error.message, 'error');
+  }
+}
+
+function closeConversationDetail(event, overlay) {
+  if (event.target === overlay) {
+    closeConversationDetailModal();
+  }
+}
+
+function closeConversationDetailModal() {
+  const modal = document.getElementById('conversation-detail-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
 }
 
 async function cargarTicketsDesdeApi() {
@@ -403,6 +614,152 @@ function actualizarEstadoPagoVisual(summary) {
   paymentStatus.innerHTML = '<i class="fa-solid fa-circle-check"></i> Al corriente';
 }
 
+function renderResidentFinanceSummary(summary) {
+  const container = document.getElementById('resident-finance-summary');
+
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="resident-finance-card accent-neutral">
+      <span class="resident-finance-label">Total registrado</span>
+      <strong class="resident-finance-amount">$${summary.total || 0}</strong>
+      <p class="resident-finance-copy">Suma acumulada de tus pagos registrados.</p>
+    </div>
+    <div class="resident-finance-card accent-success">
+      <span class="resident-finance-label">Pagado</span>
+      <strong class="resident-finance-amount success">$${summary.pagado || 0}</strong>
+      <p class="resident-finance-copy">Pagos ya validados por administración.</p>
+    </div>
+    <div class="resident-finance-card accent-review">
+      <span class="resident-finance-label">En revisión</span>
+      <strong class="resident-finance-amount review">$${summary.enRevision || 0}</strong>
+      <p class="resident-finance-copy">Pagos enviados pendientes de validación.</p>
+    </div>
+    <div class="resident-finance-card accent-danger">
+      <span class="resident-finance-label">Por cobrar</span>
+      <strong class="resident-finance-amount danger">$${summary.porCobrar || 0}</strong>
+      <p class="resident-finance-copy">Montos pendientes o con estatus rechazado.</p>
+    </div>
+  `;
+}
+
+function renderResidentPayments(payments) {
+  const container = document.getElementById('resident-payments-list');
+
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = '';
+
+  if (!payments.length) {
+    container.innerHTML = '<div class="resident-empty-state">Todavía no tienes pagos registrados.</div>';
+    return;
+  }
+
+  payments.map(mapPaymentToResidentCard).forEach((payment) => {
+    container.innerHTML += `
+      <div class="resident-payment-card">
+        <div class="resident-payment-main">
+          <div class="resident-payment-header">
+            <h4>${payment.concepto}</h4>
+            <span class="resident-payment-status" style="background:${payment.color}15;color:${payment.color};">${payment.estado}</span>
+          </div>
+          <div class="resident-payment-meta">
+            <span>Fecha: ${payment.fecha}</span>
+            <span>Monto: $${payment.monto}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function renderVisitPassCard(visit) {
+  const visitResult = document.getElementById('visit-result');
+
+  if (!visitResult) {
+    return;
+  }
+
+  visitResult.innerHTML = `
+    <div class="visit-pass-card">
+      <div class="visit-pass-header">
+        <div>
+          <span class="visit-pass-label">Pase generado</span>
+          <h4 class="visit-pass-title">${visit.visitorName}</h4>
+        </div>
+        <span class="resident-visit-status" style="background:${buildVisitColor(visit.status)}15;color:${buildVisitColor(visit.status)};">${visit.status}</span>
+      </div>
+      <div class="visit-pass-meta">
+        <span><strong>Fecha:</strong> ${visit.visitDate}</span>
+        <span><strong>Código:</strong> ${visit.accessCode}</span>
+      </div>
+      <div class="visit-pass-qr">
+        <div class="visit-pass-qr-box" id="visit-qr-current"></div>
+        <small>Presenta este QR en el acceso o comparte tu código.</small>
+      </div>
+    </div>
+  `;
+
+  renderVisitQr('visit-qr-current', visit);
+}
+
+function renderVisitQr(containerId, visit) {
+  const container = document.getElementById(containerId);
+
+  if (!container || typeof QRCode === 'undefined') {
+    return;
+  }
+
+  container.innerHTML = '';
+
+  const qrPayload = `VISIT|${visit.id}|${visit.accessCode}|${visit.visitDate}`;
+
+  new QRCode(container, {
+    text: qrPayload,
+    width: 110,
+    height: 110,
+    colorDark: '#111827',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+function renderResidentVisits(visits) {
+  const container = document.getElementById('resident-visits-list');
+
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = '';
+
+  if (!visits.length) {
+    container.innerHTML = '<div class="resident-empty-state">Todavía no has generado visitas.</div>';
+    return;
+  }
+
+  visits.map(mapVisitToResidentCard).forEach((visit) => {
+    container.innerHTML += `
+      <div class="resident-visit-card">
+        <div class="resident-visit-main">
+          <div class="resident-visit-header">
+            <h4>${visit.visitorName}</h4>
+            <span class="resident-visit-status" style="background:${visit.color}15;color:${visit.color};">${visit.status}</span>
+          </div>
+          <div class="resident-visit-meta">
+            <span>Fecha: ${visit.visitDate}</span>
+            <span>Código: ${visit.accessCode}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+}
+
 async function refrescarMovimientos() {
   try {
     const tickets = await cargarTicketsDesdeApi();
@@ -418,7 +775,11 @@ async function refrescarMovimientos() {
     ];
 
     actualizarEstadoPagoVisual(paymentData.summary || { porCobrar: 0, enRevision: 0 });
+    renderResidentFinanceSummary(paymentData.summary || { total: 0, pagado: 0, enRevision: 0, porCobrar: 0 });
+    renderResidentPayments(paymentData.payments || []);
+    renderResidentVisits(visits);
     cargarAvisos(notices);
+      await refrescarConversacionesResidente();
 
     if (!movimientos.length) {
       cargarMovimientos([
@@ -435,6 +796,9 @@ async function refrescarMovimientos() {
     cargarMovimientos(movimientos);
   } catch (error) {
     actualizarEstadoPagoVisual({ porCobrar: 0, enRevision: 0 });
+    renderResidentFinanceSummary({ total: 0, pagado: 0, enRevision: 0, porCobrar: 0 });
+    renderResidentPayments([]);
+    renderResidentVisits([]);
     cargarAvisos([]);
     cargarMovimientos([
       {
@@ -600,18 +964,15 @@ function cargarMovimientos(movs) {
   const sortedMovs = [...movs].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
   sortedMovs.forEach((m) => {
     container.innerHTML += `
-        <div class="activity-item">
-        <div>
-        ${m.tipo ? `<span class="movement-tag">${m.tipo}</span><br>` : ''}
-        <b>${m.titulo}</b>
-        <br>
-        <small style="color:#666">
-        ${m.fecha}
-        </small>
-        </div>
-        <span style="color:${m.color}; font-weight:bold;">
-        ${m.estado}
-        </span>
+        <div class="activity-item resident-activity-item">
+          <div class="resident-activity-main">
+            ${m.tipo ? `<span class="movement-tag">${m.tipo}</span>` : ''}
+            <b>${m.titulo}</b>
+            <small class="resident-activity-date">${m.fecha}</small>
+          </div>
+          <span class="resident-activity-status" style="background:${m.color}15;color:${m.color};">
+            ${m.estado}
+          </span>
         </div>
         `
   });
@@ -628,6 +989,23 @@ function closeModal(event, overlay){
 function closeAllModals(){
     document.querySelectorAll(".modal-overlay").forEach(m => m.style.display = "none");
 }
+
+function switchAssistantTab(tabName) {
+    document.querySelectorAll('.assistant-tab-btn').forEach((button) => {
+        button.classList.toggle('active', button.dataset.tab === tabName);
+    });
+
+    const helpPanel = document.getElementById('assistant-tab-help');
+    const messagesPanel = document.getElementById('assistant-tab-messages');
+
+    if (helpPanel) {
+        helpPanel.classList.toggle('active', tabName === 'help');
+    }
+
+    if (messagesPanel) {
+        messagesPanel.classList.toggle('active', tabName === 'messages');
+    }
+}
 //Chat
 function toggleChat(){
     const chat = document.getElementById("chat-window")
@@ -635,6 +1013,7 @@ function toggleChat(){
         chat.style.display = "none";
     }else{
         chat.style.display = "flex";
+        switchAssistantTab('help');
     }
 }
 function mostrarRespuesta(tipo){
@@ -697,6 +1076,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const reservationFeedback = document.getElementById('reservation-feedback');
     const reservationSlotsFeedback = document.getElementById('reservation-slots-feedback');
     const visitFeedback = document.getElementById('visit-feedback');
+    const conversationForm = document.getElementById('conversationForm');
+    const conversationFeedback = document.getElementById('conversation-feedback');
+    const conversationReplyForm = document.getElementById('conversation-reply-form');
     const reservationAmenitySelect = document.getElementById('reservationAmenityId');
     const reservationDateInput = document.getElementById('reservationDate');
 
@@ -728,6 +1110,66 @@ document.addEventListener("DOMContentLoaded", async () => {
           showFeedback(error.message, 'error');
         } finally {
           setButtonLoadingState(ticketForm.querySelector('button[type="submit"]'), false);
+        }
+      });
+    }
+
+    if (conversationForm) {
+      conversationForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const subject = document.getElementById('conversationSubject').value.trim();
+        const message = document.getElementById('conversationMessage').value.trim();
+
+        if (!subject || !message) {
+          conversationFeedback.textContent = 'Asunto y mensaje son requeridos';
+          conversationFeedback.className = 'modal-feedback error';
+          return;
+        }
+
+        try {
+          setButtonLoadingState(conversationForm.querySelector('button[type="submit"]'), true, 'Enviando...');
+          await crearConversacion({ subject, message });
+          conversationForm.reset();
+          closeAllModals();
+          await refrescarConversacionesResidente();
+          const chat = document.getElementById('chat-window');
+          if (chat) {
+            chat.style.display = 'flex';
+          }
+          switchAssistantTab('messages');
+          showFeedback('Consulta enviada correctamente', 'success');
+        } catch (error) {
+          conversationFeedback.textContent = error.message;
+          conversationFeedback.className = 'modal-feedback error';
+          showFeedback(error.message, 'error');
+        } finally {
+          setButtonLoadingState(conversationForm.querySelector('button[type="submit"]'), false);
+        }
+      });
+    }
+
+    if (conversationReplyForm) {
+      conversationReplyForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const activeConversation = window.__residentConversationDetail;
+        const message = document.getElementById('conversationReplyInput').value.trim();
+
+        if (!activeConversation || !message) {
+          return;
+        }
+
+        try {
+          setButtonLoadingState(conversationReplyForm.querySelector('button[type="submit"]'), true, 'Enviando...');
+          const updatedConversation = await responderConversacion(activeConversation.id, { message });
+          renderConversationDetail(updatedConversation);
+          await refrescarConversacionesResidente();
+          showFeedback('Respuesta enviada correctamente', 'success');
+        } catch (error) {
+          showFeedback(error.message, 'error');
+        } finally {
+          setButtonLoadingState(conversationReplyForm.querySelector('button[type="submit"]'), false);
         }
       });
     }
@@ -820,9 +1262,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           setButtonLoadingState(visitForm.querySelector('button[type="submit"]'), true, 'Generando...');
           const visit = await crearVisita({ visitorName, visitDate });
           visitForm.reset();
-          if (visitResult) {
-            visitResult.innerHTML = `<strong>Código generado:</strong> ${visit.accessCode}`;
-          }
+          renderVisitPassCard(visit);
           await refrescarMovimientos();
           showFeedback('Pase generado correctamente', 'success');
         } catch (error) {
