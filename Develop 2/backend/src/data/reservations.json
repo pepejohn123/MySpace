@@ -1,0 +1,28 @@
+[
+  {
+    "id": "RESERVATION#3001",
+    "condominioId": "CONDO#101",
+    "residentId": "user_residente_1",
+    "propertyId": "PROPERTY#A304",
+    "amenityId": "AMENITY#SALON_USOS_MULTIPLES",
+    "amenityName": "Salón de usos múltiples",
+    "reservationDate": "2026-04-10",
+    "timeSlot": "18:00-20:00",
+    "status": "pendiente",
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "RESERVATION#3002",
+    "condominioId": "CONDO#101",
+    "residentId": "user_residente_1",
+    "propertyId": "PROPERTY#A304",
+    "amenityId": "AMENITY#ALBERCA",
+    "amenityName": "Alberca",
+    "reservationDate": "2026-04-12",
+    "timeSlot": "10:00-12:00",
+    "status": "aprobada",
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  }
+]

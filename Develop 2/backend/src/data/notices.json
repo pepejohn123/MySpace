@@ -1,0 +1,13 @@
+[
+  {
+    "id": "NOTICE#5001",
+    "condominioId": "CONDO#101",
+    "authorId": "user_admin_1",
+    "title": "Mantenimiento de alberca",
+    "message": "La alberca estará cerrada el sábado de 9am a 1pm por mantenimiento.",
+    "audience": "general",
+    "status": "activo",
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  }
+]

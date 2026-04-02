@@ -19,9 +19,9 @@
     <nav class="navbar">
       <div class="brand"><i class="fa-solid fa-city"></i> MySpace</div>
 
-      <div style="display: flex; gap: 20px; align-items: center">
+      <div class="navbar-right">
         <span class="user-name" id="user-name">Cargando...</span>
-        <a href="../login/Login.html" class="logout-link">Cerrar Sesión</a>
+        <a href="../login/Login.html" class="logout-link" id="logout-link">Cerrar Sesión</a>
       </div>
     </nav>
 
@@ -36,11 +36,11 @@
                 Cargando departamento...
               </span>
 
-              <h1 style="margin: 10px 0 5px 0; font-size: 1.8rem">
+              <h1 class="hero-title">
                 Mi Departamento
               </h1>
 
-              <p style="color: #6b7280; margin: 0" id="dept-owner">
+              <p class="hero-owner" id="dept-owner">
                 Cargando propietario...
               </p>
             </div>
@@ -80,9 +80,77 @@
         </div>
       </div>
 
-      <h3 style="margin-bottom: 15px">Movimientos Recientes</h3>
+      <h3 class="section-title">Movimientos Recientes</h3>
 
       <div class="activity-list" id="activity-list"></div>
+
+      <div class="section-block">
+        <h3 class="section-title">Avisos del Condominio</h3>
+        <div class="activity-list" id="notices-list"></div>
+      </div>
+    </div>
+
+    <div id="modal-falla" class="modal-overlay" onclick="closeModal(event, this)">
+      <div class="modal-card">
+        <h3 class="modal-heading">Reportar Falla</h3>
+        <form id="ticketForm" class="modal-form">
+          <input id="ticketTitle" class="modal-input" type="text" placeholder="Título del problema" required />
+          <textarea id="ticketDescription" class="modal-textarea" placeholder="Describe la falla" rows="4" required></textarea>
+          <div id="ticket-feedback" class="modal-feedback"></div>
+          <button type="submit" class="modal-submit-btn">
+            Enviar reporte
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="modal-pago" class="modal-overlay" onclick="closeModal(event, this)">
+      <div class="modal-card">
+        <h3 class="modal-heading">Registrar Pago</h3>
+        <form id="paymentForm" class="modal-form">
+          <input id="paymentConcept" class="modal-input" type="text" placeholder="Concepto del pago" required />
+          <input id="paymentAmount" class="modal-input" type="number" min="1" step="0.01" placeholder="Monto" required />
+          <div id="payment-feedback" class="modal-feedback"></div>
+          <button type="submit" class="modal-submit-btn">
+            Registrar pago
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="modal-reserva" class="modal-overlay" onclick="closeModal(event, this)">
+      <div class="modal-card">
+        <h3 class="modal-heading">Solicitar Reserva</h3>
+        <form id="reservationForm" class="modal-form">
+          <select id="reservationAmenityId" class="modal-input" required>
+            <option value="">Selecciona una amenidad</option>
+          </select>
+          <input id="reservationDate" class="modal-input" type="date" required />
+          <select id="reservationTimeSlot" class="modal-input" required>
+            <option value="">Selecciona un horario</option>
+          </select>
+          <div id="reservation-slots-feedback" class="modal-feedback"></div>
+          <div id="reservation-feedback" class="modal-feedback"></div>
+          <button type="submit" class="modal-submit-btn">
+            Solicitar reserva
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="modal-visita" class="modal-overlay" onclick="closeModal(event, this)">
+      <div class="modal-card">
+        <h3 class="modal-heading">Generar Pase de Visita</h3>
+        <form id="visitForm" class="modal-form">
+          <input id="visitVisitorName" class="modal-input" type="text" placeholder="Nombre del visitante" required />
+          <input id="visitDate" class="modal-input" type="date" required />
+          <div id="visit-feedback" class="modal-feedback"></div>
+          <button type="submit" class="modal-submit-btn">
+            Generar pase
+          </button>
+        </form>
+        <div id="visit-result" class="visit-result"></div>
+      </div>
     </div>
 
     <div class="fab-resident" onclick="toggleChat()">
@@ -95,9 +163,8 @@
         <span>Asistente Virtual</span>
 
         <i
-          class="fa-solid fa-xmark"
+          class="fa-solid fa-xmark chat-close-icon"
           onclick="toggleChat()"
-          style="cursor:pointer"
         ></i>
       </div>
 
@@ -107,7 +174,7 @@
           <input type="text" placeholder="Buscar ayuda..." />
         </div>
 
-        <p style="font-weight:bold; font-size:0.9rem; color:#666;">
+        <p class="faq-title">
           Preguntas Frecuentes:
         </p>
 
@@ -129,6 +196,8 @@
       </div>
 
     </div>
+    <script src="../../js/auth.js"></script>
+    <script src="../../js/ui.js"></script>
     <script src="../../js/Residente.js"></script>
   </body>
 </html>

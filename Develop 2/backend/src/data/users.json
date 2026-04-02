@@ -1,0 +1,24 @@
+[
+  {
+    "id": "user_admin_1",
+    "email": "admin@myspace.com",
+    "passwordHash": "$2a$10$khhIDNCfC6JIDp0KCsQmrup0chuDwsR8ygXRkKsnu6uSWNyza1fti",
+    "role": "admin",
+    "name": "Administrador MySpace",
+    "condominioId": "CONDO#101",
+    "propertyId": null,
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "user_residente_1",
+    "email": "residente@myspace.com",
+    "passwordHash": "$2a$10$/XgoVDYaYFsGKjITtbzcGeDLy/blL8ZoNhVdr8SfFzfigiLNAfRIO",
+    "role": "residente",
+    "name": "Juan Pérez",
+    "condominioId": "CONDO#101",
+    "propertyId": "PROPERTY#A304",
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  }
+]

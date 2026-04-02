@@ -1,0 +1,15 @@
+[
+  {
+    "id": "VISIT#4001",
+    "condominioId": "CONDO#101",
+    "residentId": "user_residente_1",
+    "propertyId": "PROPERTY#A304",
+    "visitorName": "María López",
+    "visitDate": "2026-04-05",
+    "accessCode": "ACCESS-4001",
+    "status": "pendiente",
+    "validatedAt": null,
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  }
+]

@@ -37,6 +37,401 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
+.admin-action-btn {
+    padding: 10px 16px;
+    border: none;
+    background: #1e1b4b;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: 0.2s;
+    margin-top: 12px;
+}
+
+.admin-action-btn:hover {
+    opacity: 0.9;
+}
+
+.admin-empty-state {
+    background: white;
+    border: 1px dashed #d1d5db;
+    border-radius: 16px;
+    padding: 24px;
+    color: #6B7280;
+    text-align: center;
+}
+
+.admin-section-stack {
+    display: grid;
+    gap: 25px;
+}
+
+.admin-error-state {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: 16px;
+    padding: 24px;
+    color: #991B1B;
+    text-align: center;
+}
+
+.grid.admin-hidden,
+.messages-wrapper.admin-hidden,
+.history-wrapper.admin-hidden {
+    display: none !important;
+}
+
+.property-detail-modal {
+    max-width: 720px;
+}
+
+.property-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.property-detail-title {
+    margin: 0;
+    font-size: 1.6rem;
+    color: var(--text-dark);
+}
+
+.property-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.property-detail-item {
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.property-detail-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #6B7280;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.property-detail-value {
+    font-size: 1rem;
+    color: #111827;
+    font-weight: 600;
+}
+
+.property-card-button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+}
+
+.property-card-button .card {
+    width: 100%;
+}
+
+.service-card-admin {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+}
+
+.service-card-admin h3 {
+    margin: 0;
+}
+
+.service-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.service-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.service-status-activa {
+    background: #ECFDF5;
+    color: #059669;
+}
+
+.service-status-mantenimiento {
+    background: #FFFBEB;
+    color: #D97706;
+}
+
+.service-status-inactiva {
+    background: #F3F4F6;
+    color: #4B5563;
+}
+
+.service-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 18px 22px;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 18px;
+}
+
+.service-toolbar-copy h3 {
+    margin: 0 0 4px 0;
+}
+
+.service-toolbar-copy p {
+    margin: 0;
+    color: #6B7280;
+}
+
+.service-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.admin-secondary-btn {
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 1px solid #D1D5DB;
+    background: white;
+    color: #1F2937;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-secondary-btn:hover {
+    background: #F9FAFB;
+}
+
+.admin-danger-btn {
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: none;
+    background: #DC2626;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-danger-btn:hover {
+    opacity: 0.92;
+}
+
+.service-card-body {
+    display: grid;
+    gap: 10px;
+}
+
+.service-card-description {
+    color: #4B5563;
+    line-height: 1.5;
+    min-height: 48px;
+}
+
+.service-card-meta {
+    font-size: 0.9rem;
+    color: #6B7280;
+}
+
+.service-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.admin-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.admin-field-full {
+    grid-column: 1 / -1;
+}
+
+.modal-actions-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.messages-layout {
+    display: grid;
+    gap: 24px;
+}
+
+.messages-wrapper {
+    display: grid;
+    gap: 24px;
+}
+
+.history-wrapper {
+    display: grid;
+    gap: 24px;
+}
+
+.messages-section {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.messages-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.messages-section-copy {
+    margin: 6px 0 0 0;
+    color: #6B7280;
+}
+
+.messages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.history-filters {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.history-ticket-meta {
+    display: grid;
+    gap: 6px;
+    color: #6B7280;
+    font-size: 0.9rem;
+}
+
+.ticket-priority-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.ticket-priority-baja {
+    background: #EFF6FF;
+    color: #1D4ED8;
+}
+
+.ticket-priority-media {
+    background: #FFFBEB;
+    color: #D97706;
+}
+
+.ticket-priority-alta {
+    background: #FEF2F2;
+    color: #DC2626;
+}
+
+.ticket-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.ticket-status-cerrado {
+    background: #ECFDF5;
+    color: #059669;
+}
+
+.admin-toolbar-btn {
+    margin-top: 0;
+}
+
+.messages-section-title {
+    margin: 0 0 12px 0;
+}
+
+.loading-state {
+    background: white;
+    border: 1px dashed #d1d5db;
+    border-radius: 16px;
+    padding: 24px;
+    color: #6B7280;
+    text-align: center;
+}
+
+.feedback-container {
+    position: fixed;
+    top: 90px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 3000;
+}
+
+.feedback-toast {
+    min-width: 260px;
+    max-width: 360px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.feedback-success { background: #059669; }
+.feedback-error { background: #DC2626; }
+.feedback-info { background: #4F46E5; }
+
+.feedback-hide {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
 .nav-right { display: flex; align-items: center; gap: 20px; }
 .logout-btn { background: white; border: 1px solid #ddd; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
 .notif-btn { position: relative; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #666; }

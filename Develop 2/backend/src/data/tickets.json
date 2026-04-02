@@ -1,0 +1,28 @@
+[
+  {
+    "id": "TICKET#1001",
+    "condominioId": "CONDO#101",
+    "residentId": "user_residente_1",
+    "propertyId": "PROPERTY#A304",
+    "title": "Fuga en lavabo",
+    "description": "Se detectó una fuga pequeña en el lavabo del baño principal.",
+    "status": "pendiente",
+    "priority": "media",
+    "closedAt": null,
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "TICKET#1002",
+    "condominioId": "CONDO#101",
+    "residentId": "user_residente_1",
+    "propertyId": "PROPERTY#A304",
+    "title": "Foco fundido en pasillo",
+    "description": "El foco del pasillo del piso 3 no enciende desde ayer.",
+    "status": "en_proceso",
+    "priority": "baja",
+    "closedAt": null,
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  }
+]
