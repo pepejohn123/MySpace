@@ -1085,7 +1085,7 @@ async function cargarVisitasDesdeApi() {
 async function validarVisitaPorCodigo(accessCode) {
   const token = getToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/visits/${encodeURIComponent(accessCode)}/validate`, {
+  const response = await fetch(`${API_BASE_URL}/api/visits/validate/${encodeURIComponent(accessCode)}`, {
     headers: {
       Authorization: `Bearer ${token}`
     }

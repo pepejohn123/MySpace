@@ -12,6 +12,6 @@ router.use(authenticateToken);
 router.get('/', authorizeRole(ROLES.ADMIN, ROLES.RESIDENTE, ROLES.GUARDIA), visitController.listVisits);
 router.get('/:id', authorizeRole(ROLES.ADMIN, ROLES.RESIDENTE, ROLES.GUARDIA), visitController.getVisitById);
 router.post('/', authorizeRole(ROLES.RESIDENTE), visitController.createVisit);
-router.get('/:accessCode/validate', authorizeRole(ROLES.ADMIN, ROLES.GUARDIA), visitController.validateVisit);
+router.get('/validate/:accessCode', authorizeRole(ROLES.ADMIN, ROLES.GUARDIA), visitController.validateVisit);
 
 module.exports = router;
