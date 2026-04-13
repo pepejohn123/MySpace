@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MySpace - Acceso</title>
+    <link rel="stylesheet" href="../../css/Global.css" />
+    <link rel="stylesheet" href="../../css/Login.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="split-screen">
+      <div class="left-panel">
+        <div class="logo"><i class="fa-solid fa-city"></i> MySpace</div>
+
+        <h1>Bienvenido</h1>
+        <p class="subtitle">Tu comunidad, gestionada en un solo lugar.</p>
+
+        <form id="loginForm">
+          <div class="input-group">
+            <label>Correo Electrónico</label>
+            <input
+              type="email"
+              id="emailInput"
+              class="input-field"
+              placeholder="Correo@gmail.com"
+              required
+            />
+          </div>
+
+          <div class="input-group">
+            <label>Contraseña</label>
+            <input
+              type="password"
+              class="input-field"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            <span id="btnText">Iniciar Sesión</span>
+            <div class="loader" id="loader"></div>
+          </button>
+
+          <div class="divider">o continúa con</div>
+
+          <button type="button" class="btn btn-google" id="googleBtn">
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google Logo"
+              width="20"
+              height="20"
+            />
+            Continuar con Google
+          </button>
+ 
+           <div class="divider">¿Eres nuevo?</div>
+            <span id="openRegister"> Regístrate</span>
+           </p>
+        </form>
+      </div> 
+      <div class="right-panel"></div>
+    </div>
+    <!-- MODAL REGISTRO -->
+    <div id="registerModal" class="modal-overlay">
+      <div class="modal-box">
+        <span class="close-modal" id="closeRegister">&times;</span>
+
+        <h2>Crear Cuenta</h2>
+        <p style="color: #6b7280; margin-bottom: 20px">
+          Regístrate con tu correo o Google
+        </p>
+
+        <form id="registerForm">
+          <div class="input-group">
+            <label>Nombre</label>
+            <input type="text" id="nameRegister" class="input-field" required />
+          </div>
+
+          <div class="input-group">
+            <label>Correo</label>
+            <input
+              type="email"
+              id="emailRegister"
+              class="input-field"
+              required
+            />
+          </div>
+
+          <div class="input-group">
+            <label>Contraseña</label>
+            <input
+              type="password"
+              id="passwordRegister"
+              class="input-field"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary">Registrarse</button>
+
+          <div class="divider">o continúa con</div>
+
+          <button type="button" class="btn btn-google" id="googleRegisterBtn">
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              width="20"
+            />
+            Registrarse con Google
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="../../js/auth.js"></script>
+    <script src="../../js/ui.js"></script>
+    <script src="../../js/Login.js"></script>
+  </body>
+</html>
