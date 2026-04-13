@@ -36,9 +36,29 @@ function updateProperty(req, res, next) {
   }
 }
 
+function deleteProperty(req, res, next) {
+  try {
+    const property = propertyService.deleteProperty(req.params.id);
+    return res.json({ property });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+function assignResident(req, res, next) {
+  try {
+    const property = propertyService.assignResident(req.params.id, req.body.residentId);
+    return res.json({ property });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   listProperties,
   getPropertyById,
   createProperty,
-  updateProperty
+  updateProperty,
+  deleteProperty,
+  assignResident
 };

@@ -12,6 +12,7 @@ const paymentRoutes = require('./routes/payment.routes');
 const propertyRoutes = require('./routes/property.routes');
 const reservationRoutes = require('./routes/reservation.routes');
 const ticketRoutes = require('./routes/ticket.routes');
+const userRoutes = require('./routes/user.routes');
 const visitRoutes = require('./routes/visit.routes');
 
 const app = express();
@@ -32,6 +33,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/visits', visitRoutes);
 app.use(errorHandler);
 

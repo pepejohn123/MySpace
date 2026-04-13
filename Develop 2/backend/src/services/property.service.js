@@ -1,4 +1,5 @@
 const propertyRepository = require('../repositories/property.repository');
+const userRepository = require('../repositories/user.repository');
 const createHttpError = require('../utils/httpError');
 
 function buildPropertyId(name) {
@@ -87,9 +88,64 @@ function updateProperty(id, payload) {
   });
 }
 
+function deleteProperty(id) {
+  const normalizedId = normalizePropertyId(id);
+  const existingProperty = propertyRepository.findById(normalizedId);
+
+  if (!existingProperty) {
+    throw createHttpError(404, 'Propiedad no encontrada');
+  }
+
+  return propertyRepository.remove(normalizedId);
+}
+
+function assignResident(id, residentId) {
+  const normalizedId = normalizePropertyId(id);
+  const property = propertyRepository.findById(normalizedId);
+
+  if (!property) {
+    throw createHttpError(404, 'Propiedad no encontrada');
+  }
+
+  if (residentId !== null && residentId !== undefined) {
+    const resident = userRepository.findById(residentId);
+
+    if (!resident) {
+      throw createHttpError(404, 'Residente no encontrado');
+    }
+
+    if (resident.role !== 'residente') {
+      throw createHttpError(400, 'El usuario asignado debe tener rol residente');
+    }
+
+    if (resident.condominioId !== property.condominioId) {
+      throw createHttpError(400, 'El residente debe pertenecer al mismo condominio');
+    }
+
+    userRepository.update(resident.id, {
+      propertyId: property.id,
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  if (property.residentId) {
+    userRepository.update(property.residentId, {
+      propertyId: null,
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  return propertyRepository.update(normalizedId, {
+    residentId: residentId ?? null,
+    updatedAt: new Date().toISOString()
+  });
+}
+
 module.exports = {
   listProperties,
   getPropertyById,
   createProperty,
-  updateProperty
+  updateProperty,
+  deleteProperty,
+  assignResident
 };

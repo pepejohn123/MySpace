@@ -10,6 +10,7 @@ function serializeUser(user) {
     email: user.email,
     name: user.name,
     role: user.role,
+    superadmin: user.superadmin || false,
     condominioId: user.condominioId,
     propertyId: user.propertyId || null
   };
@@ -21,6 +22,7 @@ function createToken(user) {
       sub: user.id,
       email: user.email,
       role: user.role,
+      superadmin: user.superadmin || false,
       name: user.name,
       condominioId: user.condominioId,
       propertyId: user.propertyId || null

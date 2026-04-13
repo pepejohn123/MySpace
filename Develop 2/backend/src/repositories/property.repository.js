@@ -28,10 +28,22 @@ function update(id, changes) {
   return property;
 }
 
+function remove(id) {
+  const index = properties.findIndex((property) => property.id === id);
+
+  if (index === -1) {
+    return null;
+  }
+
+  const [deletedProperty] = properties.splice(index, 1);
+  return deletedProperty;
+}
+
 module.exports = {
   findAll,
   findById,
   findByCondominioId,
   create,
-  update
+  update,
+  remove
 };
