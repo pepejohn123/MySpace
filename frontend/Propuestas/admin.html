@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MySpace - Admin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* --- ESTILOS BASE --- */
+        :root { 
+            --brand: #4F46E5; 
+            --text-dark: #111827; 
+            --text-light: #6B7280; 
+            --bg-body: #f3f4f6; 
+            --white: #ffffff; 
+            --border: #E5E7EB; 
+            --success: #00C853;  
+            --danger: #EF4444; 
+            --warning: #F59E0B; 
+        }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg-body); padding-bottom: 100px; color: var(--text-dark); }
+        
+        /* NAVBAR */
+        .navbar { position: sticky; top: 0; z-index: 1000; background: rgba(255,255,255,0.95); border-bottom: 1px solid var(--border); height: 80px; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(8px); }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--brand); display: flex; align-items: center; gap: 10px; }
+        .nav-right { display: flex; align-items: center; gap: 20px; }
+        
+        .nav-tabs { display: flex; background: #f3f4f6; padding: 5px; border-radius: 50px; }
+        .nav-tab { padding: 8px 20px; border: none; background: transparent; font-weight: 600; color: #6B7280; cursor: pointer; border-radius: 40px; transition: 0.3s; }
+        .nav-tab.active { background: var(--text-dark); color: white; }
+        
+        .logout-btn { background: none; border: 1px solid #ddd; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
+        .logout-btn:hover { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+
+        /* NOTIFICACIONES */
+        .notif-btn { position: relative; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #666; }
+        .notif-badge { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; font-size: 0.7rem; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        
+        /* FILTROS */
+        .filter-container { top: 80px; position: sticky; background: white; z-index: 900; padding: 15px 40px 0; border-bottom: 1px solid var(--border); display: flex; gap: 30px; justify-content: center; }
+        .filter-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding-bottom: 15px; border-bottom: 2px solid transparent; color: #6B7280; }
+        .filter-item.active { color: var(--text-dark); border-bottom-color: var(--text-dark); }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .section-view { display: none; animation: fadeIn 0.4s; }
+        .section-view.active-view { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* GRID Y TARJETAS */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .card { background: white; border-radius: 16px; cursor: pointer; transition: transform 0.2s; border: 1px solid #eee; overflow: hidden; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .card.hidden { display: none; }
+        .card-img-wrap { width: 100%; aspect-ratio: 4/3; background: #eee; position: relative; }
+        .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .status-badge { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.95); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; }
+        .card-info { padding: 15px; }
+        .card-info h3 { margin: 0 0 5px 0; font-size: 1.1rem; }
+        .card-info p { margin: 0; font-size: 0.9rem; color: var(--text-light); }
+
+        /* TABLAS Y LISTAS */
+        .finance-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 30px; }
+        @media (max-width: 900px) { .finance-grid { grid-template-columns: 1fr; } }
+        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
+        .data-table th { background: #f9fafb; text-align: left; padding: 12px 15px; font-size: 0.85rem; color: var(--text-light); text-transform: uppercase; }
+        .data-table td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 0.95rem; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; display: inline-block; }
+        .bg-green { background: #ECFDF5; color: var(--success); }
+        .bg-red { background: #FEF2F2; color: var(--danger); }
+        .bg-yellow { background: #FFFBEB; color: #D97706; }
+
+        /* LISTAS DE SERVICIOS */
+        .list-column { background: white; padding: 20px; border-radius: 16px; border: 1px solid #eee; max-height: 600px; overflow-y: auto; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f9fafb; border: 1px solid #eee; border-radius: 10px; margin-bottom: 10px; transition: 0.2s; cursor: pointer; }
+        .list-item:hover { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-color: var(--brand); }
+        .item-left { display: flex; gap: 15px; align-items: center; }
+        .item-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+
+        /* CALENDARIO */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 20px; }
+        .cal-header { font-weight: bold; text-align: center; padding: 10px; background: #f3f4f6; border-radius: 8px; font-size: 0.9rem; }
+        .cal-day { background: white; border: 1px solid #eee; height: 100px; padding: 5px; border-radius: 8px; font-size: 0.8rem; position: relative; }
+        .cal-day:hover { border-color: var(--brand); }
+        .cal-event { margin-top: 5px; padding: 4px; border-radius: 4px; font-size: 0.7rem; color: white; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ev-reserva { background: var(--brand); }
+        .ev-mantenimiento { background: var(--warning); color: #333; }
+        .ev-urgente { background: var(--danger); }
+
+        /* MODALES */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: white; width: 90%; max-width: 600px; border-radius: 20px; padding: 30px; position: relative; max-height: 90vh; overflow-y: auto; animation: popIn 0.3s ease; }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .close-btn { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 1.5rem; color: #999; }
+        
+        /* DETALLES PROPIEDAD - ESTILO COMO IMAGEN 2 */
+        .detail-features { 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: flex-start;
+            margin: 25px 0; 
+            padding: 20px 0; 
+            border-top: 1px solid #eee; 
+            border-bottom: 1px solid #eee; 
+        }
+        .feature { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 8px;
+            color: #374151; 
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .feature i { 
+            font-size: 1.6rem; 
+            color: #111827; /* Icono negro sólido */
+        }
+        
+        /* LISTA DE SERVICIOS */
+        .services-section h4 { 
+            font-size: 1.1rem; 
+            color: #000; 
+            margin-bottom: 15px; 
+            font-weight: 700; 
+        }
+        .services-active-list { list-style: none; padding: 0; margin: 0; }
+        .services-active-list li { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            margin-bottom: 12px; 
+            font-size: 1rem; 
+            color: #374151; /* Gris oscuro legible */
+        }
+        .services-active-list li i { 
+            color: var(--success); /* Verde vibrante #00C853 */
+            font-size: 1.2rem;     /* Icono grande y sólido */
+        }
+
+        /* Fallas */
+        .faults-section { background: #FEF2F2; padding: 15px; border-radius: 8px; border: 1px solid #FECACA; margin-top: 20px; }
+        .faults-title { color: #991B1B; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .fault-item { font-size: 0.9rem; margin-bottom: 5px; color: #7F1D1D; }
+
+        /* Formularios y Botones */
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        .form-input, .form-select { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; }
+        .checkbox-group { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; cursor: pointer; }
+        .checkbox-item input { accent-color: var(--brand); transform: scale(1.2); }
+
+        .primary-btn { width: 100%; background: var(--brand); color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 10px; }
+        .secondary-btn { background: white; border: 1px solid #ddd; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .secondary-btn:hover { background: #f9fafb; border-color: #999; }
+        .action-btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-approve { flex: 1; background: var(--success); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-deny { flex: 1; background: white; color: var(--danger); border: 1px solid var(--danger); padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+
+        .fab { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--text-dark); color: white; padding: 12px 25px; border-radius: 50px; cursor: pointer; display: flex; gap: 8px; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.25); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><i class="fa-solid fa-city"></i> MySpace <span style="font-size: 0.7rem; background: #EEF2FF; color: var(--brand); padding: 2px 6px; border-radius: 6px; margin-left: 10px;">ADMIN</span></div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="changeSection('propiedades')" id="btn-propiedades">Propiedades</button>
+            <button class="nav-tab" onclick="changeSection('reservas')" id="btn-reservas">Reservas</button>
+            <button class="nav-tab" onclick="changeSection('servicios')" id="btn-servicios">Servicios</button>
+            <button class="nav-tab" onclick="changeSection('finanzas')" id="btn-finanzas">Finanzas</button>
+        </div>
+
+        <div class="nav-right">
+            <button class="notif-btn" onclick="changeSection('reservas')">
+                <i class="fa-solid fa-bell"></i>
+                <span class="notif-badge">5</span>
+            </button>
+            <button class="logout-btn" onclick="window.location.href='login.html'">Salir <i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+    </nav>
+
+    <div class="filter-container" id="filters-panel">
+        <div class="filter-item active" onclick="filterCards('all', this)"><i class="fa-solid fa-border-all"></i><span>Todo</span></div>
+        <div class="filter-item" onclick="filterCards('casa', this)"><i class="fa-solid fa-house"></i><span>Casas</span></div>
+        <div class="filter-item" onclick="filterCards('depto', this)"><i class="fa-solid fa-building"></i><span>Deptos</span></div>
+        <div class="filter-item" onclick="filterCards('amenidad', this)"><i class="fa-solid fa-umbrella-beach"></i><span>Amenidades</span></div>
+    </div>
+
+    <div class="main-content">
+        
+        <section id="view-propiedades" class="section-view active-view">
+            <h2 style="margin-bottom: 20px;">Gestión de Inmuebles</h2>
+            <div class="grid">
+                <div class="card" data-category="depto" onclick="openDetailModal('depto')">
+                    <div class="card-img-wrap"><span class="status-badge" style="color:orange;">⚠ Reporte Activo</span><img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&q=80"></div>
+                    <div class="card-info"><h3>Torre A - Depto 304</h3><p>Residente: Juan Pérez</p></div>
+                </div>
+                <div class="card" data-category="casa" onclick="openDetailModal('casa')">
+                    <div class="card-img-wrap"><span class="status-badge" style="color:green;">✔ OK</span><img src="https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=600&q=80"></div>
+                    <div class="card-info"><h3>Casa 14 - Coto Roble</h3><p>Residente: Familia Díaz</p></div>
+                </div>
+                <div class="card" data-category="amenidad" onclick="openDetailModal('alberca')">
+                    <div class="card-img-wrap"><span class="status-badge">Abierto</span><img src="https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=600&q=80"></div>
+                    <div class="card-info"><h3>Alberca Principal</h3><p>Aforo: 20%</p></div>
+                </div>
+                <div class="card" data-category="amenidad" onclick="openDetailModal('gym')">
+                    <div class="card-img-wrap"><span class="status-badge">Abierto</span><img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80"></div>
+                    <div class="card-info"><h3>Gimnasio Torre B</h3><p>Limpieza: 2:00 PM</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-reservas" class="section-view">
+            <h2 style="margin-bottom: 20px;">Control de Áreas Comunes</h2>
+            <div class="finance-grid">
+                <div class="list-column">
+                    <h3 style="color: var(--warning); margin-bottom: 15px;">⏳ Solicitudes Pendientes</h3>
+                    <div class="list-item" onclick="openReservaAction('Terraza', 'Fam. González', '20', 'Sáb 15 Feb')">
+                        <div class="item-left"><div class="item-icon" style="background:#FFFBEB; color:var(--warning);"><i class="fa-solid fa-umbrella-beach"></i></div><div><h4 style="margin:0;">Terraza Roof</h4><small>Fam. González • Sáb 15 Feb</small></div></div>
+                        <div class="badge bg-yellow">Revisar</div>
+                    </div>
+                    <div class="list-item" onclick="openReservaAction('Salón Eventos', 'Roberto Gomez', '40', 'Dom 16 Feb')">
+                        <div class="item-left"><div class="item-icon" style="background:#FFFBEB; color:var(--warning);"><i class="fa-solid fa-cake-candles"></i></div><div><h4 style="margin:0;">Salón Eventos</h4><small>Roberto G. • Dom 16 Feb</small></div></div>
+                        <div class="badge bg-yellow">Revisar</div>
+                    </div>
+                </div>
+                <div class="list-column">
+                    <h3 style="color: var(--success); margin-bottom: 15px;">✅ Aprobadas</h3>
+                    <div class="list-item"><div class="item-left"><div class="item-icon" style="background:#ECFDF5; color:var(--success);"><i class="fa-solid fa-calendar-check"></i></div><div><h4 style="margin:0;">Alberca (Clase)</h4><small>Mañana 10:00 AM</small></div></div></div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="view-servicios" class="section-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="margin: 0; font-weight: 800; color: #111;">Centro de Servicios y Mantenimiento</h2>
+                <button class="secondary-btn" onclick="openCalendar()">
+                    <i class="fa-regular fa-calendar"></i> Ver Calendario
+                </button>
+            </div>
+            
+            <div class="services-grid-layout">
+                
+                <div class="service-column">
+                    <h3 class="col-title"><i class="fa-solid fa-inbox" style="color:#6B7280;"></i> Reportes y Quejas (6)</h3>
+                    <div class="scroll-container">
+                        <div class="service-card">
+                            <div class="service-icon icon-red"><i class="fa-solid fa-droplet"></i></div>
+                            <div class="service-info"><h4>Fuga de Agua</h4><p>Torre A-304</p></div>
+                            <button class="btn-outline">Agendar</button>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon icon-yellow"><i class="fa-solid fa-bolt"></i></div>
+                            <div class="service-info"><h4>Falla Eléctrica</h4><p>Lobby B</p></div>
+                            <button class="btn-outline">Agendar</button>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon icon-red"><i class="fa-solid fa-car-burst"></i></div>
+                            <div class="service-info"><h4>Portón Dañado</h4><p>Acceso Norte</p></div>
+                            <button class="btn-outline">Agendar</button>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon icon-dark"><i class="fa-solid fa-key"></i></div>
+                            <div class="service-info"><h4>Llaves Perdidas</h4><p>Casa 12</p></div>
+                            <button class="btn-outline">Agendar</button>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon icon-red"><i class="fa-solid fa-table-cells-large"></i></div>
+                            <div class="service-info"><h4>Vidrio Roto</h4><p>Gimnasio</p></div>
+                            <button class="btn-outline">Agendar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="service-column">
+                    <h3 class="col-title"><i class="fa-solid fa-hard-hat" style="color:#F59E0B;"></i> Directorio de Proveedores</h3>
+                    <div class="scroll-container">
+                        <div class="service-card">
+                            <div class="service-icon icon-blue"><i class="fa-solid fa-wrench"></i></div>
+                            <div class="service-info"><h4>Plomería Rápida</h4><p>55-1234-5678</p></div>
+                            <button class="btn-icon"><i class="fa-solid fa-phone"></i></button>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon icon-green"><i class="fa-solid fa-tree"></i></div>
+                            <div class="service-info"><h4>Jardines Verdes</h4><p>55-8765-4321</p></div>
+                            <button class="btn-icon"><i class="fa-solid fa-phone"></i></button>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon icon-yellow"><i class="fa-solid fa-plug"></i></div>
+                            <div class="service-info"><h4>Electro-Fix</h4><p>24 Horas</p></div>
+                            <button class="btn-icon"><i class="fa-solid fa-phone"></i></button>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon icon-dark"><i class="fa-solid fa-shield-halved"></i></div>
+                            <div class="service-info"><h4>Seguridad Elite</h4><p>Caseta</p></div>
+                            <button class="btn-icon"><i class="fa-solid fa-phone"></i></button>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon icon-blue"><i class="fa-solid fa-table-cells"></i></div>
+                            <div class="service-info"><h4>Vidriería Express</h4><p>55-9988-7766</p></div>
+                            <button class="btn-icon"><i class="fa-solid fa-phone"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="modal-calendar" class="modal-overlay" onclick="closeModal(event, this)">
+            <div class="modal-box" style="max-width: 900px;">
+                <span class="close-btn" onclick="document.getElementById('modal-calendar').style.display='none'">&times;</span>
+                
+                <h2 style="margin-top:0; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-regular fa-calendar-check" style="color:var(--brand);"></i> Calendario de Servicios
+                </h2>
+
+                <div class="calendar-grid">
+                    <div class="cal-header">Lun</div><div class="cal-header">Mar</div><div class="cal-header">Mié</div>
+                    <div class="cal-header">Jue</div><div class="cal-header">Vie</div><div class="cal-header">Sáb</div><div class="cal-header">Dom</div>
+                    
+                    <div class="cal-day"><span class="day-num">1</span></div>
+                    <div class="cal-day"><span class="day-num">2</span><div class="cal-event ev-mantenimiento">Jardinería</div></div>
+                    <div class="cal-day"><span class="day-num">3</span></div>
+                    <div class="cal-day"><span class="day-num">4</span><div class="cal-event ev-urgente">Fuga A-304</div></div>
+                    <div class="cal-day"><span class="day-num">5</span><div class="cal-event ev-reserva">Terraza - Gtz</div></div>
+                    <div class="cal-day"><span class="day-num">6</span></div>
+                    <div class="cal-day"><span class="day-num">7</span></div>
+                    
+                    <div class="cal-day"><span class="day-num">8</span><div class="cal-event ev-mantenimiento">Limpieza Alberca</div></div>
+                    <div class="cal-day"><span class="day-num">9</span></div>
+                    <div class="cal-day"><span class="day-num">10</span></div>
+                    <div class="cal-day"><span class="day-num">11</span><div class="cal-event ev-urgente">Portón</div></div>
+                    <div class="cal-day"><span class="day-num">12</span><div class="cal-event ev-reserva">Salón - Evento</div></div>
+                    <div class="cal-day"><span class="day-num">13</span></div>
+                    <div class="cal-day"><span class="day-num">14</span></div>
+                    
+                    <div class="cal-day"><span class="day-num">15</span></div>
+                    <div class="cal-day"><span class="day-num">16</span></div>
+                    <div class="cal-day"><span class="day-num">17</span></div>
+                    <div class="cal-day"><span class="day-num">18</span></div>
+                    <div class="cal-day"><span class="day-num">19</span></div>
+                    <div class="cal-day"><span class="day-num">20</span></div>
+                    <div class="cal-day"><span class="day-num">21</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <section id="view-finanzas" class="section-view">
+            <h2 style="margin-bottom: 20px;">Tablero Financiero</h2>
+            <div class="grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 30px;">
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #eee;"><p style="color: #666;">Ingresos Mensuales</p><h2 style="color: var(--success);">$125,400</h2></div>
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #eee;"><p style="color: #666;">Cuentas por Cobrar</p><h2 style="color: var(--danger);">$12,500</h2></div>
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #eee;"><p style="color: #666;">Gastos Totales</p><h2 style="color: var(--text-dark);">$45,000</h2></div>
+            </div>
+            
+            <div class="finance-grid">
+                <div class="list-column">
+                    <h3>📊 Estado de Cuenta Residentes</h3>
+                    <table class="data-table">
+                        <thead><tr><th>Unidad</th><th>Residente</th><th>Monto Mensual</th><th>Estado</th></tr></thead>
+                        <tbody>
+                            <tr><td>Casa 14</td><td>Fam. Díaz</td><td>$2,200</td><td><span class="badge bg-green">Al corriente</span></td></tr>
+                            <tr><td>Torre B-101</td><td>Carlos Ruiz</td><td>$1,500</td><td><span class="badge bg-green">Al corriente</span></td></tr>
+                            <tr><td>Torre C-PH</td><td>Laura M.</td><td>$3,000</td><td><span class="badge bg-green">Al corriente</span></td></tr>
+                            <tr><td>Torre A-304</td><td>Juan Pérez</td><td>$1,500</td><td><span class="badge bg-red">Deudor ($3,000)</span></td></tr>
+                            <tr><td>Casa 08</td><td>Roberto G.</td><td>$2,200</td><td><span class="badge bg-yellow">Pendiente</span></td></tr>
+                            <tr><td>Torre A-202</td><td>Luisa Lane</td><td>$1,500</td><td><span class="badge bg-red">Deudor ($1,500)</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="list-column">
+                    <h3>📉 En qué se van los gastos</h3>
+                    <div style="font-size:0.9rem; color:#444;">
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;"><span><i class="fa-solid fa-bolt" style="color:var(--warning);"></i> CFE (Luz Común)</span><span style="font-weight:bold;">-$4,500</span></div>
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;"><span><i class="fa-solid fa-faucet" style="color:#3b82f6;"></i> SIAPA (Agua)</span><span style="font-weight:bold;">-$2,100</span></div>
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;"><span><i class="fa-solid fa-shield-halved" style="color:#111;"></i> Empresa Seguridad</span><span style="font-weight:bold;">-$25,000</span></div>
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;"><span><i class="fa-solid fa-tree" style="color:var(--success);"></i> Jardinería</span><span style="font-weight:bold;">-$3,200</span></div>
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;"><span><i class="fa-solid fa-broom" style="color:purple;"></i> Insumos Limpieza</span><span style="font-weight:bold;">-$1,500</span></div>
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;"><span><i class="fa-solid fa-water" style="color:#0ea5e9;"></i> Químicos Alberca</span><span style="font-weight:bold;">-$800</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="fab" onclick="document.getElementById('modal-add').style.display='flex'"><i class="fa-solid fa-plus"></i> Nueva Propiedad</div>
+
+    <div id="modal-detail" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-box">
+            <span class="close-btn" onclick="document.getElementById('modal-detail').style.display='none'">&times;</span>
+            <img id="detail-img" src="" style="width:100%; height:200px; object-fit:cover; border-radius:12px;">
+            <h2 id="detail-title" style="margin: 15px 0 5px 0;">Titulo</h2>
+            <p id="detail-subtitle" style="color:var(--brand); font-weight:600;">Subtitulo</p>
+            <p id="detail-desc" style="color:#555; line-height:1.6; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;"></p>
+            
+            <div class="detail-features" id="features-container"></div>
+            
+            <div class="services-section">
+                <h4>Servicios y Amenidades Incluidas:</h4>
+                <ul class="services-active-list" id="services-list"></ul>
+            </div>
+
+            <div id="faults-container" class="faults-section" style="display:none;"><div class="faults-title"><i class="fa-solid fa-triangle-exclamation"></i> Reportes Activos</div><div id="faults-list"></div></div>
+            <div id="no-faults-msg" style="margin-top:20px; color:#10B981; font-weight:600; display:none; background:#ECFDF5; padding:10px; border-radius:8px; border:1px solid #D1FAE5;"><i class="fa-solid fa-check-circle"></i> Sin reportes activos.</div>
+        </div>
+    </div>
+
+    <div id="modal-reserva-action" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-box">
+            <span class="close-btn" onclick="document.getElementById('modal-reserva-action').style.display='none'">&times;</span>
+            <h2><i class="fa-solid fa-calendar-days" style="color:var(--brand)"></i> Aprobar Reserva</h2>
+            <p style="color:#666;">Revisa los detalles antes de aprobar.</p>
+            <div style="background:#f9fafb; padding:15px; border-radius:10px; margin-top:15px;">
+                <div style="margin-bottom:10px;"><strong>Área:</strong> <span id="res-area"></span></div>
+                <div style="margin-bottom:10px;"><strong>Solicitante:</strong> <span id="res-user"></span></div>
+                <div style="margin-bottom:10px;"><strong>Fecha:</strong> <span id="res-date"></span></div>
+                <div><strong>Personas:</strong> <span id="res-pax"></span> invitados</div>
+            </div>
+            <div class="action-btn-group">
+                <button class="btn-deny" onclick="alert('Rechazada')">Rechazar</button>
+                <button class="btn-approve" onclick="alert('✅ Aprobada')">Aprobar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-calendar" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-box" style="max-width: 800px;">
+            <span class="close-btn" onclick="document.getElementById('modal-calendar').style.display='none'">&times;</span>
+            <h2>📅 Calendario de Servicios</h2>
+            <div class="calendar-grid">
+                <div class="cal-header">Lun</div><div class="cal-header">Mar</div><div class="cal-header">Mié</div><div class="cal-header">Jue</div><div class="cal-header">Vie</div><div class="cal-header">Sáb</div><div class="cal-header">Dom</div>
+                <div class="cal-day">1</div>
+                <div class="cal-day">2 <div class="cal-event ev-mantenimiento">Jardinería</div></div>
+                <div class="cal-day">3</div>
+                <div class="cal-day">4 <div class="cal-event ev-urgente">Fuga A-304</div></div>
+                <div class="cal-day">5 <div class="cal-event ev-reserva">Terraza - Gtz</div></div>
+                <div class="cal-day">6</div>
+                <div class="cal-day">7</div>
+                <div class="cal-day">8 <div class="cal-event ev-mantenimiento">Limpieza Alberca</div></div>
+                <div class="cal-day">9</div>
+                <div class="cal-day">10</div>
+                <div class="cal-day">11 <div class="cal-event ev-urgente">Portón</div></div>
+                <div class="cal-day">12 <div class="cal-event ev-reserva">Salón - Evento</div></div>
+                <div class="cal-day">13</div>
+                <div class="cal-day">14</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-add" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-box">
+            <span class="close-btn" onclick="document.getElementById('modal-add').style.display='none'">&times;</span>
+            <h2><i class="fa-solid fa-circle-plus"></i> Nueva Propiedad</h2>
+            <div class="form-group">
+                <label class="form-label">Tipo de Propiedad</label>
+                <select class="form-select" id="prop-type" onchange="togglePropertyFields(this.value)">
+                    <option value="depto">Departamento</option>
+                    <option value="casa">Casa</option>
+                    <option value="area_comun">Área Común</option>
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Identificador</label><input type="text" class="form-input" placeholder="Ej. Torre B - 301"></div>
+            <div id="residential-fields">
+                <div style="display:flex; gap:10px;">
+                    <div class="form-group" style="flex:1"><label class="form-label">Recámaras</label><input type="number" class="form-input" placeholder="0"></div>
+                    <div class="form-group" style="flex:1"><label class="form-label">Baños</label><input type="number" class="form-input" placeholder="0"></div>
+                </div>
+                <div class="form-group"><label class="form-label">Características</label><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox"> Cocina Integral</label><label class="checkbox-item"><input type="checkbox"> Patio de Servicio</label><label class="checkbox-item"><input type="checkbox"> Terraza </label>
+                <label class="checkbox-item"><input type="checkbox"> Jardin </label><label class="checkbox-item"><input type="checkbox"> Balcon </label></div></div>
+            </div>
+            <div id="common-fields" style="display:none;"><div class="form-group"><label class="form-label">Tipo Amenidad</label><select class="form-select"><option>Alberca</option><option>Gimnasio</option><option>Terraza</option></select></div></div>
+            <button class="primary-btn" onclick="alert('Guardado')">Guardar Propiedad</button>
+        </div>
+    </div>
+
+    <div id="modal-cita" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-box">
+            <span class="close-btn" onclick="document.getElementById('modal-cita').style.display='none'">&times;</span>
+            <h2>🗓️ Asignar Servicio</h2>
+            <div class="form-group"><label>Solicitud</label><input type="text" id="cita-solicitud" class="form-input" readonly style="background:#f3f4f6;"></div>
+            <div class="form-group"><label>Ubicación</label><input type="text" id="cita-ubicacion" class="form-input" readonly style="background:#f3f4f6;"></div>
+            <div class="form-group"><label>Proveedor</label><select class="form-select"><option>Plomería Rápida</option><option>Electro-Fix</option><option>Cerrajería Mike</option><option>Vidriería Express</option></select></div>
+            <div class="form-group"><label>Fecha</label><input type="date" class="form-input"></div>
+            <button class="primary-btn" onclick="alert('Cita agendada')">Confirmar</button>
+        </div>
+    </div>
+
+    <script>
+        function changeSection(name) {
+            document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-'+name).classList.add('active');
+            document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active-view'));
+            document.getElementById('view-'+name).classList.add('active-view');
+            const filters = document.getElementById('filters-panel');
+            if(name === 'propiedades') filters.style.display = 'flex'; else filters.style.display = 'none';
+        }
+        function filterCards(cat, el) {
+            document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(c => c.classList.remove('hidden'));
+            if(cat !== 'all') cards.forEach(c => { if(c.dataset.category !== cat) c.classList.add('hidden'); });
+        }
+        function closeModal(e, el) { if(e.target === el) el.style.display = 'none'; }
+        function openCalendar() { document.getElementById('modal-calendar').style.display = 'flex'; }
+        function openCitaModal(sol, loc) { document.getElementById('cita-solicitud').value = sol; document.getElementById('cita-ubicacion').value = loc; document.getElementById('modal-cita').style.display = 'flex'; }
+        function openReservaAction(area, user, pax, date) { document.getElementById('res-area').innerText = area; document.getElementById('res-user').innerText = user; document.getElementById('res-pax').innerText = pax; document.getElementById('res-date').innerText = date; document.getElementById('modal-reserva-action').style.display = 'flex'; }
+        
+        function togglePropertyFields(type) {
+            const res = document.getElementById('residential-fields'); const comm = document.getElementById('common-fields');
+            if (type === 'area_comun') { res.style.display = 'none'; comm.style.display = 'block'; } else { res.style.display = 'block'; comm.style.display = 'none'; }
+        }
+
+        function openDetailModal(type) {
+            const modal = document.getElementById('modal-detail');
+            const img = document.getElementById('detail-img');
+            const title = document.getElementById('detail-title');
+            const sub = document.getElementById('detail-subtitle');
+            const desc = document.getElementById('detail-desc');
+            const featuresDiv = document.getElementById('features-container');
+            const servicesList = document.getElementById('services-list');
+            const faultsContainer = document.getElementById('faults-container');
+            const noFaultsMsg = document.getElementById('no-faults-msg');
+            const faultsList = document.getElementById('faults-list');
+
+            faultsContainer.style.display = 'none'; noFaultsMsg.style.display = 'none';
+
+            if(type === 'depto') {
+                img.src = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&q=80';
+                title.innerText = 'Torre A - Depto 304';
+                sub.innerText = 'Residente: Juan Pérez';
+                desc.innerText = "Departamento moderno con vista panorámica. Cuenta con acabados de lujo, piso de mármol y sistema de iluminación inteligente.";
+                featuresDiv.innerHTML = `
+                    <div class="feature"><i class="fa-solid fa-bed"></i>3 Rec</div>
+                    <div class="feature"><i class="fa-solid fa-bath"></i>2 Baños</div>
+                    <div class="feature"><i class="fa-solid fa-kitchen-set"></i>Integral</div>
+                `;
+                servicesList.innerHTML = `
+                    <li><i class="fa-solid fa-circle-check"></i> Mantenimiento de Áreas Comunes (Pagado)</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Recolección de Basura</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Seguridad 24/7</li>
+                    <li><i class="fa-solid fa-circle-check"></i> 2 Cajones de Estacionamiento</li>
+                `;
+                faultsContainer.style.display = 'block';
+                faultsList.innerHTML = '<div class="fault-item">🔴 Fuga de agua en baño principal</div>';
+            } else if (type === 'casa') {
+                img.src = 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=600&q=80';
+                title.innerText = 'Casa 14 - Coto Roble';
+                sub.innerText = 'Propietario: Familia Díaz';
+                desc.innerText = "Residencia de dos plantas con jardín privado y terraza trasera. Ubicada en la zona más tranquila del condominio.";
+                featuresDiv.innerHTML = `
+                    <div class="feature"><i class="fa-solid fa-bed"></i>4 Rec</div>
+                    <div class="feature"><i class="fa-solid fa-bath"></i>3.5 Baños</div>
+                    <div class="feature"><i class="fa-solid fa-kitchen-set"></i>Integral</div>
+                    <div class="feature"><i class="fa-solid fa-tree"></i>Jardín</div>
+                `;
+                servicesList.innerHTML = `
+                    <li><i class="fa-solid fa-circle-check"></i> Mantenimiento de Áreas Comunes (Pagado)</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Recolección de Basura</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Vigilancia Coto</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Jardinería Frontal</li>
+                `;
+                noFaultsMsg.style.display = 'block';
+            } else if (type === 'alberca') {
+                img.src = 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=600&q=80';
+                title.innerText = 'Alberca Principal';
+                sub.innerText = 'Área Común';
+                desc.innerText = "Alberca recreativa semi-olímpica climatizada a 28°C. Incluye zona de chapoteadero y área de asoleaderos.";
+                featuresDiv.innerHTML = `
+                    <div class="feature"><i class="fa-solid fa-temperature-three-quarters"></i>28°C</div>
+                    <div class="feature"><i class="fa-solid fa-water"></i>1.5m</div>
+                    <div class="feature"><i class="fa-solid fa-umbrella-beach"></i>Camastros</div>
+                `;
+                servicesList.innerHTML = `
+                    <li><i class="fa-solid fa-circle-check"></i> Climatización</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Limpieza Diaria</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Salvavidas (Fines de semana)</li>
+                `;
+                noFaultsMsg.style.display = 'block';
+            } else if (type === 'gym') {
+                img.src = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80';
+                title.innerText = 'Gimnasio';
+                sub.innerText = 'Área Común';
+                desc.innerText = "Gimnasio completo equipado con máquinas de cardio y peso libre de última generación. Espacio climatizado.";
+                featuresDiv.innerHTML = `
+                    <div class="feature"><i class="fa-solid fa-dumbbell"></i>Pesas</div>
+                    <div class="feature"><i class="fa-solid fa-person-running"></i>Cardio</div>
+                    <div class="feature"><i class="fa-solid fa-fan"></i>A/C</div>
+                `;
+                servicesList.innerHTML = `
+                    <li><i class="fa-solid fa-circle-check"></i> Mantenimiento Equipos</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Toallas Limpias</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Dispensador Agua</li>
+                `;
+                noFaultsMsg.style.display = 'block';
+            }
+            modal.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
