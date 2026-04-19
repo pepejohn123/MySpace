@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = String(window.APP_CONFIG?.API_BASE_URL || 'http://localhost:3001').replace(/\/$/, '');
 
 function getToken() {
   return localStorage.getItem('token');
