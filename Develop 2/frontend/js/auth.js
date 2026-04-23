@@ -1,4 +1,51 @@
 const API_BASE_URL = String(window.APP_CONFIG?.API_BASE_URL || 'http://localhost:3001').replace(/\/$/, '');
+const AUTH_PROVIDER = String(window.APP_CONFIG?.AUTH_PROVIDER || 'local').toLowerCase();
+
+function decodeJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((char) => `%${(`00${char.charCodeAt(0).toString(16)}`).slice(-2)}`)
+        .join('')
+    );
+
+    return JSON.parse(jsonPayload);
+  } catch (_error) {
+    return null;
+  }
+}
+
+function buildUserFromCognitoToken(token) {
+  const payload = decodeJwt(token);
+
+  if (!payload) {
+    return null;
+  }
+
+  return {
+    id: payload.sub || payload['cognito:username'] || null,
+    sub: payload.sub || null,
+    email: payload.email || null,
+    name: payload.name || payload.email?.split('@')[0] || 'Usuario',
+    role: payload['custom:role'] || getRole() || 'residente',
+    condominioId: payload['custom:condominioId'] || null,
+    propertyId: payload['custom:propertyId'] || null,
+    superadmin: payload['custom:superadmin'] === 'true' || payload.superadmin === true
+  };
+}
+
+function isTokenExpired(token) {
+  const payload = decodeJwt(token);
+
+  if (!payload?.exp) {
+    return false;
+  }
+
+  return (payload.exp * 1000) <= Date.now();
+}
 
 function getToken() {
   return localStorage.getItem('token');
@@ -45,6 +92,30 @@ async function fetchCurrentUser() {
 
   if (!token) {
     return null;
+  }
+
+  if (AUTH_PROVIDER === 'cognito') {
+    if (isTokenExpired(token)) {
+      clearSession();
+      return null;
+    }
+
+    const cachedUser = getUser();
+
+    if (cachedUser) {
+      return cachedUser;
+    }
+
+    const rebuiltUser = buildUserFromCognitoToken(token);
+
+    if (!rebuiltUser) {
+      clearSession();
+      return null;
+    }
+
+    localStorage.setItem('user', JSON.stringify(rebuiltUser));
+    localStorage.setItem('role', rebuiltUser.role);
+    return rebuiltUser;
   }
 
   try {
@@ -94,7 +165,13 @@ async function requireAuth(expectedRole) {
   const token = getToken();
   const role = getRole();
 
-  if (!token || !role) {
+  if (!token) {
+    clearSession();
+    window.location.href = '../login/Login.html';
+    return null;
+  }
+
+  if (AUTH_PROVIDER !== 'cognito' && !role) {
     clearSession();
     window.location.href = '../login/Login.html';
     return null;

@@ -46,6 +46,10 @@
           <!-- JS inserta propiedades -->
         </div>
 
+        <div class="admin-hidden properties-footer" id="properties-footer">
+          <button class="admin-action-btn admin-toolbar-btn" id="open-property-form-btn">Nueva propiedad</button>
+        </div>
+
         <div class="admin-hidden messages-wrapper" id="messages-wrapper">
           <section class="messages-section">
             <div class="messages-section-header">
@@ -228,6 +232,56 @@
           <div class="modal-actions-row">
             <button type="button" class="admin-secondary-btn" onclick="closeAmenityModal()">Cancelar</button>
             <button type="submit" class="admin-action-btn" id="amenity-submit-btn">Guardar amenidad</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="property-form-modal" class="modal-overlay" onclick="closePropertyFormModal(event, this)">
+      <div class="modal-box property-detail-modal">
+        <span class="close-btn" onclick="closePropertyFormModal()">&times;</span>
+        <h3 class="property-detail-title" id="property-form-title">Nueva propiedad</h3>
+        <form id="property-form" class="modal-form">
+          <div class="admin-form-grid">
+            <label class="admin-field admin-field-full">
+              <span>Nombre de la propiedad</span>
+              <input id="property-form-name" class="modal-input" type="text" placeholder="Ej. Casa 08 - Roble" required />
+            </label>
+            <label class="admin-field">
+              <span>Edificio / sección</span>
+              <input id="property-form-building" class="modal-input" type="text" placeholder="Ej. Torre A" />
+            </label>
+            <label class="admin-field">
+              <span>Estado</span>
+              <select id="property-form-status" class="modal-input">
+                <option value="disponible">Disponible</option>
+                <option value="ocupada">Ocupada</option>
+                <option value="mantenimiento">Mantenimiento</option>
+                <option value="inactiva">Inactiva</option>
+              </select>
+            </label>
+          </div>
+          <div class="modal-actions-row">
+            <button type="button" class="admin-secondary-btn" onclick="closePropertyFormModal()">Cancelar</button>
+            <button type="submit" class="admin-action-btn" id="property-form-submit-btn">Guardar propiedad</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="assign-resident-modal" class="modal-overlay" onclick="closeAssignResidentModal(event, this)">
+      <div class="modal-box property-detail-modal">
+        <span class="close-btn" onclick="closeAssignResidentModal()">&times;</span>
+        <h3 class="property-detail-title">Asignar residente</h3>
+        <form id="assign-resident-form" class="modal-form">
+          <input id="assign-resident-property-id" type="hidden" />
+          <label class="admin-field admin-field-full">
+            <span>ID del residente</span>
+            <input id="assign-resident-id" class="modal-input" type="text" placeholder="user_residente_1 o vacío para desasignar" />
+          </label>
+          <div class="modal-actions-row">
+            <button type="button" class="admin-secondary-btn" onclick="closeAssignResidentModal()">Cancelar</button>
+            <button type="submit" class="admin-action-btn">Guardar asignación</button>
           </div>
         </form>
       </div>

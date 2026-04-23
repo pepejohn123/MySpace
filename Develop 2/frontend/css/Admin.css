@@ -146,6 +146,12 @@
     width: 100%;
 }
 
+.properties-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+}
+
 .service-card-admin {
     background: white;
     border: 1px solid #E5E7EB;

@@ -1,8 +1,10 @@
+(() => {
 const loginForm = document.getElementById('loginForm');
-const loginButton = loginForm.querySelector('button[type="submit"]');
+const loginButton = loginForm?.querySelector('button[type="submit"]');
 const btnText = document.getElementById('btnText');
 const loader = document.getElementById('loader');
 const loginFeedback = document.getElementById('login-feedback');
+const LOGIN_AUTH_PROVIDER = String(window.APP_CONFIG?.AUTH_PROVIDER || 'local').toLowerCase();
 
 function setLoginFeedback(message = '', type = '') {
   if (!loginFeedback) {
@@ -27,22 +29,125 @@ function setLoginLoadingState(isLoading) {
 const existingToken = typeof getToken === 'function' ? getToken() : localStorage.getItem('token');
 const existingRole = typeof getRole === 'function' ? getRole() : localStorage.getItem('role');
 
-if (existingToken && existingRole) {
-  if (existingRole === 'admin') {
-    window.location.href = '../admin/Admin.html';
-  }
+function decodeJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((char) => `%${(`00${char.charCodeAt(0).toString(16)}`).slice(-2)}`)
+        .join('')
+    );
 
-  if (existingRole === 'residente') {
-    window.location.href = '../residente/Residente.html';
+    return JSON.parse(jsonPayload);
+  } catch (_error) {
+    return null;
   }
 }
 
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
+function redirectByRole(role) {
+  if (role === 'admin') {
+    window.location.href = '../admin/Admin.html';
+    return;
+  }
 
-  setLoginFeedback('');
-  setLoginLoadingState(true);
+  window.location.href = '../residente/Residente.html';
+}
 
+function getExistingSessionRole() {
+  if (existingRole) {
+    return existingRole;
+  }
+
+if (LOGIN_AUTH_PROVIDER === 'cognito' && existingToken) {
+    return decodeJwt(existingToken)?.['custom:role'] || null;
+  }
+
+  return null;
+}
+
+const resolvedExistingRole = getExistingSessionRole();
+
+if (existingToken && resolvedExistingRole) {
+  redirectByRole(resolvedExistingRole);
+}
+
+function handleCognitoLogin() {
+  if (typeof AmazonCognitoIdentity === 'undefined') {
+    setLoginFeedback('No se cargó la librería de Cognito.', 'error');
+    setLoginLoadingState(false);
+    return;
+  }
+
+  const email = document.getElementById('emailInput').value;
+  const password = document.querySelector('input[type=password]').value;
+  const poolData = {
+    UserPoolId: window.APP_CONFIG?.COGNITO_USER_POOL_ID,
+    ClientId: window.APP_CONFIG?.COGNITO_CLIENT_ID
+  };
+
+  const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+  const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
+    Username: email,
+    Password: password
+  });
+
+  const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
+    Username: email,
+    Pool: userPool
+  });
+
+  cognitoUser.authenticateUser(authenticationDetails, {
+    onSuccess(result) {
+      const idToken = result.getIdToken().getJwtToken();
+      const payload = decodeJwt(idToken);
+      const userRole = payload?.['custom:role'] || 'residente';
+
+      saveSession({
+        token: idToken,
+        role: userRole,
+        user: {
+          sub: payload?.sub,
+          email: payload?.email || email,
+          name: payload?.name || email.split('@')[0],
+          role: userRole,
+          condominioId: payload?.['custom:condominioId'] || null,
+          propertyId: payload?.['custom:propertyId'] || null,
+          superadmin: payload?.['custom:superadmin'] === 'true' || false
+        }
+      });
+
+      setLoginFeedback('Inicio de sesión correcto', 'success');
+      redirectByRole(userRole);
+    },
+
+    onFailure(err) {
+      console.error(err);
+      const errorMsg = err.code === 'NotAuthorizedException'
+        ? 'Credenciales incorrectas'
+        : err.message || 'Error al iniciar sesión';
+
+      setLoginFeedback(errorMsg, 'error');
+      showFeedback(errorMsg, 'error');
+      setLoginLoadingState(false);
+    },
+
+    newPasswordRequired(userAttributes) {
+      const newPassword = prompt('Primer inicio de sesión. Ingresa tu nueva contraseña definitiva:');
+
+      if (newPassword) {
+        delete userAttributes.email_verified;
+        delete userAttributes.email;
+        cognitoUser.completeNewPasswordChallenge(newPassword, userAttributes, this);
+      } else {
+        setLoginLoadingState(false);
+      }
+    }
+  });
+}
+
+async function handleLocalLogin() {
   const email = document.getElementById('emailInput').value;
   const password = document.querySelector('input[type=password]').value;
 
@@ -66,18 +171,31 @@ loginForm.addEventListener('submit', async (e) => {
 
     saveSession(data);
     setLoginFeedback('Inicio de sesión correcto', 'success');
-
-    if (data.role === 'admin') {
-      window.location.href = '../admin/Admin.html';
-    }
-
-    if (data.role === 'residente') {
-      window.location.href = '../residente/Residente.html';
-    }
+    redirectByRole(data.role);
   } catch (_error) {
     setLoginFeedback('No se pudo conectar con el backend de login.', 'error');
     showFeedback('No se pudo conectar con el backend de login.', 'error');
   } finally {
     setLoginLoadingState(false);
   }
+}
+
+if (!loginForm) {
+  return;
+}
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  setLoginFeedback('');
+  setLoginLoadingState(true);
+
+  if (LOGIN_AUTH_PROVIDER === 'cognito') {
+    handleCognitoLogin();
+    return;
+  }
+
+  await handleLocalLogin();
 });
+
+})();

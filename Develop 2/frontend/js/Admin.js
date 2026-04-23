@@ -1,6 +1,8 @@
 const DEFAULT_PROPERTY_IMAGE = 'https://images.unsplash.com/photo-1560448204?auto=format&fit=crop&w=800&q=80';
 let amenityModalMode = 'create';
 let selectedAmenityId = null;
+let propertyModalMode = 'create';
+let selectedPropertyId = null;
 let ticketsHistoryCache = [];
 let visitsCache = [];
 let paymentsFinanzasCache = [];
@@ -49,6 +51,16 @@ function getTicketPriorityClass(priority) {
 
 function getConversationStatusClass(status) {
   return `conversation-status-${status || 'abierta'}`;
+}
+
+function buildPropertyStatusClass(status) {
+  if (status === 'ocupada') return 'bg-yellow';
+  if (status === 'mantenimiento' || status === 'inactiva') return 'bg-red';
+  return 'bg-green';
+}
+
+function getApiErrorMessage(errorData, fallbackMessage) {
+  return errorData?.error || errorData?.message || fallbackMessage;
 }
 
 async function cargarConversacionesAdminDesdeApi() {
@@ -1650,6 +1662,7 @@ function cargarPropiedades(data) {
   <div class="card">
     <div class="card-img-wrap">
       <img src="${p.imagen}">
+      <span class="status-badge ${buildPropertyStatusClass(p.status)}">${p.status || 'disponible'}</span>
     </div>
     <div class="card-info">
       <h3>${p.nombre}</h3>
@@ -1666,6 +1679,8 @@ function mapPropertyToCard(property) {
     id: property.id,
     nombre: property.name,
     residente: property.residentId || 'Sin residente asignado',
+    building: property.building || 'General',
+    status: property.status || 'disponible',
     imagen: property.imagen || DEFAULT_PROPERTY_IMAGE
   };
 }
@@ -1681,11 +1696,12 @@ async function cargarPropiedadesDesdeApi() {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudieron cargar las propiedades');
+    throw new Error(getApiErrorMessage(errorData, 'No se pudieron cargar las propiedades'));
   }
 
   const data = await response.json();
-  return (data.properties || []).map(mapPropertyToCard);
+  const properties = Array.isArray(data) ? data : (data.properties || []);
+  return properties.map(mapPropertyToCard);
 }
 
 async function cargarDetallePropiedadDesdeApi(propertyId) {
@@ -1699,11 +1715,89 @@ async function cargarDetallePropiedadDesdeApi(propertyId) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudo cargar el detalle de la propiedad');
+    throw new Error(getApiErrorMessage(errorData, 'No se pudo cargar el detalle de la propiedad'));
   }
 
   const data = await response.json();
-  return data.property;
+  return data.property || data;
+}
+
+async function crearPropiedad(payload) {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/properties`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || 'No se pudo crear la propiedad');
+  }
+
+  return response.json();
+}
+
+async function actualizarPropiedad(propertyId, payload) {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/properties/${encodeURIComponent(propertyId)}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || 'No se pudo actualizar la propiedad');
+  }
+
+  return response.json();
+}
+
+async function eliminarPropiedad(propertyId) {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/properties/${encodeURIComponent(propertyId)}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || 'No se pudo eliminar la propiedad');
+  }
+
+  return response.json();
+}
+
+async function asignarResidentePropiedad(propertyId, residentId) {
+  const token = getToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/properties/${encodeURIComponent(propertyId)}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ residentId: residentId || null })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || 'No se pudo asignar el residente');
+  }
+
+  return response.json();
 }
 
 function renderDetallePropiedad(property) {
@@ -1716,7 +1810,7 @@ function renderDetallePropiedad(property) {
   detailContent.innerHTML = `
     <div class="property-detail-header">
       <h3 class="property-detail-title">${property.name}</h3>
-      <span class="badge ${property.status === 'ok' ? 'bg-green' : 'bg-yellow'}">${property.status}</span>
+      <span class="badge ${buildPropertyStatusClass(property.status)}">${property.status || 'disponible'}</span>
     </div>
     <div class="property-detail-grid">
       <div class="property-detail-item">
@@ -1724,12 +1818,12 @@ function renderDetallePropiedad(property) {
         <span class="property-detail-value">${property.id}</span>
       </div>
       <div class="property-detail-item">
-        <span class="property-detail-label">Tipo</span>
-        <span class="property-detail-value">${property.type}</span>
+        <span class="property-detail-label">Edificio / sección</span>
+        <span class="property-detail-value">${property.building || 'General'}</span>
       </div>
       <div class="property-detail-item">
         <span class="property-detail-label">Condominio</span>
-        <span class="property-detail-value">${property.condominioId}</span>
+        <span class="property-detail-value">${property.condominioId || property.PK || 'Sin condominio'}</span>
       </div>
       <div class="property-detail-item">
         <span class="property-detail-label">Residente asignado</span>
@@ -1744,7 +1838,92 @@ function renderDetallePropiedad(property) {
         <span class="property-detail-value">${property.updatedAt}</span>
       </div>
     </div>
+    <div class="service-card-actions" style="margin-top:20px;">
+      <button class="admin-secondary-btn" onclick="openPropertyFormModal('edit', '${property.id}')">Editar</button>
+      <button class="admin-secondary-btn" onclick="openAssignResidentModal('${property.id}', '${property.residentId || ''}')">Asignar residente</button>
+      <button class="admin-danger-btn" onclick="confirmarEliminarPropiedad('${property.id}')">Eliminar</button>
+    </div>
   `;
+}
+
+function openPropertyFormModal(mode = 'create', propertyId = null) {
+  const modal = document.getElementById('property-form-modal');
+  const title = document.getElementById('property-form-title');
+  const submitButton = document.getElementById('property-form-submit-btn');
+  const form = document.getElementById('property-form');
+
+  propertyModalMode = mode;
+  selectedPropertyId = propertyId;
+
+  if (form) {
+    form.reset();
+  }
+
+  if (title) {
+    title.textContent = mode === 'edit' ? 'Editar propiedad' : 'Nueva propiedad';
+  }
+
+  if (submitButton) {
+    submitButton.textContent = mode === 'edit' ? 'Guardar cambios' : 'Guardar propiedad';
+  }
+
+  if (mode === 'edit' && propertyId) {
+    cargarDetallePropiedadDesdeApi(propertyId)
+      .then((property) => {
+        document.getElementById('property-form-name').value = property.name || '';
+        document.getElementById('property-form-building').value = property.building || '';
+        document.getElementById('property-form-status').value = property.status || 'disponible';
+      })
+      .catch((error) => showFeedback(error.message, 'error'));
+  }
+
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+function closePropertyFormModal(event, overlay) {
+  if (!event || event.target === overlay) {
+    const modal = document.getElementById('property-form-modal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  }
+}
+
+function openAssignResidentModal(propertyId, residentId = '') {
+  const modal = document.getElementById('assign-resident-modal');
+  document.getElementById('assign-resident-property-id').value = propertyId;
+  document.getElementById('assign-resident-id').value = residentId || '';
+
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+function closeAssignResidentModal(event, overlay) {
+  if (!event || event.target === overlay) {
+    const modal = document.getElementById('assign-resident-modal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  }
+}
+
+async function confirmarEliminarPropiedad(propertyId) {
+  if (!window.confirm('¿Seguro que quieres dar de baja esta propiedad?')) {
+    return;
+  }
+
+  try {
+    await eliminarPropiedad(propertyId);
+    closePropertyDetailModal();
+    const propiedades = await cargarPropiedadesDesdeApi();
+    cargarPropiedades(propiedades);
+    showFeedback('Propiedad actualizada correctamente', 'success');
+  } catch (error) {
+    showFeedback(error.message, 'error');
+  }
 }
 
 async function verDetallePropiedad(propertyId) {
@@ -1865,6 +2044,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const logoutButton = document.getElementById('logout-btn');
+  const openPropertyFormButton = document.getElementById('open-property-form-btn');
+  const propertyForm = document.getElementById('property-form');
+  const assignResidentForm = document.getElementById('assign-resident-form');
   const amenityForm = document.getElementById('amenity-form');
   const noticeForm = document.getElementById('notice-form');
   const historyStatusFilter = document.getElementById('history-status-filter');
@@ -1881,6 +2063,68 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (logoutButton) {
     logoutButton.addEventListener('click', logout);
+  }
+
+  if (openPropertyFormButton) {
+    openPropertyFormButton.addEventListener('click', () => openPropertyFormModal('create'));
+  }
+
+  if (propertyForm) {
+    propertyForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const payload = {
+        name: document.getElementById('property-form-name').value.trim(),
+        building: document.getElementById('property-form-building').value.trim(),
+        status: document.getElementById('property-form-status').value
+      };
+
+      if (!payload.name) {
+        showFeedback('El nombre de la propiedad es requerido', 'error');
+        return;
+      }
+
+      try {
+        setButtonLoadingState(document.getElementById('property-form-submit-btn'), true, propertyModalMode === 'edit' ? 'Guardando...' : 'Creando...');
+
+        if (propertyModalMode === 'edit' && selectedPropertyId) {
+          await actualizarPropiedad(selectedPropertyId, payload);
+          showFeedback('Propiedad actualizada correctamente', 'success');
+        } else {
+          await crearPropiedad(payload);
+          showFeedback('Propiedad creada correctamente', 'success');
+        }
+
+        closePropertyFormModal();
+        const propiedades = await cargarPropiedadesDesdeApi();
+        cargarPropiedades(propiedades);
+      } catch (error) {
+        showFeedback(error.message, 'error');
+      } finally {
+        setButtonLoadingState(document.getElementById('property-form-submit-btn'), false);
+      }
+    });
+  }
+
+  if (assignResidentForm) {
+    assignResidentForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const propertyId = document.getElementById('assign-resident-property-id').value;
+      const residentId = document.getElementById('assign-resident-id').value.trim();
+
+      try {
+        await asignarResidentePropiedad(propertyId, residentId || null);
+        closeAssignResidentModal();
+        const property = await cargarDetallePropiedadDesdeApi(propertyId);
+        renderDetallePropiedad(property);
+        const propiedades = await cargarPropiedadesDesdeApi();
+        cargarPropiedades(propiedades);
+        showFeedback('Asignación actualizada correctamente', 'success');
+      } catch (error) {
+        showFeedback(error.message, 'error');
+      }
+    });
   }
 
   if (exportContextButton) {
@@ -1950,13 +2194,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  try {
-    const propiedades = await cargarPropiedadesDesdeApi();
-    cargarPropiedades(propiedades);
-  } catch (error) {
-    const container = document.getElementById('propiedades-container');
-    container.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-  }
+  changeTab('propiedades');
 
   if (amenityForm) {
     amenityForm.addEventListener('submit', async (event) => {
