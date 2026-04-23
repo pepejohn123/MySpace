@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'https://4ei3v71ie2.execute-api.us-east-2.amazonaws.com/dev';
 
 function getToken() {
   return localStorage.getItem('token');
@@ -43,48 +43,21 @@ function logout() {
 async function fetchCurrentUser() {
   const token = getToken();
 
+  // Si no hay token, no hay usuario
   if (!token) {
     return null;
   }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
+  // 🚨 EL CAMBIO: Ya no hacemos un 'fetch' a /api/me.
+  // En su lugar, confiamos en los datos que Cognito y Login.js
+  // ya guardaron de forma segura en nuestro localStorage.
+  const cachedUser = getUser();
 
-    if (!response.ok) {
-      clearSession();
-      return null;
-    }
-
-    const data = await response.json();
-
-    if (!data.user) {
-      clearSession();
-      return null;
-    }
-
-    const cachedUser = getUser();
-
-    localStorage.setItem(
-      'user',
-      JSON.stringify({
-        ...(cachedUser || {}),
-        id: data.user.sub,
-        email: data.user.email,
-        name: data.user.name,
-        role: data.user.role,
-        condominioId: data.user.condominioId,
-        propertyId: data.user.propertyId || null
-      })
-    );
-
-    localStorage.setItem('role', data.user.role);
-
-    return data.user;
-  } catch (_error) {
+  if (cachedUser) {
+    // Si tenemos los datos, los devolvemos instantáneamente
+    return cachedUser;
+  } else {
+    // Si por alguna razón el token está pero los datos del usuario se borraron
     clearSession();
     return null;
   }
