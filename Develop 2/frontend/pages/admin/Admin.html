@@ -8,7 +8,10 @@
 
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../../css/Admin.css" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
   </head>
 
   <body>
@@ -19,35 +22,56 @@
       </div>
 
       <div class="nav-tabs">
-        <button class="nav-tab active" onclick="changeTab('propiedades')">Propiedades</button>
-        <button class="nav-tab" onclick="changeTab('reservas')">Reservas</button>
+        <button class="nav-tab active" onclick="changeTab('propiedades')">
+          Propiedades
+        </button>
+        <button class="nav-tab" onclick="changeTab('reservas')">
+          Reservas
+        </button>
         <button class="nav-tab" onclick="changeTab('visitas')">Visitas</button>
-        <button class="nav-tab" onclick="changeTab('servicios')">Servicios</button>
-        <button class="nav-tab" onclick="changeTab('mensajes')">Mensajes</button>
-        <button class="nav-tab" onclick="changeTab('historial')">Historial</button>
-        <button class="nav-tab" onclick="changeTab('finanzas')">Finanzas</button>
+        <button class="nav-tab" onclick="changeTab('servicios')">
+          Servicios
+        </button>
+        <button class="nav-tab" onclick="changeTab('mensajes')">
+          Mensajes
+        </button>
+        <button class="nav-tab" onclick="changeTab('historial')">
+          Historial
+        </button>
+        <button class="nav-tab" onclick="changeTab('finanzas')">
+          Finanzas
+        </button>
       </div>
 
       <div class="nav-right">
-        <button class="logout-btn" id="logout-btn">
-          Salir
-        </button>
+        <button class="logout-btn" id="logout-btn">Salir</button>
       </div>
     </nav>
-    
+
     <div class="main-content">
       <section>
-        <div class="page-header-actions">
-          <h2 class="page-title">Gestión de Inmuebles</h2>
-          <button id="export-context-btn" class="admin-action-btn admin-toolbar-btn admin-hidden">Exportar</button>
+        <div class="page-header-actions" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+          <h2 class="page-title" style="margin: 0;">Gestión de Inmuebles</h2>
+
+          <div>
+              <button
+                id="export-context-btn"
+                class="admin-action-btn admin-toolbar-btn admin-hidden"
+              >
+                Exportar
+              </button>
+
+              <button
+                class="admin-action-btn admin-toolbar-btn"
+                onclick="openPropertyFormModal('create')"
+              >
+                + Nueva propiedad
+              </button>
+          </div>
         </div>
 
         <div class="grid" id="propiedades-container">
-          <!-- JS inserta propiedades -->
-        </div>
-
-        <div class="admin-hidden properties-footer" id="properties-footer">
-          <button class="admin-action-btn admin-toolbar-btn" id="open-property-form-btn">Nueva propiedad</button>
+          </div>
         </div>
 
         <div class="admin-hidden messages-wrapper" id="messages-wrapper">
@@ -55,7 +79,9 @@
             <div class="messages-section-header">
               <div>
                 <h3 class="messages-section-title">Tickets activos</h3>
-                <p class="messages-section-copy">Da seguimiento a reportes abiertos por residentes.</p>
+                <p class="messages-section-copy">
+                  Da seguimiento a reportes abiertos por residentes.
+                </p>
               </div>
             </div>
             <div class="messages-grid" id="tickets-container">
@@ -66,8 +92,12 @@
           <section class="messages-section">
             <div class="messages-section-header">
               <div>
-                <h3 class="messages-section-title">Tickets cerrados recientes</h3>
-                <p class="messages-section-copy">Muestra tickets cerrados en los últimos 7 días.</p>
+                <h3 class="messages-section-title">
+                  Tickets cerrados recientes
+                </h3>
+                <p class="messages-section-copy">
+                  Muestra tickets cerrados en los últimos 7 días.
+                </p>
               </div>
             </div>
             <div class="messages-grid" id="closed-tickets-container">
@@ -79,9 +109,16 @@
             <div class="messages-section-header">
               <div>
                 <h3 class="messages-section-title">Avisos activos</h3>
-                <p class="messages-section-copy">Publica comunicaciones visibles para los residentes.</p>
+                <p class="messages-section-copy">
+                  Publica comunicaciones visibles para los residentes.
+                </p>
               </div>
-              <button class="admin-action-btn admin-toolbar-btn" onclick="openNoticeModal()">Publicar aviso</button>
+              <button
+                class="admin-action-btn admin-toolbar-btn"
+                onclick="openNoticeModal()"
+              >
+                Publicar aviso
+              </button>
             </div>
             <div class="messages-grid" id="avisos-container">
               <!-- JS inserta avisos -->
@@ -92,7 +129,9 @@
             <div class="messages-section-header">
               <div>
                 <h3 class="messages-section-title">Avisos archivados</h3>
-                <p class="messages-section-copy">Consulta y reactiva avisos que ya no están activos.</p>
+                <p class="messages-section-copy">
+                  Consulta y reactiva avisos que ya no están activos.
+                </p>
               </div>
             </div>
             <div class="messages-grid" id="archived-avisos-container">
@@ -104,7 +143,9 @@
             <div class="messages-section-header">
               <div>
                 <h3 class="messages-section-title">Consultas de residentes</h3>
-                <p class="messages-section-copy">Responde conversaciones internas enviadas por los residentes.</p>
+                <p class="messages-section-copy">
+                  Responde conversaciones internas enviadas por los residentes.
+                </p>
               </div>
             </div>
             <div class="messages-grid" id="admin-conversations-container"></div>
@@ -120,12 +161,24 @@
             <div class="messages-section-header">
               <div>
                 <h3 class="messages-section-title">Validar acceso</h3>
-                <p class="messages-section-copy">Ingresa un código de acceso para validar el pase de visita.</p>
+                <p class="messages-section-copy">
+                  Ingresa un código de acceso para validar el pase de visita.
+                </p>
               </div>
             </div>
             <div class="visit-validation-form">
-              <input id="visit-access-code-input" class="modal-input" type="text" placeholder="ACCESS-4001" />
-              <button id="validate-visit-btn" class="admin-action-btn admin-toolbar-btn">Validar acceso</button>
+              <input
+                id="visit-access-code-input"
+                class="modal-input"
+                type="text"
+                placeholder="ACCESS-4001"
+              />
+              <button
+                id="validate-visit-btn"
+                class="admin-action-btn admin-toolbar-btn"
+              >
+                Validar acceso
+              </button>
             </div>
             <div id="visit-validation-result"></div>
           </section>
@@ -134,7 +187,9 @@
             <div class="messages-section-header">
               <div>
                 <h3 class="messages-section-title">Visitas registradas</h3>
-                <p class="messages-section-copy">Consulta las visitas registradas en el condominio y su estado.</p>
+                <p class="messages-section-copy">
+                  Consulta las visitas registradas en el condominio y su estado.
+                </p>
               </div>
             </div>
             <div class="visit-filters">
@@ -144,7 +199,12 @@
                 <option value="validada">Validada</option>
                 <option value="expirada">Expirada</option>
               </select>
-              <input id="visit-search-filter" class="modal-input" type="text" placeholder="Buscar por visitante o código" />
+              <input
+                id="visit-search-filter"
+                class="modal-input"
+                type="text"
+                placeholder="Buscar por visitante o código"
+              />
             </div>
             <div class="messages-grid" id="visits-container"></div>
           </section>
@@ -159,7 +219,10 @@
             <div class="messages-section-header">
               <div>
                 <h3 class="messages-section-title">Historial de tickets</h3>
-                <p class="messages-section-copy">Consulta tickets cerrados y activos con filtros administrativos.</p>
+                <p class="messages-section-copy">
+                  Consulta tickets cerrados y activos con filtros
+                  administrativos.
+                </p>
               </div>
             </div>
 
@@ -182,7 +245,12 @@
                 <option value="30d">Últimos 30 días</option>
                 <option value="recent_closed">Cerrados recientes</option>
               </select>
-              <input id="history-search-filter" class="modal-input" type="text" placeholder="Buscar por título o descripción" />
+              <input
+                id="history-search-filter"
+                class="modal-input"
+                type="text"
+                placeholder="Buscar por título o descripción"
+              />
             </div>
 
             <div class="messages-grid" id="tickets-history-container">
@@ -197,28 +265,50 @@
       </section>
     </div>
 
-    <div id="property-detail-modal" class="modal-overlay" onclick="closePropertyDetail(event, this)">
+    <div
+      id="property-detail-modal"
+      class="modal-overlay"
+      onclick="closePropertyDetail(event, this)"
+    >
       <div class="modal-box property-detail-modal">
-        <span class="close-btn" onclick="closePropertyDetailModal()">&times;</span>
+        <span class="close-btn" onclick="closePropertyDetailModal()"
+          >&times;</span
+        >
         <div id="property-detail-content">
           <div class="loading-state">Cargando detalle de propiedad...</div>
         </div>
       </div>
     </div>
 
-    <div id="amenity-modal" class="modal-overlay" onclick="closeAmenityModal(event, this)">
+    <div
+      id="amenity-modal"
+      class="modal-overlay"
+      onclick="closeAmenityModal(event, this)"
+    >
       <div class="modal-box property-detail-modal">
         <span class="close-btn" onclick="closeAmenityModal()">&times;</span>
-        <h3 class="property-detail-title" id="amenity-modal-title">Nueva amenidad</h3>
+        <h3 class="property-detail-title" id="amenity-modal-title">
+          Nueva amenidad
+        </h3>
         <form id="amenity-form" class="modal-form">
           <div class="admin-form-grid">
             <label class="admin-field">
               <span>Nombre</span>
-              <input id="amenity-name" class="modal-input" type="text" placeholder="Nombre de la amenidad" required />
+              <input
+                id="amenity-name"
+                class="modal-input"
+                type="text"
+                placeholder="Nombre de la amenidad"
+                required
+              />
             </label>
             <label class="admin-field admin-field-full">
               <span>Descripción</span>
-              <textarea id="amenity-description" class="modal-textarea" placeholder="Descripción"></textarea>
+              <textarea
+                id="amenity-description"
+                class="modal-textarea"
+                placeholder="Descripción"
+              ></textarea>
             </label>
             <label class="admin-field admin-field-full">
               <span>Estado</span>
@@ -230,26 +320,57 @@
             </label>
           </div>
           <div class="modal-actions-row">
-            <button type="button" class="admin-secondary-btn" onclick="closeAmenityModal()">Cancelar</button>
-            <button type="submit" class="admin-action-btn" id="amenity-submit-btn">Guardar amenidad</button>
+            <button
+              type="button"
+              class="admin-secondary-btn"
+              onclick="closeAmenityModal()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="admin-action-btn"
+              id="amenity-submit-btn"
+            >
+              Guardar amenidad
+            </button>
           </div>
         </form>
       </div>
     </div>
 
-    <div id="property-form-modal" class="modal-overlay" onclick="closePropertyFormModal(event, this)">
+    <div
+      id="property-form-modal"
+      class="modal-overlay"
+      onclick="closePropertyFormModal(event, this)"
+    >
       <div class="modal-box property-detail-modal">
-        <span class="close-btn" onclick="closePropertyFormModal()">&times;</span>
-        <h3 class="property-detail-title" id="property-form-title">Nueva propiedad</h3>
-        <form id="property-form" class="modal-form">
+        <span class="close-btn" onclick="closePropertyFormModal()"
+          >&times;</span
+        >
+        <h3 class="property-detail-title" id="property-form-title">
+          Nueva propiedad
+        </h3>
+        <form id="property-form" class="modal-form" onsubmit="handlePropertyFormSubmit(event)">
           <div class="admin-form-grid">
             <label class="admin-field admin-field-full">
               <span>Nombre de la propiedad</span>
-              <input id="property-form-name" class="modal-input" type="text" placeholder="Ej. Casa 08 - Roble" required />
+              <input
+                id="property-form-name"
+                class="modal-input"
+                type="text"
+                placeholder="Ej. Casa 08 - Roble"
+                required
+              />
             </label>
             <label class="admin-field">
               <span>Edificio / sección</span>
-              <input id="property-form-building" class="modal-input" type="text" placeholder="Ej. Torre A" />
+              <input
+                id="property-form-building"
+                class="modal-input"
+                type="text"
+                placeholder="Ej. Torre A"
+              />
             </label>
             <label class="admin-field">
               <span>Estado</span>
@@ -262,38 +383,94 @@
             </label>
           </div>
           <div class="modal-actions-row">
-            <button type="button" class="admin-secondary-btn" onclick="closePropertyFormModal()">Cancelar</button>
-            <button type="submit" class="admin-action-btn" id="property-form-submit-btn">Guardar propiedad</button>
+            <button
+              type="button"
+              class="admin-secondary-btn"
+              onclick="closePropertyFormModal()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="admin-action-btn"
+              id="property-form-submit-btn"
+            >
+              Guardar propiedad
+            </button>
           </div>
         </form>
       </div>
     </div>
 
-    <div id="assign-resident-modal" class="modal-overlay" onclick="closeAssignResidentModal(event, this)">
+    <div
+      id="assign-resident-modal"
+      class="modal-overlay"
+      onclick="closeAssignResidentModal(event, this)"
+    >
       <div class="modal-box property-detail-modal">
-        <span class="close-btn" onclick="closeAssignResidentModal()">&times;</span>
+        <span class="close-btn" onclick="closeAssignResidentModal()"
+          >&times;</span
+        >
         <h3 class="property-detail-title">Asignar residente</h3>
         <form id="assign-resident-form" class="modal-form">
           <input id="assign-resident-property-id" type="hidden" />
           <label class="admin-field admin-field-full">
             <span>ID del residente</span>
-            <input id="assign-resident-id" class="modal-input" type="text" placeholder="user_residente_1 o vacío para desasignar" />
+            <select
+              id="assign-resident-id"
+              required
+              style="
+                width: 100%;
+                padding: 8px;
+                margin-top: 5px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+              "
+            >
+              <option value="">Cargando residentes...</option>
+            </select>
           </label>
           <div class="modal-actions-row">
-            <button type="button" class="admin-secondary-btn" onclick="closeAssignResidentModal()">Cancelar</button>
-            <button type="submit" class="admin-action-btn">Guardar asignación</button>
+            <button
+              type="button"
+              class="admin-secondary-btn"
+              onclick="closeAssignResidentModal()"
+            >
+              Cancelar
+            </button>
+            <button
+              class="admin-secondary-btn"
+              onclick="confirmarAsignacionResidente(event)"
+            >
+              Asignar Residente
+            </button>
           </div>
         </form>
       </div>
     </div>
 
-    <div id="notice-modal" class="modal-overlay" onclick="closeNoticeModal(event, this)">
+    <div
+      id="notice-modal"
+      class="modal-overlay"
+      onclick="closeNoticeModal(event, this)"
+    >
       <div class="modal-box property-detail-modal">
         <span class="close-btn" onclick="closeNoticeModal()">&times;</span>
         <h3 class="property-detail-title">Publicar aviso</h3>
         <form id="notice-form" class="modal-form">
-          <input id="notice-title" class="modal-input" type="text" placeholder="Título del aviso" required />
-          <textarea id="notice-message" class="modal-textarea" placeholder="Mensaje del aviso" required></textarea>
+          <input
+            id="notice-title"
+            class="modal-input"
+            type="text"
+            placeholder="Título del aviso"
+            required
+          />
+          <textarea
+            id="notice-message"
+            class="modal-textarea"
+            placeholder="Mensaje del aviso"
+            required
+          ></textarea>
           <select id="notice-audience" class="modal-input">
             <option value="general">General</option>
             <option value="residentes">Residentes</option>
@@ -303,16 +480,41 @@
       </div>
     </div>
 
-    <div id="admin-conversation-modal" class="modal-overlay" onclick="closeAdminConversationModal(event, this)">
+    <div
+      id="admin-conversation-modal"
+      class="modal-overlay"
+      onclick="closeAdminConversationModal(event, this)"
+    >
       <div class="modal-box property-detail-modal conversation-admin-modal">
-        <span class="close-btn" onclick="closeAdminConversationModal()">&times;</span>
-        <h3 class="property-detail-title" id="admin-conversation-title">Conversación</h3>
-        <div id="admin-conversation-status" class="admin-conversation-status-row"></div>
-        <div id="admin-conversation-messages" class="conversation-messages"></div>
+        <span class="close-btn" onclick="closeAdminConversationModal()"
+          >&times;</span
+        >
+        <h3 class="property-detail-title" id="admin-conversation-title">
+          Conversación
+        </h3>
+        <div
+          id="admin-conversation-status"
+          class="admin-conversation-status-row"
+        ></div>
+        <div
+          id="admin-conversation-messages"
+          class="conversation-messages"
+        ></div>
         <form id="admin-conversation-reply-form" class="modal-form">
-          <textarea id="adminConversationReplyInput" class="modal-textarea" placeholder="Responder conversación" rows="3"></textarea>
+          <textarea
+            id="adminConversationReplyInput"
+            class="modal-textarea"
+            placeholder="Responder conversación"
+            rows="3"
+          ></textarea>
           <div class="modal-actions-row">
-            <button type="button" class="admin-secondary-btn" id="admin-conversation-close-btn">Cerrar conversación</button>
+            <button
+              type="button"
+              class="admin-secondary-btn"
+              id="admin-conversation-close-btn"
+            >
+              Cerrar conversación
+            </button>
             <button type="submit" class="admin-action-btn">Responder</button>
           </div>
         </form>
