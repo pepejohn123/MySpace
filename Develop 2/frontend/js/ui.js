@@ -1,3 +1,9 @@
+window.closeModal = function(event, modalElement) {
+    if (event.target === modalElement) {
+        modalElement.style.display = 'none';
+    }
+};
+
 function ensureFeedbackContainer() {
   let container = document.getElementById('feedback-container');
 

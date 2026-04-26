@@ -63,7 +63,7 @@
 
               <button
                 class="admin-action-btn admin-toolbar-btn"
-                onclick="openPropertyFormModal('create')"
+                id="open-property-form-btn"
               >
                 + Nueva propiedad
               </button>
@@ -520,6 +520,78 @@
         </form>
       </div>
     </div>
+
+    <div id="modal-reserva-action" class="modal-overlay" onclick="closeModal(event, this)">
+    <div class="modal-box property-detail-modal">
+        <span class="close-btn" onclick="document.getElementById('modal-reserva-action').style.display='none'">&times;</span>
+        <h3 class="property-detail-title"><i class="fa-solid fa-calendar-check" style="color:var(--brand)"></i> Detalle de Reserva</h3>
+
+        <div class="property-detail-grid" style="margin-top: 20px;">
+            <div class="property-detail-item">
+                <span class="property-detail-label">Área / Amenidad</span>
+                <span class="property-detail-value" id="res-area"></span>
+            </div>
+            <div class="property-detail-item">
+                <span class="property-detail-label">Residente (ID)</span>
+                <span class="property-detail-value" id="res-user"></span>
+            </div>
+            <div class="property-detail-item">
+                <span class="property-detail-label">Fecha y Horario</span>
+                <span class="property-detail-value" id="res-date"></span>
+            </div>
+            <div class="property-detail-item">
+                <span class="property-detail-label">Estado Actual</span>
+                <span class="property-detail-value" id="res-status" style="text-transform: capitalize;"></span>
+            </div>
+        </div>
+
+        <div class="modal-actions-row" style="margin-top: 30px;">
+            <button class="admin-secondary-btn" onclick="document.getElementById('modal-reserva-action').style.display='none'">Cerrar</button>
+            <button id="reserva-toggle-btn" class="admin-action-btn">Actualizar Estado</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-ticket-action" class="modal-overlay" onclick="closeModal(event, this)">
+    <div class="modal-box property-detail-modal">
+        <span class="close-btn" onclick="document.getElementById('modal-ticket-action').style.display='none'">&times;</span>
+        <h3 class="property-detail-title"><i class="fa-solid fa-ticket" style="color:var(--brand)"></i> Detalle del Ticket</h3>
+
+        <div class="property-detail-grid" style="margin-top: 20px;">
+            <div class="property-detail-item" style="grid-column: span 2;">
+                <span class="property-detail-label">Asunto / Título</span>
+                <span class="property-detail-value" id="ticket-title"></span>
+            </div>
+            <div class="property-detail-item" style="grid-column: span 2;">
+                <span class="property-detail-label">Descripción</span>
+                <span class="property-detail-value" id="ticket-desc" style="white-space: pre-wrap; background: #f9fafb; padding: 10px; border-radius: 6px;"></span>
+            </div>
+
+            <div class="property-detail-item">
+                <label for="ticket-status-select" class="property-detail-label">Estado:</label>
+                <select id="ticket-status-select" class="admin-input" style="width: 100%;">
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en proceso">En Proceso</option>
+                    <option value="cerrado">Cerrado</option>
+                </select>
+            </div>
+
+            <div class="property-detail-item">
+                <label for="ticket-priority-select" class="property-detail-label">Prioridad:</label>
+                <select id="ticket-priority-select" class="admin-input" style="width: 100%;">
+                    <option value="baja">Baja</option>
+                    <option value="media">Media</option>
+                    <option value="alta">Alta</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="modal-actions-row" style="margin-top: 30px;">
+            <button class="admin-secondary-btn" onclick="document.getElementById('modal-ticket-action').style.display='none'">Cancelar</button>
+            <button type="button" id="ticket-save-btn" class="admin-action-btn">Guardar Cambios</button>
+        </div>
+    </div>
+</div>
 
     <script src="../../js/config.js"></script>
     <script src="../../js/auth.js"></script>

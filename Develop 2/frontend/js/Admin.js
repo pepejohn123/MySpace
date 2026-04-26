@@ -5,6 +5,8 @@ let propertyModalMode = 'create';
 let selectedPropertyId = null;
 let ticketsHistoryCache = [];
 let visitsCache = [];
+let ticketsCache = [];
+let reservationsCache = [];
 let paymentsFinanzasCache = [];
 let conversationsAdminCache = [];
 let currentFinanceFilters = {
@@ -245,39 +247,128 @@ function closeAdminConversationModal(event, overlay) {
   }
 }
 
+
 function cargarTickets(data) {
-  const ticketsContainer = document.getElementById('tickets-container');
+    const ticketsContainer = document.getElementById('tickets-container');
+    if (!ticketsContainer) return;
 
-  if (!ticketsContainer) {
-    return;
-  }
+    ticketsCache = data;
+    let htmlContent = '';
 
-  ticketsContainer.innerHTML = '';
+    if (!data.length) {
+        ticketsContainer.innerHTML = '<div class="admin-empty-state">No hay tickets registrados todavía.</div>';
+        return;
+    }
 
-  const activeTickets = data.filter((ticket) => ticket.estado !== 'cerrado');
+    const priorityColors = { alta: '#ef4444', media: '#f59e0b', baja: '#10b981' };
 
-  if (!activeTickets.length) {
-    ticketsContainer.innerHTML = '<div class="admin-empty-state">No hay tickets registrados todavía.</div>';
-    return;
-  }
+    data.forEach(ticket => {
+        const pColor = priorityColors[ticket.priority] || '#6b7280';
 
-  activeTickets.forEach((ticket) => {
-    ticketsContainer.innerHTML += `
-      <div class="card">
-        <div class="card-info">
-          <h3>${ticket.titulo}</h3>
-          <p>${ticket.descripcion}</p>
-          <p><strong>Estado:</strong> ${ticket.estado}</p>
-          <p><strong>Prioridad:</strong> ${ticket.prioridad}</p>
-          ${ticket.siguienteEstado ? `
-            <button class="admin-action-btn" onclick="actualizarEstadoTicket('${ticket.id}', '${ticket.siguienteEstado}')">
-              Marcar como ${ticket.siguienteEstadoLabel}
-            </button>
-          ` : '<span class="ticket-status-badge ticket-status-cerrado">Sin acciones disponibles</span>'}
-        </div>
-      </div>
-    `;
-  });
+        ticketsContainer.innerHTML += `
+            <div class="card" onclick="window.openTicketActionModal('${ticket.id}')" style="cursor: pointer;">
+
+                <div class="card-info" style="pointer-events: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <h3>${ticket.title}</h3>
+                        <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; background: ${pColor}; text-transform: uppercase; font-weight: bold;">
+                            ${ticket.priority || 'baja'}
+                        </span>
+                    </div>
+                    <p><strong>Estado:</strong> <span style="text-transform: capitalize;">${ticket.status}</span></p>
+                </div>
+
+            </div>
+        `;
+    });
+
+    ticketsContainer.innerHTML = htmlContent;
+}
+
+window.openTicketActionModal = function(ticketId) {
+    let ticket = null;
+    if (typeof ticketsCache !== 'undefined') {
+        ticket = ticketsCache.find(t => t.id === ticketId);
+    }
+    if (!ticket && typeof ticketsHistoryCache !== 'undefined') {
+        ticket = ticketsHistoryCache.find(t => t.id === ticketId);
+    }
+
+    if (!ticket) {
+        console.error("❌ No se encontró el ticket en ninguna caché. ID buscado:", ticketId);
+        return;
+    }
+
+    const modal = document.getElementById('modal-ticket-action');
+    if (!modal) {
+        console.error("❌ El HTML del modal no existe en esta página.");
+        return;
+    }
+
+    document.getElementById('ticket-title').textContent = ticket.titulo || ticket.title || 'Sin título';
+    document.getElementById('ticket-desc').textContent = ticket.descripcion || ticket.description || 'Sin descripción';
+    document.getElementById('ticket-status-select').value = ticket.estado || ticket.status || 'pendiente';
+    document.getElementById('ticket-priority-select').value = ticket.prioridad || ticket.priority || 'baja';
+
+    const saveBtn = document.getElementById('ticket-save-btn');
+
+    saveBtn.onclick = async (e) => {
+        if(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        const newStatus = document.getElementById('ticket-status-select').value;
+        const newPriority = document.getElementById('ticket-priority-select').value;
+
+        setButtonLoadingState(saveBtn, true, 'Guardando...');
+        await actualizarEstadoTicket(ticket.id, newStatus, newPriority);
+        modal.style.display = 'none';
+        setButtonLoadingState(saveBtn, false);
+    };
+
+    modal.style.display = 'flex';
+}
+
+async function actualizarEstadoTicket(ticketId, nuevoEstado, nuevaPrioridad) {
+    const token = getToken();
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/tickets/${encodeURIComponent(ticketId)}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                status: nuevoEstado,
+                priority: nuevaPrioridad
+            })
+        });
+
+        if (!response.ok) throw new Error('Error al actualizar');
+
+        const ticketsFrescos = await cargarTicketsDesdeApi();
+        cargarTickets(ticketsFrescos);
+
+        if (typeof ticketsHistoryCache !== 'undefined') {
+            const index = ticketsHistoryCache.findIndex(t => t.id === ticketId);
+
+            if (index !== -1) {
+                ticketsHistoryCache[index].estado = nuevoEstado;
+                ticketsHistoryCache[index].status = nuevoEstado;
+                ticketsHistoryCache[index].prioridad = nuevaPrioridad;
+                ticketsHistoryCache[index].priority = nuevaPrioridad;
+
+                if (typeof actualizarHistorialTickets === 'function') {
+                    actualizarHistorialTickets();
+                }
+            }
+        }
+
+        showFeedback('Ticket actualizado correctamente', 'success');
+    } catch (error) {
+        showFeedback(error.message, 'error');
+    }
 }
 
 function cargarTicketsCerradosRecientes(data) {
@@ -370,18 +461,20 @@ function renderHistorialTickets(tickets) {
 
   tickets.forEach((ticket) => {
     historyContainer.innerHTML += `
-      <div class="card">
-        <div class="card-info">
-          <h3>${ticket.titulo}</h3>
-          <p>${ticket.descripcion}</p>
+      <div class="card" onclick="window.openTicketActionModal('${ticket.id}')" style="cursor: pointer;">
+
+        <div class="card-info" style="pointer-events: none;">
+          <h3>${ticket.titulo || ticket.title}</h3>
+          <p>${ticket.descripcion || ticket.description}</p>
           <div class="history-ticket-meta">
-            <span><strong>Estado:</strong> ${ticket.estado}</span>
+            <span><strong>Estado:</strong> ${ticket.estado || ticket.status}</span>
             <span><strong>Creado:</strong> ${ticket.createdAt}</span>
             <span><strong>Cerrado:</strong> ${ticket.closedAt || '—'}</span>
             <span><strong>Propiedad:</strong> ${ticket.propertyId || '—'}</span>
           </div>
-          <span class="ticket-priority-badge ${getTicketPriorityClass(ticket.prioridad)}">${ticket.prioridad}</span>
+          <span class="ticket-priority-badge ${getTicketPriorityClass(ticket.prioridad || ticket.priority)}">${ticket.prioridad || ticket.priority || 'baja'}</span>
         </div>
+
       </div>
     `;
   });
@@ -401,11 +494,9 @@ function actualizarHistorialTickets() {
 
 function cargarReservas(data) {
   const reservasContainer = document.getElementById('reservas-container');
+  if (!reservasContainer) return;
 
-  if (!reservasContainer) {
-    return;
-  }
-
+  reservationsCache = data;
   reservasContainer.innerHTML = '';
 
   if (!data.length) {
@@ -415,19 +506,50 @@ function cargarReservas(data) {
 
   data.forEach((reserva) => {
     reservasContainer.innerHTML += `
-      <div class="card">
+      <div class="card" onclick="openReservaActionModal('${reserva.id}')" style="cursor: pointer;">
         <div class="card-info">
           <h3>${reserva.amenidad}</h3>
           <p><strong>Fecha:</strong> ${reserva.fecha}</p>
           <p><strong>Horario:</strong> ${reserva.horario}</p>
-          <p><strong>Estado:</strong> ${reserva.estado}</p>
-          <button class="admin-action-btn" onclick="actualizarEstadoReserva('${reserva.id}', '${reserva.siguienteEstado}')">
-            Marcar como ${reserva.siguienteEstadoLabel}
-          </button>
+          <p><strong>Estado:</strong> <span class="badge ${reserva.estado === 'aprobada' ? 'bg-green' : (reserva.estado === 'pendiente' ? 'bg-yellow' : 'bg-red')}">${reserva.estado}</span></p>
         </div>
       </div>
     `;
   });
+}
+
+function openReservaActionModal(reservaId) {
+  window.openReservaActionModal = function(reservaId) {
+  console.log("Clic en reserva ID:", reservaId);
+  console.log("Data en caché:", reservationsCache);
+
+  const reserva = reservationsCache.find(r => r.id === reservaId);
+
+  if (!reserva) {
+      console.error("Reserva no encontrada en la caché. Verifica los IDs.");
+      return;
+  }
+
+  document.getElementById('res-area').textContent = reserva.amenidad;
+  document.getElementById('res-user').textContent = reserva.residente || 'Cargando...';
+  document.getElementById('res-date').textContent = `${reserva.fecha} | ${reserva.horario}`;
+  document.getElementById('res-status').textContent = reserva.estado;
+
+  const actionBtn = document.getElementById('reserva-toggle-btn');
+
+  const nextStatus = reserva.estado === 'aprobada' ? 'rechazada' : 'aprobada';
+  actionBtn.textContent = nextStatus === 'aprobada' ? 'Aprobar Reserva' : 'Rechazar Reserva';
+  actionBtn.style.background = nextStatus === 'aprobada' ? '#059669' : '#DC2626';
+
+  actionBtn.onclick = async () => {
+    setButtonLoadingState(actionBtn, true, 'Procesando...');
+    await actualizarEstadoReserva(reserva.id, nextStatus);
+    document.getElementById('modal-reserva-action').style.display = 'none';
+    setButtonLoadingState(actionBtn, false);
+  };
+
+  document.getElementById('modal-reserva-action').style.display = 'flex';
+}
 }
 
 function cargarPagos(data, summary) {
@@ -1097,7 +1219,8 @@ async function cargarVisitasDesdeApi() {
 async function validarVisitaPorCodigo(accessCode) {
   const token = getToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/visits/validate/${encodeURIComponent(accessCode)}`, {
+  const response = await fetch(`${API_BASE_URL}/api/visits/${encodeURIComponent(accessCode)}/validate`, {
+    method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -1414,7 +1537,6 @@ async function actualizarEstadoTicket(ticketId, nextStatus) {
       throw new Error(errorData.message || 'No se pudo actualizar el ticket');
     }
 
-    changeTab('mensajes');
     showFeedback('Ticket actualizado correctamente', 'success');
   } catch (error) {
     showFeedback(error.message, 'error');
@@ -1436,11 +1558,18 @@ async function actualizarEstadoReserva(reservationId, nextStatus) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'No se pudo actualizar la reserva');
+      throw new Error(errorData.error || errorData.message || 'No se pudo actualizar la reserva');
     }
 
-    changeTab('reservas');
-    showFeedback('Reserva actualizada correctamente', 'success');
+    const modal = document.getElementById('modal-reserva-action');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+
+    const reservasFrescas = await cargarReservasDesdeApi();
+    cargarReservas(reservasFrescas);
+
+    showFeedback(`Reserva marcada como ${nextStatus}`, 'success');
   } catch (error) {
     showFeedback(error.message, 'error');
   }
@@ -1494,6 +1623,7 @@ function changeTab(tabName) {
   const messagesWrapper = document.getElementById('messages-wrapper');
   const closedTicketsContainer = document.getElementById('closed-tickets-container');
   const ticketsHistoryWrapper = document.getElementById('tickets-history-wrapper');
+  const openPropertyFormButton = document.getElementById('open-property-form-btn');
 
   if (!title || !propertyContainer || !ticketsContainer || !reservasContainer || !finanzasContainer || !visitsWrapper || !avisosContainer || !serviciosContainer || !archivedAvisosContainer || !conversationsContainer || !messagesWrapper || !closedTicketsContainer || !ticketsHistoryWrapper) {
     return;
@@ -1512,6 +1642,15 @@ function changeTab(tabName) {
   messagesWrapper.classList.add('admin-hidden');
   closedTicketsContainer.classList.add('admin-hidden');
   ticketsHistoryWrapper.classList.add('admin-hidden');
+
+  if (openPropertyFormButton) {
+    if (tabName === 'propiedades') {
+      openPropertyFormButton.classList.remove('admin-hidden');
+    } else {
+      openPropertyFormButton.classList.add('admin-hidden');
+    }
+  }
+
   if (tabName === 'servicios') {
     title.textContent = 'Gestión de Servicios';
     serviciosContainer.classList.remove('admin-hidden');
