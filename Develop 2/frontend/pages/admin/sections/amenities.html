@@ -1,0 +1,62 @@
+<div class="grid admin-hidden" id="servicios-container">
+  <!-- JS inserta amenidades -->
+</div>
+
+<div
+  id="amenity-modal"
+  class="modal-overlay"
+  onclick="closeAmenityModal(event, this)"
+>
+  <div class="modal-box property-detail-modal">
+    <span class="close-btn" onclick="closeAmenityModal()">&times;</span>
+    <h3 class="property-detail-title" id="amenity-modal-title">
+      Nueva amenidad
+    </h3>
+    <form id="amenity-form" class="modal-form">
+      <div class="admin-form-grid">
+        <label class="admin-field">
+          <span>Nombre</span>
+          <input
+            id="amenity-name"
+            class="modal-input"
+            type="text"
+            placeholder="Nombre de la amenidad"
+            required
+          />
+        </label>
+        <label class="admin-field admin-field-full">
+          <span>Descripción</span>
+          <textarea
+            id="amenity-description"
+            class="modal-textarea"
+            placeholder="Descripción"
+          ></textarea>
+        </label>
+        <label class="admin-field admin-field-full">
+          <span>Estado</span>
+          <select id="amenity-status" class="modal-input">
+            <option value="activa">Activa</option>
+            <option value="mantenimiento">Mantenimiento</option>
+            <option value="inactiva">Inactiva</option>
+          </select>
+        </label>
+      </div>
+      <div class="modal-actions-row">
+        <button
+          type="button"
+          class="admin-secondary-btn"
+          onclick="closeAmenityModal()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="admin-action-btn"
+          id="amenity-submit-btn"
+        >
+          Guardar amenidad
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

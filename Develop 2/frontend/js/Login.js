@@ -113,8 +113,7 @@ function handleCognitoLogin() {
           name: payload?.name || email.split('@')[0],
           role: userRole,
           condominioId: payload?.['custom:condominioId'] || null,
-          propertyId: payload?.['custom:propertyId'] || null,
-          superadmin: payload?.['custom:superadmin'] === 'true' || false
+          propertyId: payload?.['custom:propertyId'] || null
         }
       });
 
@@ -148,36 +147,9 @@ function handleCognitoLogin() {
 }
 
 async function handleLocalLogin() {
-  const email = document.getElementById('emailInput').value;
-  const password = document.querySelector('input[type=password]').value;
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      setLoginFeedback(data.message || 'Credenciales incorrectas', 'error');
-      showFeedback(data.message || 'Credenciales incorrectas', 'error');
-      setLoginLoadingState(false);
-      return;
-    }
-
-    saveSession(data);
-    setLoginFeedback('Inicio de sesión correcto', 'success');
-    redirectByRole(data.role);
-  } catch (_error) {
-    setLoginFeedback('No se pudo conectar con el backend de login.', 'error');
-    showFeedback('No se pudo conectar con el backend de login.', 'error');
-  } finally {
-    setLoginLoadingState(false);
-  }
+  setLoginFeedback('La autenticación local ya no está habilitada. Usa Cognito.', 'error');
+  showFeedback('La autenticación local ya no está habilitada. Usa Cognito.', 'error');
+  setLoginLoadingState(false);
 }
 
 if (!loginForm) {

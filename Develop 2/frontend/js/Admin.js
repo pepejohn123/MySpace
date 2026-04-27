@@ -1,4 +1,5 @@
-const DEFAULT_PROPERTY_IMAGE = 'https://images.unsplash.com/photo-1560448204?auto=format&fit=crop&w=800&q=80';
+const DEFAULT_PROPERTY_IMAGE = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=500&q=60';
+window.DEFAULT_PROPERTY_IMAGE = DEFAULT_PROPERTY_IMAGE;
 let amenityModalMode = 'create';
 let selectedAmenityId = null;
 let propertyModalMode = 'create';
@@ -7,6 +8,8 @@ let ticketsHistoryCache = [];
 let visitsCache = [];
 let ticketsCache = [];
 let reservationsCache = [];
+let propertiesCache = [];
+let reservationsAmenitiesCache = [];
 let paymentsFinanzasCache = [];
 let conversationsAdminCache = [];
 let currentFinanceFilters = {
@@ -16,12 +19,13 @@ let currentFinanceFilters = {
   search: ''
 };
 let financeShellRendered = false;
+let propertyFiltersBound = false;
 const exportConfigByTab = {
   reservas: {
     label: 'Exportar reservas',
     endpoint: '/api/exports/reservations',
     filename: 'reservations.xlsx',
-    getFilters: () => ({})
+    getFilters: getReservationsExportFilters
   },
   visitas: {
     label: 'Exportar visitas',
@@ -43,107 +47,83 @@ const exportConfigByTab = {
   }
 };
 
+function getReservationsExportFilters() {
+  return window.AdminReservationsScreen?.getExportFilters?.() || {};
+}
+
+function normalizarFechaReserva(dateValue) {
+  return window.AdminReservationsScreen?.normalizarFecha?.(dateValue) || null;
+}
+
+function getReservationWindowMeta(reservation) {
+  return window.AdminReservationsScreen?.getWindowMeta?.(reservation) || {
+    isWithinWindow: false,
+    bucket: 'fuera_de_rango',
+    diffDays: Number.POSITIVE_INFINITY,
+    label: 'Fecha inválida'
+  };
+}
+
+function getReservationStatusClass(status) {
+  return window.AdminReservationsScreen?.getStatusClass?.(status) || 'reservation-status-pendiente';
+}
+
 function getAmenityStatusClass(status) {
-  return `service-status-${status || 'inactiva'}`;
+  return window.AdminShared?.getAmenityStatusClass?.(status) || `service-status-${status || 'inactiva'}`;
 }
 
 function getTicketPriorityClass(priority) {
-  return `ticket-priority-${priority || 'media'}`;
+  return window.AdminShared?.getTicketPriorityClass?.(priority) || `ticket-priority-${priority || 'media'}`;
 }
 
 function getConversationStatusClass(status) {
-  return `conversation-status-${status || 'abierta'}`;
+  return window.AdminShared?.getConversationStatusClass?.(status) || `conversation-status-${status || 'abierta'}`;
 }
 
 function buildPropertyStatusClass(status) {
-  if (status === 'ocupada') return 'bg-yellow';
-  if (status === 'mantenimiento' || status === 'inactiva') return 'bg-red';
-  return 'bg-green';
+  return window.AdminShared?.buildPropertyStatusClass?.(status) || 'bg-green';
 }
 
 function getApiErrorMessage(errorData, fallbackMessage) {
-  return errorData?.error || errorData?.message || fallbackMessage;
+  return window.AdminShared?.getApiErrorMessage?.(errorData, fallbackMessage) || errorData?.error || errorData?.message || fallbackMessage;
 }
 
 async function cargarConversacionesAdminDesdeApi() {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/conversations`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudieron cargar las conversaciones');
+  if (window.AdminConversationsScreen?.fetchList) {
+    return window.AdminConversationsScreen.fetchList();
   }
-
-  const data = await response.json();
+  const data = await apiGet('/api/conversations', 'No se pudieron cargar las conversaciones');
   return data.conversations || [];
 }
 
 async function cargarDetalleConversacionAdmin(conversationId) {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/conversations/${encodeURIComponent(conversationId)}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudo cargar la conversación');
+  if (window.AdminConversationsScreen?.fetchDetail) {
+    return window.AdminConversationsScreen.fetchDetail(conversationId);
   }
-
-  const data = await response.json();
+  const data = await apiGet(`/api/conversations/${encodeURIComponent(conversationId)}`, 'No se pudo cargar la conversación');
   return data.conversation;
 }
 
 async function responderConversacionAdmin(conversationId, payload) {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/conversations/${encodeURIComponent(conversationId)}/messages`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudo responder la conversación');
+  if (window.AdminConversationsScreen?.reply) {
+    return window.AdminConversationsScreen.reply(conversationId, payload);
   }
-
-  const data = await response.json();
+  const data = await apiPost(`/api/conversations/${encodeURIComponent(conversationId)}/messages`, payload, 'No se pudo responder la conversación');
   return data.conversation;
 }
 
 async function cerrarConversacionAdmin(conversationId) {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/conversations/${encodeURIComponent(conversationId)}/status`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ status: 'cerrada' })
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudo cerrar la conversación');
+  if (window.AdminConversationsScreen?.closeConversation) {
+    return window.AdminConversationsScreen.closeConversation(conversationId);
   }
-
-  const data = await response.json();
+  const data = await apiPatch(`/api/conversations/${encodeURIComponent(conversationId)}/status`, { status: 'cerrada' }, 'No se pudo cerrar la conversación');
   return data.conversation;
 }
 
 function renderAdminConversations(conversations) {
+  if (window.AdminConversationsScreen?.renderList) {
+    return window.AdminConversationsScreen.renderList(conversations);
+  }
   const container = document.getElementById('admin-conversations-container');
 
   if (!container) {
@@ -182,6 +162,9 @@ function renderAdminConversations(conversations) {
 }
 
 function renderAdminConversationDetail(conversation) {
+  if (window.AdminConversationsScreen?.renderDetail) {
+    return window.AdminConversationsScreen.renderDetail(conversation);
+  }
   const title = document.getElementById('admin-conversation-title');
   const status = document.getElementById('admin-conversation-status');
   const messages = document.getElementById('admin-conversation-messages');
@@ -229,6 +212,9 @@ function renderAdminConversationDetail(conversation) {
 }
 
 async function openAdminConversationModal(conversationId) {
+  if (window.AdminConversationsScreen?.openModal) {
+    return window.AdminConversationsScreen.openModal(conversationId);
+  }
   try {
     const conversation = await cargarDetalleConversacionAdmin(conversationId);
     renderAdminConversationDetail(conversation);
@@ -239,6 +225,9 @@ async function openAdminConversationModal(conversationId) {
 }
 
 function closeAdminConversationModal(event, overlay) {
+  if (window.AdminConversationsScreen?.closeModal) {
+    return window.AdminConversationsScreen.closeModal(event, overlay);
+  }
   if (!event || event.target === overlay) {
     const modal = document.getElementById('admin-conversation-modal');
     if (modal) {
@@ -249,10 +238,17 @@ function closeAdminConversationModal(event, overlay) {
 
 
 function cargarTickets(data) {
+    if (window.AdminTicketsScreen?.renderList) {
+        ticketsCache = Array.isArray(data) ? data : [];
+        window.AdminStore?.set('tickets', ticketsCache);
+        return window.AdminTicketsScreen.renderList(ticketsCache);
+    }
+
     const ticketsContainer = document.getElementById('tickets-container');
     if (!ticketsContainer) return;
 
     ticketsCache = data;
+    window.AdminStore?.set('tickets', data);
     let htmlContent = '';
 
     if (!data.length) {
@@ -263,19 +259,22 @@ function cargarTickets(data) {
     const priorityColors = { alta: '#ef4444', media: '#f59e0b', baja: '#10b981' };
 
     data.forEach(ticket => {
-        const pColor = priorityColors[ticket.priority] || '#6b7280';
+        const ticketPriority = ticket.prioridad || ticket.priority || 'baja';
+        const ticketTitle = ticket.titulo || ticket.title || 'Sin título';
+        const ticketStatus = ticket.estado || ticket.status || 'pendiente';
+        const pColor = priorityColors[ticketPriority] || '#6b7280';
 
-        ticketsContainer.innerHTML += `
+        htmlContent += `
             <div class="card" onclick="window.openTicketActionModal('${ticket.id}')" style="cursor: pointer;">
 
                 <div class="card-info" style="pointer-events: none;">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <h3>${ticket.title}</h3>
+                        <h3>${ticketTitle}</h3>
                         <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; background: ${pColor}; text-transform: uppercase; font-weight: bold;">
-                            ${ticket.priority || 'baja'}
+                            ${ticketPriority}
                         </span>
                     </div>
-                    <p><strong>Estado:</strong> <span style="text-transform: capitalize;">${ticket.status}</span></p>
+                    <p><strong>Estado:</strong> <span style="text-transform: capitalize;">${ticketStatus}</span></p>
                 </div>
 
             </div>
@@ -331,38 +330,38 @@ window.openTicketActionModal = function(ticketId) {
 }
 
 async function actualizarEstadoTicket(ticketId, nuevoEstado, nuevaPrioridad) {
-    const token = getToken();
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/tickets/${encodeURIComponent(ticketId)}/status`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                status: nuevoEstado,
-                priority: nuevaPrioridad
-            })
-        });
+    if (window.AdminTicketsScreen?.updateStatus) {
+        try {
+            await window.AdminTicketsScreen.updateStatus(ticketId, nuevoEstado, nuevaPrioridad);
+            const ticketsFrescos = await cargarTicketsDesdeApi();
+            ticketsCache = ticketsFrescos;
+            ticketsHistoryCache = ticketsFrescos;
+            window.AdminStore?.patch({ tickets: ticketsFrescos, ticketsHistory: ticketsFrescos });
+            cargarTickets(ticketsFrescos);
+            cargarTicketsCerradosRecientes(ticketsFrescos);
+            if (window.AdminHistoryScreen?.refresh) {
+                window.AdminHistoryScreen.refresh();
+            }
+            showFeedback('Ticket actualizado correctamente', 'success');
+        } catch (error) {
+            showFeedback(error.message, 'error');
+        }
+        return;
+    }
 
-        if (!response.ok) throw new Error('Error al actualizar');
+    try {
+        await apiPatch(`/api/tickets/${encodeURIComponent(ticketId)}/status`, {
+            status: nuevoEstado,
+            priority: nuevaPrioridad
+        }, 'Error al actualizar');
 
         const ticketsFrescos = await cargarTicketsDesdeApi();
+        ticketsCache = ticketsFrescos;
+        ticketsHistoryCache = ticketsFrescos;
         cargarTickets(ticketsFrescos);
-
-        if (typeof ticketsHistoryCache !== 'undefined') {
-            const index = ticketsHistoryCache.findIndex(t => t.id === ticketId);
-
-            if (index !== -1) {
-                ticketsHistoryCache[index].estado = nuevoEstado;
-                ticketsHistoryCache[index].status = nuevoEstado;
-                ticketsHistoryCache[index].prioridad = nuevaPrioridad;
-                ticketsHistoryCache[index].priority = nuevaPrioridad;
-
-                if (typeof actualizarHistorialTickets === 'function') {
-                    actualizarHistorialTickets();
-                }
-            }
+        cargarTicketsCerradosRecientes(ticketsFrescos);
+        if (typeof actualizarHistorialTickets === 'function') {
+            actualizarHistorialTickets();
         }
 
         showFeedback('Ticket actualizado correctamente', 'success');
@@ -372,6 +371,10 @@ async function actualizarEstadoTicket(ticketId, nuevoEstado, nuevaPrioridad) {
 }
 
 function cargarTicketsCerradosRecientes(data) {
+  if (window.AdminTicketsScreen?.renderClosedRecent) {
+    return window.AdminTicketsScreen.renderClosedRecent(data);
+  }
+
   const closedTicketsContainer = document.getElementById('closed-tickets-container');
 
   if (!closedTicketsContainer) {
@@ -413,6 +416,10 @@ function cargarTicketsCerradosRecientes(data) {
 }
 
 function filtrarTicketsHistorial(tickets, filters) {
+  if (window.AdminHistoryScreen?.filterList) {
+    return window.AdminHistoryScreen.filterList(tickets, filters);
+  }
+
   const now = new Date();
 
   return tickets.filter((ticket) => {
@@ -446,6 +453,10 @@ function filtrarTicketsHistorial(tickets, filters) {
 }
 
 function renderHistorialTickets(tickets) {
+  if (window.AdminHistoryScreen?.renderList) {
+    return window.AdminHistoryScreen.renderList(tickets);
+  }
+
   const historyContainer = document.getElementById('tickets-history-container');
 
   if (!historyContainer) {
@@ -481,6 +492,10 @@ function renderHistorialTickets(tickets) {
 }
 
 function actualizarHistorialTickets() {
+  if (window.AdminHistoryScreen?.refresh) {
+    return window.AdminHistoryScreen.refresh();
+  }
+
   const filters = {
     status: document.getElementById('history-status-filter')?.value || 'all',
     priority: document.getElementById('history-priority-filter')?.value || 'all',
@@ -493,63 +508,39 @@ function actualizarHistorialTickets() {
 }
 
 function cargarReservas(data) {
-  const reservasContainer = document.getElementById('reservas-container');
-  if (!reservasContainer) return;
+  reservationsCache = Array.isArray(data) ? data : [];
+  window.AdminShared?.debugPayload?.('Admin.cargarReservas(mapped)', reservationsCache, {
+    count: reservationsCache.length,
+    sample: reservationsCache[0] || null
+  });
+  reservationsAmenitiesCache = [...new Map(
+    reservationsCache
+      .filter((reservation) => reservation.amenityId && reservation.amenidad)
+      .map((reservation) => [reservation.amenityId, { id: reservation.amenityId, name: reservation.amenidad }])
+  ).values()];
 
-  reservationsCache = data;
-  reservasContainer.innerHTML = '';
+  window.AdminStore?.patch({
+    reservations: reservationsCache,
+    amenities: reservationsAmenitiesCache
+  });
 
-  if (!data.length) {
-    reservasContainer.innerHTML = '<div class="admin-empty-state">No hay reservas registradas todavía.</div>';
-    return;
-  }
-
-  data.forEach((reserva) => {
-    reservasContainer.innerHTML += `
-      <div class="card" onclick="openReservaActionModal('${reserva.id}')" style="cursor: pointer;">
-        <div class="card-info">
-          <h3>${reserva.amenidad}</h3>
-          <p><strong>Fecha:</strong> ${reserva.fecha}</p>
-          <p><strong>Horario:</strong> ${reserva.horario}</p>
-          <p><strong>Estado:</strong> <span class="badge ${reserva.estado === 'aprobada' ? 'bg-green' : (reserva.estado === 'pendiente' ? 'bg-yellow' : 'bg-red')}">${reserva.estado}</span></p>
-        </div>
-      </div>
-    `;
+  window.AdminReservationsScreen?.mount?.({
+    containerId: 'reservas-container',
+    reservations: reservationsCache,
+    amenities: reservationsAmenitiesCache
   });
 }
 
 function openReservaActionModal(reservaId) {
-  window.openReservaActionModal = function(reservaId) {
-  console.log("Clic en reserva ID:", reservaId);
-  console.log("Data en caché:", reservationsCache);
-
-  const reserva = reservationsCache.find(r => r.id === reservaId);
-
-  if (!reserva) {
-      console.error("Reserva no encontrada en la caché. Verifica los IDs.");
-      return;
-  }
-
-  document.getElementById('res-area').textContent = reserva.amenidad;
-  document.getElementById('res-user').textContent = reserva.residente || 'Cargando...';
-  document.getElementById('res-date').textContent = `${reserva.fecha} | ${reserva.horario}`;
-  document.getElementById('res-status').textContent = reserva.estado;
-
-  const actionBtn = document.getElementById('reserva-toggle-btn');
-
-  const nextStatus = reserva.estado === 'aprobada' ? 'rechazada' : 'aprobada';
-  actionBtn.textContent = nextStatus === 'aprobada' ? 'Aprobar Reserva' : 'Rechazar Reserva';
-  actionBtn.style.background = nextStatus === 'aprobada' ? '#059669' : '#DC2626';
-
-  actionBtn.onclick = async () => {
-    setButtonLoadingState(actionBtn, true, 'Procesando...');
-    await actualizarEstadoReserva(reserva.id, nextStatus);
-    document.getElementById('modal-reserva-action').style.display = 'none';
-    setButtonLoadingState(actionBtn, false);
-  };
-
-  document.getElementById('modal-reserva-action').style.display = 'flex';
+  return window.AdminReservationsScreen?.openDetail?.(reservaId);
 }
+
+function applyReservasFilters() {
+  return window.AdminReservationsScreen?.applyFilters?.();
+}
+
+function renderReservasList(list) {
+  return window.AdminReservationsScreen?.renderList?.(list);
 }
 
 function cargarPagos(data, summary) {
@@ -558,6 +549,11 @@ function cargarPagos(data, summary) {
   if (!finanzasContainer) {
     return;
   }
+
+  window.AdminStore?.patch({
+    payments: Array.isArray(data) ? data : [],
+    financeSummary: summary || null
+  });
 
   finanzasContainer.innerHTML = `
     <div class="card">
@@ -664,6 +660,8 @@ function cargarAmenidades(data) {
     return;
   }
 
+  window.AdminStore?.set('amenities', Array.isArray(data) ? data : []);
+
   serviciosContainer.innerHTML = `
     <div class="service-toolbar">
       <div class="service-toolbar-copy">
@@ -728,22 +726,15 @@ function mapTicketToCard(ticket) {
 }
 
 function mapReservationToCard(reservation) {
-  const statusTransitions = {
-    pendiente: { next: 'aprobada', label: 'Aprobada' },
-    aprobada: { next: 'rechazada', label: 'Rechazada' },
-    rechazada: { next: 'rechazada', label: 'Rechazada' }
-  };
-
-  const transition = statusTransitions[reservation.status] || statusTransitions.rechazada;
-
   return {
     id: reservation.id,
     amenidad: reservation.amenityName,
+    amenityId: reservation.amenityId || reservation.amenity || '',
+    propertyId: reservation.propertyId || null,
     fecha: reservation.reservationDate,
     horario: reservation.timeSlot,
     estado: reservation.status,
-    siguienteEstado: transition.next,
-    siguienteEstadoLabel: transition.label
+    residente: reservation.residentName || reservation.residentId || 'Sin residente'
   };
 }
 
@@ -1142,100 +1133,80 @@ function mapNoticeToCard(notice) {
 }
 
 async function cargarTicketsDesdeApi() {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/tickets`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudieron cargar los tickets');
+  if (window.AdminTicketsScreen?.fetchList) {
+    const tickets = await window.AdminTicketsScreen.fetchList();
+    window.AdminShared?.debugPayload?.('Admin.cargarTicketsDesdeApi(mapped via screen)', tickets, {
+      count: tickets.length,
+      sample: tickets[0] || null
+    });
+    return tickets;
   }
 
-  const data = await response.json();
-  return (data.tickets || []).map(mapTicketToCard);
+  const data = await apiGet('/api/tickets', 'No se pudieron cargar los tickets');
+  const tickets = Array.isArray(data) ? data : (data.tickets || []);
+  const mapped = tickets.map(mapTicketToCard);
+  window.AdminShared?.debugPayload?.('Admin.cargarTicketsDesdeApi(raw/mapped)', { raw: data, mapped }, {
+    count: mapped.length,
+    sample: mapped[0] || null
+  });
+  return mapped;
 }
 
 async function cargarReservasDesdeApi() {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/reservations`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+  const data = await apiGet('/api/reservations', 'No se pudieron cargar las reservas');
+  const reservations = Array.isArray(data) ? data : (data.reservations || []);
+  const mapped = reservations.map(mapReservationToCard);
+  window.AdminShared?.debugPayload?.('Admin.cargarReservasDesdeApi(raw/mapped)', { raw: data, mapped }, {
+    count: mapped.length,
+    sample: mapped[0] || null
   });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudieron cargar las reservas');
-  }
-
-  const data = await response.json();
-  return (data.reservations || []).map(mapReservationToCard);
+  return mapped;
 }
 
 async function cargarPagosDesdeApi() {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/payments`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudieron cargar los pagos');
+  if (window.AdminFinancesScreen?.fetchData) {
+    return window.AdminFinancesScreen.fetchData();
   }
 
-  const data = await response.json();
+  const data = await apiGet('/api/payments', 'No se pudieron cargar los pagos');
+  const payments = Array.isArray(data) ? data : (data.payments || []);
+  const summary = data.summary || {
+    total: payments.reduce((sum, item) => sum + (Number(item.amount) || 0), 0),
+    pagado: payments.filter((item) => item.status === 'pagado').reduce((sum, item) => sum + (Number(item.amount) || 0), 0),
+    enRevision: payments.filter((item) => item.status === 'en_revision').reduce((sum, item) => sum + (Number(item.amount) || 0), 0),
+    porCobrar: payments.filter((item) => item.status === 'pendiente' || item.status === 'rechazado').reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+  };
+
   return {
-    payments: (data.payments || []).map(mapPaymentToCard),
-    summary: data.summary || { total: 0, pagado: 0, enRevision: 0, porCobrar: 0 }
+    payments: payments.map(mapPaymentToCard),
+    summary
   };
 }
 
 async function cargarVisitasDesdeApi() {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/visits`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudieron cargar las visitas');
+  if (window.AdminVisitsScreen?.fetchList) {
+    return window.AdminVisitsScreen.fetchList();
   }
 
-  const data = await response.json();
-  return (data.visits || []).map(mapVisitToAdminCard);
+  const data = await apiGet('/api/visits', 'No se pudieron cargar las visitas');
+  const visits = Array.isArray(data) ? data : (data.visits || []);
+  return visits.map(mapVisitToAdminCard);
 }
 
 async function validarVisitaPorCodigo(accessCode) {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/visits/${encodeURIComponent(accessCode)}/validate`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudo validar la visita');
+  if (window.AdminVisitsScreen?.validateByCode) {
+    return window.AdminVisitsScreen.validateByCode(accessCode);
   }
 
-  const data = await response.json();
+  const data = await apiPatch(`/api/visits/${encodeURIComponent(accessCode)}/validate`, {}, 'No se pudo validar la visita');
   return mapVisitToAdminCard(data.visit);
 }
 
 function renderVisitas(visits) {
+  if (window.AdminVisitsScreen?.renderList) {
+    return window.AdminVisitsScreen.renderList(visits);
+  }
+
   const visitsContainer = document.getElementById('visits-container');
 
   if (!visitsContainer) {
@@ -1273,6 +1244,10 @@ function renderVisitas(visits) {
 }
 
 function filtrarVisitas(visits, filters) {
+  if (window.AdminVisitsScreen?.filterList) {
+    return window.AdminVisitsScreen.filterList(visits, filters);
+  }
+
   return visits.filter((visit) => {
     const matchesStatus = filters.status === 'all' || visit.estado === filters.status;
     const searchTarget = `${visit.visitante} ${visit.codigo}`.toLowerCase();
@@ -1283,6 +1258,10 @@ function filtrarVisitas(visits, filters) {
 }
 
 function actualizarVistaVisitas() {
+  if (window.AdminVisitsScreen?.refresh) {
+    return window.AdminVisitsScreen.refresh();
+  }
+
   const filters = {
     status: document.getElementById('visit-status-filter')?.value || 'all',
     search: document.getElementById('visit-search-filter')?.value || ''
@@ -1293,6 +1272,10 @@ function actualizarVistaVisitas() {
 }
 
 async function validarVisitaDesdeCard(accessCode) {
+  if (window.AdminVisitsScreen?.validateFromCard) {
+    return window.AdminVisitsScreen.validateFromCard(accessCode);
+  }
+
   try {
     const visit = await validarVisitaPorCodigo(accessCode);
     renderVisitValidationResult(visit);
@@ -1306,6 +1289,10 @@ async function validarVisitaDesdeCard(accessCode) {
 }
 
 function renderVisitValidationResult(visit, isError = false) {
+  if (window.AdminVisitsScreen?.renderValidationResult) {
+    return window.AdminVisitsScreen.renderValidationResult(visit, isError);
+  }
+
   const resultContainer = document.getElementById('visit-validation-result');
 
   if (!resultContainer) {
@@ -1332,78 +1319,37 @@ function renderVisitValidationResult(visit, isError = false) {
 }
 
 async function cargarAvisosDesdeApi() {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/notices`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudieron cargar los avisos');
+  if (window.AdminNoticesScreen?.fetchList) {
+    return window.AdminNoticesScreen.fetchList();
   }
-
-  const data = await response.json();
-  return (data.notices || []).map(mapNoticeToCard);
+  const data = await apiGet('/api/notices', 'No se pudieron cargar los avisos');
+  const notices = Array.isArray(data) ? data : (data.notices || []);
+  return notices.map(mapNoticeToCard);
 }
 
 async function cargarAmenidadesDesdeApi() {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/amenities`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudieron cargar las amenidades');
+  if (window.AdminAmenitiesScreen?.fetchList) {
+    return window.AdminAmenitiesScreen.fetchList();
   }
 
-  const data = await response.json();
-  return data.amenities || [];
+  const data = await apiGet('/api/amenities', 'No se pudieron cargar las amenidades');
+  return Array.isArray(data) ? data : (data.amenities || []);
 }
 
 async function crearAviso(payload) {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/notices`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudo crear el aviso');
+  if (window.AdminNoticesScreen?.createNotice) {
+    return window.AdminNoticesScreen.createNotice(payload);
   }
-
-  const data = await response.json();
+  const data = await apiPost('/api/notices', payload, 'No se pudo crear el aviso');
   return data.notice;
 }
 
 async function actualizarEstadoAviso(noticeId, status) {
-  const token = getToken();
-
   try {
-    const response = await fetch(`${API_BASE_URL}/api/notices/${encodeURIComponent(noticeId)}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ status })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'No se pudo actualizar el aviso');
+    if (window.AdminNoticesScreen?.updateNoticeStatus) {
+      await window.AdminNoticesScreen.updateNoticeStatus(noticeId, status);
+    } else {
+      await apiPatch(`/api/notices/${encodeURIComponent(noticeId)}/status`, { status }, 'No se pudo actualizar el aviso');
     }
 
     changeTab('mensajes');
@@ -1414,23 +1360,15 @@ async function actualizarEstadoAviso(noticeId, status) {
 }
 
 async function eliminarAviso(noticeId) {
-  const token = getToken();
-
   if (!window.confirm('¿Seguro que quieres eliminar este aviso?')) {
     return;
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/notices/${encodeURIComponent(noticeId)}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'No se pudo eliminar el aviso');
+    if (window.AdminNoticesScreen?.deleteNotice) {
+      await window.AdminNoticesScreen.deleteNotice(noticeId);
+    } else {
+      await apiDelete(`/api/notices/${encodeURIComponent(noticeId)}`, 'No se pudo eliminar el aviso');
     }
 
     changeTab('mensajes');
@@ -1441,65 +1379,33 @@ async function eliminarAviso(noticeId) {
 }
 
 async function crearAmenidad(payload) {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/amenities`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudo crear la amenidad');
+  if (window.AdminAmenitiesScreen?.createAmenity) {
+    return window.AdminAmenitiesScreen.createAmenity(payload);
   }
 
-  const data = await response.json();
+  const data = await apiPost('/api/amenities', payload, 'No se pudo crear la amenidad');
   return data.amenity;
 }
 
 async function actualizarAmenidad(amenityId, payload) {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/amenities/${encodeURIComponent(amenityId)}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'No se pudo actualizar la amenidad');
+  if (window.AdminAmenitiesScreen?.updateAmenity) {
+    return window.AdminAmenitiesScreen.updateAmenity(amenityId, payload);
   }
 
-  const data = await response.json();
+  const data = await apiPatch(`/api/amenities/${encodeURIComponent(amenityId)}`, payload, 'No se pudo actualizar la amenidad');
   return data.amenity;
 }
 
 async function eliminarAmenidad(amenityId) {
-  const token = getToken();
-
   if (!window.confirm('¿Seguro que quieres eliminar esta amenidad?')) {
     return;
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/amenities/${encodeURIComponent(amenityId)}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'No se pudo eliminar la amenidad');
+    if (window.AdminAmenitiesScreen?.deleteAmenity) {
+      await window.AdminAmenitiesScreen.deleteAmenity(amenityId);
+    } else {
+      await apiDelete(`/api/amenities/${encodeURIComponent(amenityId)}`, 'No se pudo eliminar la amenidad');
     }
 
     changeTab('servicios');
@@ -1519,79 +1425,20 @@ async function cambiarEstadoAmenidad(amenityId, status) {
   }
 }
 
-async function actualizarEstadoTicket(ticketId, nextStatus) {
-  const token = getToken();
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/tickets/${encodeURIComponent(ticketId)}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ status: nextStatus })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'No se pudo actualizar el ticket');
-    }
-
-    showFeedback('Ticket actualizado correctamente', 'success');
-  } catch (error) {
-    showFeedback(error.message, 'error');
-  }
-}
-
-async function actualizarEstadoReserva(reservationId, nextStatus) {
-  const token = getToken();
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/reservations/${encodeURIComponent(reservationId)}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ status: nextStatus })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || errorData.message || 'No se pudo actualizar la reserva');
-    }
-
-    const modal = document.getElementById('modal-reserva-action');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-
-    const reservasFrescas = await cargarReservasDesdeApi();
-    cargarReservas(reservasFrescas);
-
-    showFeedback(`Reserva marcada como ${nextStatus}`, 'success');
-  } catch (error) {
-    showFeedback(error.message, 'error');
-  }
-}
-
 async function actualizarEstadoPago(paymentId, nextStatus) {
-  const token = getToken();
+  if (window.AdminFinancesScreen?.updateStatus) {
+    try {
+      await window.AdminFinancesScreen.updateStatus(paymentId, nextStatus);
+      changeTab('finanzas');
+      showFeedback('Pago actualizado correctamente', 'success');
+    } catch (error) {
+      showFeedback(error.message, 'error');
+    }
+    return;
+  }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/payments/${encodeURIComponent(paymentId)}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ status: nextStatus })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'No se pudo actualizar el pago');
-    }
+    await apiPatch(`/api/payments/${encodeURIComponent(paymentId)}/status`, { status: nextStatus }, 'No se pudo actualizar el pago');
 
     changeTab('finanzas');
     showFeedback('Pago actualizado correctamente', 'success');
@@ -1601,6 +1448,10 @@ async function actualizarEstadoPago(paymentId, nextStatus) {
 }
 
 function changeTab(tabName) {
+  if (window.AdminTabs?.changeTab) {
+    return window.AdminTabs.changeTab(tabName);
+  }
+
   const tabs = document.querySelectorAll('.nav-tab');
   tabs.forEach((tab) => tab.classList.remove('active'));
 
@@ -1623,6 +1474,7 @@ function changeTab(tabName) {
   const messagesWrapper = document.getElementById('messages-wrapper');
   const closedTicketsContainer = document.getElementById('closed-tickets-container');
   const ticketsHistoryWrapper = document.getElementById('tickets-history-wrapper');
+  const propertyFiltersWrapper = document.getElementById('property-filters-wrapper');
   const openPropertyFormButton = document.getElementById('open-property-form-btn');
 
   if (!title || !propertyContainer || !ticketsContainer || !reservasContainer || !finanzasContainer || !visitsWrapper || !avisosContainer || !serviciosContainer || !archivedAvisosContainer || !conversationsContainer || !messagesWrapper || !closedTicketsContainer || !ticketsHistoryWrapper) {
@@ -1642,6 +1494,9 @@ function changeTab(tabName) {
   messagesWrapper.classList.add('admin-hidden');
   closedTicketsContainer.classList.add('admin-hidden');
   ticketsHistoryWrapper.classList.add('admin-hidden');
+  if (propertyFiltersWrapper) {
+    propertyFiltersWrapper.classList.add('admin-hidden');
+  }
 
   if (openPropertyFormButton) {
     if (tabName === 'propiedades') {
@@ -1667,9 +1522,16 @@ function changeTab(tabName) {
   if (tabName === 'propiedades') {
     title.textContent = 'Gestión de Inmuebles';
     propertyContainer.classList.remove('admin-hidden');
+    if (propertyFiltersWrapper) {
+      propertyFiltersWrapper.classList.remove('admin-hidden');
+    }
     setLoadingState('propiedades-container', 'Cargando propiedades...');
     cargarPropiedadesDesdeApi()
-      .then(cargarPropiedades)
+      .then((properties) => {
+        propertiesCache = properties;
+        cargarPropiedades(properties);
+        bindPropertyFilters();
+      })
       .catch((error) => {
         propertyContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
       });
@@ -1705,8 +1567,16 @@ function changeTab(tabName) {
     title.textContent = 'Gestión de Reservas';
     reservasContainer.classList.remove('admin-hidden');
     setLoadingState('reservas-container', 'Cargando reservas...');
-    cargarReservasDesdeApi()
-      .then(cargarReservas)
+    Promise.all([
+      cargarReservasDesdeApi(),
+      cargarAmenidadesDesdeApi().catch(() => [])
+    ])
+      .then(([reservations, amenities]) => {
+        reservationsAmenitiesCache = Array.isArray(amenities)
+          ? amenities.map((amenity) => ({ id: amenity.id, name: amenity.name }))
+          : [];
+        cargarReservas(reservations);
+      })
       .catch((error) => {
         reservasContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
       });
@@ -1786,179 +1656,87 @@ function changeTab(tabName) {
 // ===============================
 
 function cargarPropiedades(data) {
-  const container = document.getElementById("propiedades-container");
-
-  container.innerHTML = "";
-
-  if (!data.length) {
-    container.innerHTML = '<p>No hay propiedades registradas todavía.</p>';
-    return;
-  }
-
-  data.forEach((p) => {
-    container.innerHTML += `
-<button class="property-card-button" onclick="verDetallePropiedad('${p.id}')">
-  <div class="card">
-    <div class="card-img-wrap">
-      <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=500&q=60">
-      <span class="status-badge ${buildPropertyStatusClass(p.status)}">${p.status || 'disponible'}</span>
-    </div>
-    <div class="card-info">
-      <h3>${p.name}</h3>
-
-      <p style="color: #666; font-size: 0.9em;">
-        ${p.residentName ? `👤 ${p.residentName}` : '🏠 Sin residente'}
-      </p>
-    </div>
-  </div>
-</button>
-`;
+  propertiesCache = Array.isArray(data) ? data : [];
+  window.AdminStore?.set('properties', propertiesCache);
+  return window.AdminPropertiesScreen?.mount?.({
+    containerId: 'propiedades-container',
+    filtersContainerId: 'property-filters-wrapper',
+    properties: propertiesCache
   });
 }
 
+function populatePropertyFilters() {
+  return window.AdminPropertiesScreen?.populateFilters?.(propertiesCache);
+}
+
+function getCurrentPropertyFilters() {
+  return window.AdminPropertiesScreen?.getCurrentFilters?.() || {
+    search: '',
+    status: 'all',
+    building: 'all',
+    resident: 'all'
+  };
+}
+
+function filtrarPropiedades(propiedades, filters) {
+  return window.AdminPropertiesScreen?.filterList?.(propiedades, filters) || propiedades;
+}
+
+function actualizarPropiedadesConFiltros() {
+  return window.AdminPropertiesScreen?.applyFilters?.();
+}
+
+function bindPropertyFilters() {
+  if (propertyFiltersBound) return;
+  window.AdminPropertiesScreen?.bindEvents?.();
+  propertyFiltersBound = true;
+}
+
 function mapPropertyToCard(property) {
-  return {
+  return window.AdminPropertiesScreen?.mapProperty?.(property) || {
     id: property.id,
     nombre: property.name,
-    residente: property.residentName || property.residentId || 'Nombre de residente no encontrado',
+    residente: property.residentName || property.residentId || 'Sin residente asignado',
     building: property.building || 'General',
     status: property.status || 'disponible',
-    imagen: property.imagen || "DEFAULT_PROPERTY_IMAGE"
+    imagen: (typeof mapAwsPropertyToCard === 'function' ? mapAwsPropertyToCard(property).imagen : null) || DEFAULT_PROPERTY_IMAGE
   };
 }
 
 async function cargarPropiedadesDesdeApi() {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/properties`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(getApiErrorMessage(errorData, 'No se pudieron cargar las propiedades'));
-  }
-
-  const data = await response.json();
+  const data = await apiGet('/api/properties', 'No se pudieron cargar las propiedades');
   const properties = Array.isArray(data) ? data : (data.properties || []);
-
-  // 🚨 EL FIX: Devolvemos los DATOS PUROS, no texto HTML
   return properties;
 }
 
 async function cargarDetallePropiedadDesdeApi(propertyId) {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/properties/${encodeURIComponent(propertyId)}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(getApiErrorMessage(errorData, 'No se pudo cargar el detalle de la propiedad'));
-  }
-
-  const data = await response.json();
+  const data = await apiGet(`/api/properties/${encodeURIComponent(propertyId)}`, 'No se pudo cargar el detalle de la propiedad');
   return data.property || data;
 }
 
 async function crearPropiedad(payload) {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/properties`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || 'No se pudo crear la propiedad');
-  }
-
-  return response.json();
+  return apiPost('/api/properties', payload, 'No se pudo crear la propiedad');
 }
 
 async function actualizarPropiedad(propertyId, payload) {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/properties/${encodeURIComponent(propertyId)}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || 'No se pudo actualizar la propiedad');
-  }
-
-  return response.json();
+  return apiPatch(`/api/properties/${encodeURIComponent(propertyId)}`, payload, 'No se pudo actualizar la propiedad');
 }
 
 async function eliminarPropiedad(propertyId) {
-  const token = getToken();
-
-  const response = await fetch(`${API_BASE_URL}/api/properties/${encodeURIComponent(propertyId)}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || 'No se pudo eliminar la propiedad');
-  }
-
-  return response.json();
+  return apiDelete(`/api/properties/${encodeURIComponent(propertyId)}`, 'No se pudo eliminar la propiedad');
 }
 
 async function asignarResidentePropiedad(propertyId, residentId, residentName) {
-  const token = getToken();
-
   const payload = {
       residentId: residentId !== null ? residentId : null,
       residentName: residentName !== null ? residentName : null
   };
 
-  const response = await fetch(`${API_BASE_URL}/api/properties/${encodeURIComponent(propertyId)}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || 'No se pudo actualizar la propiedad');
-  }
-
-  return response.json();
+  return apiPatch(`/api/properties/${encodeURIComponent(propertyId)}`, payload, 'No se pudo actualizar la propiedad');
 }
 
 function formatearFechaLegible(fechaIso) {
-  if (!fechaIso) return 'N/A';
-  const fecha = new Date(fechaIso);
-  return fecha.toLocaleString('es-MX', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return window.AdminShared?.formatearFechaLegible?.(fechaIso) || 'N/A';
 }
 
 function renderDetallePropiedad(property) {
@@ -2011,6 +1789,10 @@ function renderDetallePropiedad(property) {
 }
 
 function openPropertyFormModal(mode = 'create', propertyId = null) {
+  if (window.AdminPropertiesScreen?.openForm) {
+    return window.AdminPropertiesScreen.openForm(mode, propertyId);
+  }
+
   const modal = document.getElementById('property-form-modal');
   const title = document.getElementById('property-form-title');
   const submitButton = document.getElementById('property-form-submit-btn');
@@ -2047,6 +1829,10 @@ function openPropertyFormModal(mode = 'create', propertyId = null) {
 }
 
 async function handlePropertyFormSubmit(event) {
+  if (window.AdminPropertiesScreen?.submitForm) {
+    return window.AdminPropertiesScreen.submitForm(event);
+  }
+
   if (event) event.preventDefault();
 
   const name = document.getElementById('property-form-name').value;
@@ -2076,13 +1862,9 @@ async function handlePropertyFormSubmit(event) {
 
     // 3. Forzamos la recarga completa de los datos
     const propiedadesFrescas = await cargarPropiedadesDesdeApi();
-
-    // 4. Limpiamos y redibujamos
-    if (typeof cargarPropiedades === 'function') {
-        cargarPropiedades(propiedadesFrescas);
-    } else if (typeof renderizarPropiedades === 'function') {
-        cargarPropiedades(propiedadesFrescas);
-    }
+    propertiesCache = propiedadesFrescas;
+    populatePropertyFilters();
+    actualizarPropiedadesConFiltros();
 
     // 5. Si el detalle estaba abierto, lo actualizamos también
     const detailModal = document.getElementById('property-detail-modal');
@@ -2098,6 +1880,10 @@ async function handlePropertyFormSubmit(event) {
 }
 
 function closePropertyFormModal(event, overlay) {
+  if (window.AdminPropertiesScreen?.closeForm) {
+    return window.AdminPropertiesScreen.closeForm(event, overlay);
+  }
+
   if (!event || event.target === overlay) {
     const modal = document.getElementById('property-form-modal');
     if (modal) {
@@ -2107,6 +1893,10 @@ function closePropertyFormModal(event, overlay) {
 }
 
 async function openAssignResidentModal(propertyId) {
+  if (window.AdminPropertiesScreen?.openAssignResident) {
+    return window.AdminPropertiesScreen.openAssignResident(propertyId);
+  }
+
   const modal = document.getElementById('assign-resident-modal');
   const selectElement = document.getElementById('assign-resident-id');
   const propertyInput = document.getElementById('assign-resident-property-id');
@@ -2118,12 +1908,7 @@ async function openAssignResidentModal(propertyId) {
   selectElement.disabled = true;
 
   try {
-    const token = getToken();
-    const response = await fetch(`${API_BASE_URL}/api/residents?unassigned=true`, {
-  headers: { 'Authorization': `Bearer ${token}` }
-});
-
-    const data = await response.json();
+    const data = await apiGet('/api/residents?unassigned=true', 'Error al cargar residentes');
     const residentes = data.residents || [];
 
     if (residentes.length === 0) {
@@ -2154,6 +1939,10 @@ async function openAssignResidentModal(propertyId) {
 
 
 async function confirmarAsignacionResidente(event) {
+  if (window.AdminPropertiesScreen?.confirmAssignResident) {
+    return window.AdminPropertiesScreen.confirmAssignResident(event);
+  }
+
   if (event) event.preventDefault();
 
   const select = document.getElementById('assign-resident-id');
@@ -2177,11 +1966,9 @@ async function confirmarAsignacionResidente(event) {
     if (modal) modal.style.display = 'none';
 
     const properties = await cargarPropiedadesDesdeApi();
-    if (typeof renderizarPropiedades === 'function') {
-        renderizarPropiedades(properties);
-    } else if (typeof cargarPropiedades === 'function') {
-        cargarPropiedades(properties);
-    }
+    propertiesCache = properties;
+    populatePropertyFilters();
+    actualizarPropiedadesConFiltros();
 
     const detailModal = document.getElementById('property-detail-modal');
     if (detailModal && detailModal.style.display === 'flex') {
@@ -2195,6 +1982,10 @@ async function confirmarAsignacionResidente(event) {
 }
 
 function closeAssignResidentModal(event, overlay) {
+  if (window.AdminPropertiesScreen?.closeAssignResident) {
+    return window.AdminPropertiesScreen.closeAssignResident(event, overlay);
+  }
+
   if (!event || event.target === overlay) {
     const modal = document.getElementById('assign-resident-modal');
     if (modal) {
@@ -2204,6 +1995,10 @@ function closeAssignResidentModal(event, overlay) {
 }
 
 async function confirmarEliminarPropiedad(propertyId) {
+  if (window.AdminPropertiesScreen?.confirmDelete) {
+    return window.AdminPropertiesScreen.confirmDelete(propertyId);
+  }
+
   if (!window.confirm('¿Seguro que quieres dar de baja esta propiedad?')) {
     return;
   }
@@ -2212,7 +2007,9 @@ async function confirmarEliminarPropiedad(propertyId) {
     await eliminarPropiedad(propertyId);
     closePropertyDetailModal();
     const propiedades = await cargarPropiedadesDesdeApi();
-    cargarPropiedades(propiedades);
+    propertiesCache = propiedades;
+    populatePropertyFilters();
+    actualizarPropiedadesConFiltros();
     showFeedback('Propiedad actualizada correctamente', 'success');
   } catch (error) {
     showFeedback(error.message, 'error');
@@ -2220,6 +2017,10 @@ async function confirmarEliminarPropiedad(propertyId) {
 }
 
 async function verDetallePropiedad(propertyId) {
+  if (window.AdminPropertiesScreen?.openDetail) {
+    return window.AdminPropertiesScreen.openDetail(propertyId);
+  }
+
   const modal = document.getElementById('property-detail-modal');
   const detailContent = document.getElementById('property-detail-content');
 
@@ -2239,12 +2040,20 @@ async function verDetallePropiedad(propertyId) {
 }
 
 function closePropertyDetail(event, overlay) {
+  if (window.AdminPropertiesScreen?.closeDetail) {
+    return window.AdminPropertiesScreen.closeDetail(event, overlay);
+  }
+
   if (event.target === overlay) {
     closePropertyDetailModal();
   }
 }
 
 function closePropertyDetailModal() {
+  if (window.AdminPropertiesScreen?.closeDetail) {
+    return window.AdminPropertiesScreen.closeDetail();
+  }
+
   const modal = document.getElementById('property-detail-modal');
   const detailContent = document.getElementById('property-detail-content');
 
@@ -2324,260 +2133,3 @@ function closeNoticeModal(event, overlay) {
     }
   }
 }
-
-// ===============================
-// INIT
-// ===============================
-
-document.addEventListener("DOMContentLoaded", async () => {
-  const currentUser = await requireAuth('admin');
-
-  if (!currentUser) {
-    return;
-  }
-
-  const logoutButton = document.getElementById('logout-btn');
-  const openPropertyFormButton = document.getElementById('open-property-form-btn');
-  const propertyForm = document.getElementById('property-form');
-  const assignResidentForm = document.getElementById('assign-resident-form');
-  const amenityForm = document.getElementById('amenity-form');
-  const noticeForm = document.getElementById('notice-form');
-  const historyStatusFilter = document.getElementById('history-status-filter');
-  const historyPriorityFilter = document.getElementById('history-priority-filter');
-  const historyPeriodFilter = document.getElementById('history-period-filter');
-  const historySearchFilter = document.getElementById('history-search-filter');
-  const validateVisitButton = document.getElementById('validate-visit-btn');
-  const visitAccessCodeInput = document.getElementById('visit-access-code-input');
-  const visitStatusFilter = document.getElementById('visit-status-filter');
-  const visitSearchFilter = document.getElementById('visit-search-filter');
-  const exportContextButton = document.getElementById('export-context-btn');
-  const adminConversationReplyForm = document.getElementById('admin-conversation-reply-form');
-  const adminConversationCloseButton = document.getElementById('admin-conversation-close-btn');
-
-  if (logoutButton) {
-    logoutButton.addEventListener('click', logout);
-  }
-
-  if (openPropertyFormButton) {
-    openPropertyFormButton.addEventListener('click', () => openPropertyFormModal('create'));
-  }
-
-  if (propertyForm) {
-    propertyForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      const payload = {
-        name: document.getElementById('property-form-name').value.trim(),
-        building: document.getElementById('property-form-building').value.trim(),
-        status: document.getElementById('property-form-status').value
-      };
-
-      if (!payload.name) {
-        showFeedback('El nombre de la propiedad es requerido', 'error');
-        return;
-      }
-
-      try {
-        setButtonLoadingState(document.getElementById('property-form-submit-btn'), true, propertyModalMode === 'edit' ? 'Guardando...' : 'Creando...');
-
-        if (propertyModalMode === 'edit' && selectedPropertyId) {
-          await actualizarPropiedad(selectedPropertyId, payload);
-          showFeedback('Propiedad actualizada correctamente', 'success');
-        } else {
-          await crearPropiedad(payload);
-          showFeedback('Propiedad creada correctamente', 'success');
-        }
-
-        closePropertyFormModal();
-        const propiedades = await cargarPropiedadesDesdeApi();
-        cargarPropiedades(propiedades);
-      } catch (error) {
-        showFeedback(error.message, 'error');
-      } finally {
-        setButtonLoadingState(document.getElementById('property-form-submit-btn'), false);
-      }
-    });
-  }
-
-  if (assignResidentForm) {
-    assignResidentForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      const propertyId = document.getElementById('assign-resident-property-id').value;
-      const residentId = document.getElementById('assign-resident-id').value.trim();
-
-      try {
-        await asignarResidentePropiedad(propertyId, residentId || null);
-        closeAssignResidentModal();
-        const property = await cargarDetallePropiedadDesdeApi(propertyId);
-        renderDetallePropiedad(property);
-        const propiedades = await cargarPropiedadesDesdeApi();
-        cargarPropiedades(propiedades);
-        showFeedback('Asignación actualizada correctamente', 'success');
-      } catch (error) {
-        showFeedback(error.message, 'error');
-      }
-    });
-  }
-
-  if (exportContextButton) {
-    exportContextButton.addEventListener('click', async () => {
-      const { endpoint, filename } = exportContextButton.dataset;
-
-      if (!endpoint || !filename) {
-        return;
-      }
-
-      try {
-        const activeTab = Array.from(document.querySelectorAll('.nav-tab')).find((tab) => tab.classList.contains('active'))?.textContent.trim().toLowerCase();
-        const exportConfig = exportConfigByTab[activeTab];
-        const filters = exportConfig?.getFilters ? exportConfig.getFilters() : {};
-        await descargarExcel(endpoint, filename, filters);
-        showFeedback('Archivo exportado correctamente', 'success');
-      } catch (error) {
-        showFeedback(error.message, 'error');
-      }
-    });
-  }
-
-  if (adminConversationReplyForm) {
-    adminConversationReplyForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      const activeConversation = window.__adminConversationDetail;
-      const message = document.getElementById('adminConversationReplyInput').value.trim();
-
-      if (!activeConversation || !message) {
-        return;
-      }
-
-      try {
-        setButtonLoadingState(adminConversationReplyForm.querySelector('button[type="submit"]'), true, 'Enviando...');
-        const updatedConversation = await responderConversacionAdmin(activeConversation.id, { message });
-        renderAdminConversationDetail(updatedConversation);
-        conversationsAdminCache = await cargarConversacionesAdminDesdeApi();
-        renderAdminConversations(conversationsAdminCache);
-        showFeedback('Respuesta enviada correctamente', 'success');
-      } catch (error) {
-        showFeedback(error.message, 'error');
-      } finally {
-        setButtonLoadingState(adminConversationReplyForm.querySelector('button[type="submit"]'), false);
-      }
-    });
-  }
-
-  if (adminConversationCloseButton) {
-    adminConversationCloseButton.addEventListener('click', async () => {
-      const activeConversation = window.__adminConversationDetail;
-
-      if (!activeConversation) {
-        return;
-      }
-
-      try {
-        await cerrarConversacionAdmin(activeConversation.id);
-        const updatedConversation = await cargarDetalleConversacionAdmin(activeConversation.id);
-        renderAdminConversationDetail(updatedConversation);
-        conversationsAdminCache = await cargarConversacionesAdminDesdeApi();
-        renderAdminConversations(conversationsAdminCache);
-        showFeedback('Conversación cerrada correctamente', 'success');
-      } catch (error) {
-        showFeedback(error.message, 'error');
-      }
-    });
-  }
-
-  changeTab('propiedades');
-
-  if (amenityForm) {
-    amenityForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      try {
-        const payload = {
-          condominioId: 'CONDO#101',
-          name: document.getElementById('amenity-name').value.trim(),
-          description: document.getElementById('amenity-description').value.trim(),
-          status: document.getElementById('amenity-status').value
-        };
-
-        if (amenityModalMode === 'edit' && selectedAmenityId) {
-          await actualizarAmenidad(selectedAmenityId, payload);
-          showFeedback('Amenidad actualizada correctamente', 'success');
-        } else {
-          await crearAmenidad(payload);
-          showFeedback('Amenidad creada correctamente', 'success');
-        }
-
-        amenityForm.reset();
-        closeAmenityModal();
-        changeTab('servicios');
-      } catch (error) {
-        showFeedback(error.message, 'error');
-      }
-    });
-  }
-
-  if (noticeForm) {
-    noticeForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      try {
-        await crearAviso({
-          title: document.getElementById('notice-title').value.trim(),
-          message: document.getElementById('notice-message').value.trim(),
-          audience: document.getElementById('notice-audience').value
-        });
-        noticeForm.reset();
-        closeNoticeModal();
-        changeTab('mensajes');
-        showFeedback('Aviso publicado correctamente', 'success');
-      } catch (error) {
-        showFeedback(error.message, 'error');
-      }
-    });
-  }
-
-  [historyStatusFilter, historyPriorityFilter, historyPeriodFilter].forEach((element) => {
-    if (element) {
-      element.addEventListener('change', actualizarHistorialTickets);
-    }
-  });
-
-  if (historySearchFilter) {
-    historySearchFilter.addEventListener('input', actualizarHistorialTickets);
-  }
-
-  if (validateVisitButton && visitAccessCodeInput) {
-    validateVisitButton.addEventListener('click', async () => {
-      const accessCode = visitAccessCodeInput.value.trim();
-
-      if (!accessCode) {
-        renderVisitValidationResult('Ingresa un código de acceso válido.', true);
-        return;
-      }
-
-      try {
-        setButtonLoadingState(validateVisitButton, true, 'Validando...');
-        const visit = await validarVisitaPorCodigo(accessCode);
-        renderVisitValidationResult(visit);
-        visitsCache = await cargarVisitasDesdeApi();
-        actualizarVistaVisitas();
-        showFeedback('Acceso validado correctamente', 'success');
-      } catch (error) {
-        renderVisitValidationResult(error.message, true);
-        showFeedback(error.message, 'error');
-      } finally {
-        setButtonLoadingState(validateVisitButton, false);
-      }
-    });
-  }
-
-  if (visitStatusFilter) {
-    visitStatusFilter.addEventListener('change', actualizarVistaVisitas);
-  }
-
-  if (visitSearchFilter) {
-    visitSearchFilter.addEventListener('input', actualizarVistaVisitas);
-  }
-});

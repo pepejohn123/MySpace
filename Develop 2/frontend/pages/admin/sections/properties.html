@@ -1,0 +1,147 @@
+<div class="admin-hidden property-filters-section" id="property-filters-wrapper">
+  <div class="property-filters">
+    <input id="property-name-filter" class="modal-input" type="text" placeholder="Buscar por nombre o ID" />
+    <select id="property-status-filter" class="modal-input">
+      <option value="all">Todos los estados</option>
+      <option value="disponible">Disponible</option>
+      <option value="ocupada">Ocupada</option>
+      <option value="mantenimiento">Mantenimiento</option>
+      <option value="inactiva">Inactiva</option>
+    </select>
+    <select id="property-building-filter" class="modal-input">
+      <option value="all">Todos los edificios</option>
+    </select>
+    <select id="property-resident-filter" class="modal-input">
+      <option value="all">Todas las asignaciones</option>
+      <option value="assigned">Con residente</option>
+      <option value="unassigned">Sin residente</option>
+    </select>
+  </div>
+</div>
+
+<div class="grid" id="propiedades-container"></div>
+
+<div
+  id="property-detail-modal"
+  class="modal-overlay"
+  onclick="closePropertyDetail(event, this)"
+>
+  <div class="modal-box property-detail-modal">
+    <span class="close-btn" onclick="closePropertyDetailModal()"
+      >&times;</span
+    >
+    <div id="property-detail-content">
+      <div class="loading-state">Cargando detalle de propiedad...</div>
+    </div>
+  </div>
+</div>
+
+<div
+  id="property-form-modal"
+  class="modal-overlay"
+  onclick="closePropertyFormModal(event, this)"
+>
+  <div class="modal-box property-detail-modal">
+    <span class="close-btn" onclick="closePropertyFormModal()"
+      >&times;</span
+    >
+    <h3 class="property-detail-title" id="property-form-title">
+      Nueva propiedad
+    </h3>
+    <form id="property-form" class="modal-form" onsubmit="handlePropertyFormSubmit(event)">
+      <div class="admin-form-grid">
+        <label class="admin-field admin-field-full">
+          <span>Nombre de la propiedad</span>
+          <input
+            id="property-form-name"
+            class="modal-input"
+            type="text"
+            placeholder="Ej. Casa 08 - Roble"
+            required
+          />
+        </label>
+        <label class="admin-field">
+          <span>Edificio / sección</span>
+          <input
+            id="property-form-building"
+            class="modal-input"
+            type="text"
+            placeholder="Ej. Torre A"
+          />
+        </label>
+        <label class="admin-field">
+          <span>Estado</span>
+          <select id="property-form-status" class="modal-input">
+            <option value="disponible">Disponible</option>
+            <option value="ocupada">Ocupada</option>
+            <option value="mantenimiento">Mantenimiento</option>
+            <option value="inactiva">Inactiva</option>
+          </select>
+        </label>
+      </div>
+      <div class="modal-actions-row">
+        <button
+          type="button"
+          class="admin-secondary-btn"
+          onclick="closePropertyFormModal()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="admin-action-btn"
+          id="property-form-submit-btn"
+        >
+          Guardar propiedad
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div
+  id="assign-resident-modal"
+  class="modal-overlay"
+  onclick="closeAssignResidentModal(event, this)"
+>
+  <div class="modal-box property-detail-modal">
+    <span class="close-btn" onclick="closeAssignResidentModal()"
+      >&times;</span
+    >
+    <h3 class="property-detail-title">Asignar residente</h3>
+    <form id="assign-resident-form" class="modal-form">
+      <input id="assign-resident-property-id" type="hidden" />
+      <label class="admin-field admin-field-full">
+        <span>ID del residente</span>
+        <select
+          id="assign-resident-id"
+          required
+          style="
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+          "
+        >
+          <option value="">Cargando residentes...</option>
+        </select>
+      </label>
+      <div class="modal-actions-row">
+        <button
+          type="button"
+          class="admin-secondary-btn"
+          onclick="closeAssignResidentModal()"
+        >
+          Cancelar
+        </button>
+        <button
+          class="admin-secondary-btn"
+          onclick="confirmarAsignacionResidente(event)"
+        >
+          Asignar Residente
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

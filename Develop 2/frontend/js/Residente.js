@@ -1,6 +1,11 @@
 const DEFAULT_DEPT_IMAGE = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80';
+window.DEFAULT_DEPT_IMAGE = DEFAULT_DEPT_IMAGE;
 
 function buildTicketColor(status) {
+  if (window.ResidentShared?.buildTicketColor) {
+    return window.ResidentShared.buildTicketColor(status);
+  }
+
   const colorMap = {
     pendiente: '#F59E0B',
     en_proceso: '#4F46E5',
@@ -11,6 +16,10 @@ function buildTicketColor(status) {
 }
 
 function buildPaymentColor(status) {
+  if (window.ResidentShared?.buildPaymentColor) {
+    return window.ResidentShared.buildPaymentColor(status);
+  }
+
   const colorMap = {
     pagado: '#00C853',
     en_revision: '#4F46E5',
@@ -22,6 +31,10 @@ function buildPaymentColor(status) {
 }
 
 function buildReservationColor(status) {
+  if (window.ResidentShared?.buildReservationColor) {
+    return window.ResidentShared.buildReservationColor(status);
+  }
+
   const colorMap = {
     pendiente: '#F59E0B',
     aprobada: '#00C853',
@@ -32,6 +45,10 @@ function buildReservationColor(status) {
 }
 
 function buildVisitColor(status) {
+  if (window.ResidentShared?.buildVisitColor) {
+    return window.ResidentShared.buildVisitColor(status);
+  }
+
   const colorMap = {
     pendiente: '#F59E0B',
     validada: '#00C853',
@@ -42,6 +59,10 @@ function buildVisitColor(status) {
 }
 
 function buildResidentViewModel(user) {
+  if (window.ResidentHomeScreen?.buildResidentViewModel) {
+    return window.ResidentHomeScreen.buildResidentViewModel(user);
+  }
+
   const propertyId = user.propertyId || 'SIN-ASIGNAR';
   const propertyLabel = propertyId.replace('PROPERTY#', '').replace(/([A-Z])([0-9])/g, '$1 $2');
 
@@ -67,6 +88,10 @@ function buildResidentViewModel(user) {
 }
 
 function mapTicketsToMovimientos(tickets) {
+  if (window.ResidentTicketsScreen?.mapToMovements) {
+    return window.ResidentTicketsScreen.mapToMovements(tickets);
+  }
+
   return tickets.map((ticket) => ({
     tipo: 'Ticket',
     titulo: ticket.title,
@@ -77,6 +102,10 @@ function mapTicketsToMovimientos(tickets) {
 }
 
 function mapPaymentsToMovimientos(payments) {
+  if (window.ResidentPaymentsScreen?.mapToMovements) {
+    return window.ResidentPaymentsScreen.mapToMovements(payments);
+  }
+
   return payments.map((payment) => ({
     tipo: 'Pago',
     titulo: payment.concept,
@@ -87,6 +116,10 @@ function mapPaymentsToMovimientos(payments) {
 }
 
 function mapPaymentToResidentCard(payment) {
+  if (window.ResidentPaymentsScreen?.mapToCard) {
+    return window.ResidentPaymentsScreen.mapToCard(payment);
+  }
+
   return {
     concepto: payment.concept,
     fecha: payment.paymentDate || payment.createdAt || 'Sin fecha',
@@ -97,6 +130,10 @@ function mapPaymentToResidentCard(payment) {
 }
 
 function mapReservationsToMovimientos(reservations) {
+  if (window.ResidentReservationsScreen?.mapToMovements) {
+    return window.ResidentReservationsScreen.mapToMovements(reservations);
+  }
+
   return reservations.map((reservation) => ({
     tipo: 'Reserva',
     titulo: reservation.amenityName,
@@ -107,6 +144,10 @@ function mapReservationsToMovimientos(reservations) {
 }
 
 function mapVisitsToMovimientos(visits) {
+  if (window.ResidentVisitsScreen?.mapToMovements) {
+    return window.ResidentVisitsScreen.mapToMovements(visits);
+  }
+
   return visits.map((visit) => ({
     tipo: 'Visita',
     titulo: `Visita: ${visit.visitorName}`,
@@ -117,6 +158,10 @@ function mapVisitsToMovimientos(visits) {
 }
 
 function mapVisitToResidentCard(visit) {
+  if (window.ResidentVisitsScreen?.mapToCard) {
+    return window.ResidentVisitsScreen.mapToCard(visit);
+  }
+
   return {
     visitorName: visit.visitorName,
     visitDate: visit.visitDate,
@@ -136,10 +181,18 @@ function mapNoticeToCard(notice) {
 }
 
 function getConversationStatusClass(status) {
+  if (window.ResidentShared?.getConversationStatusClass) {
+    return window.ResidentShared.getConversationStatusClass(status);
+  }
+
   return `conversation-status-${status || 'abierta'}`;
 }
 
 async function cargarConversacionesDesdeApi() {
+  if (window.ResidentConversationsScreen?.fetchList) {
+    return window.ResidentConversationsScreen.fetchList();
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/conversations`, {
@@ -158,6 +211,10 @@ async function cargarConversacionesDesdeApi() {
 }
 
 async function crearConversacion(payload) {
+  if (window.ResidentConversationsScreen?.createConversation) {
+    return window.ResidentConversationsScreen.createConversation(payload);
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/conversations`, {
@@ -179,6 +236,10 @@ async function crearConversacion(payload) {
 }
 
 async function cargarDetalleConversacion(conversationId) {
+  if (window.ResidentConversationsScreen?.fetchDetail) {
+    return window.ResidentConversationsScreen.fetchDetail(conversationId);
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/conversations/${encodeURIComponent(conversationId)}`, {
@@ -197,6 +258,10 @@ async function cargarDetalleConversacion(conversationId) {
 }
 
 async function responderConversacion(conversationId, payload) {
+  if (window.ResidentConversationsScreen?.reply) {
+    return window.ResidentConversationsScreen.reply(conversationId, payload);
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/conversations/${encodeURIComponent(conversationId)}/messages`, {
@@ -218,6 +283,10 @@ async function responderConversacion(conversationId, payload) {
 }
 
 function renderResidentConversations(conversations) {
+  if (window.ResidentConversationsScreen?.renderList) {
+    return window.ResidentConversationsScreen.renderList(conversations);
+  }
+
   const container = document.getElementById('resident-conversations-list');
 
   if (!container) {
@@ -250,6 +319,10 @@ function renderResidentConversations(conversations) {
 }
 
 function renderConversationDetail(conversation) {
+  if (window.ResidentConversationsScreen?.renderDetail) {
+    return window.ResidentConversationsScreen.renderDetail(conversation);
+  }
+
   const title = document.getElementById('conversation-detail-title');
   const status = document.getElementById('conversation-detail-status');
   const messages = document.getElementById('conversation-detail-messages');
@@ -292,6 +365,10 @@ function renderConversationDetail(conversation) {
 }
 
 async function refrescarConversacionesResidente() {
+  if (window.ResidentConversationsScreen?.refreshList) {
+    return window.ResidentConversationsScreen.refreshList();
+  }
+
   try {
     const conversations = await cargarConversacionesDesdeApi();
     renderResidentConversations(conversations);
@@ -304,6 +381,10 @@ async function refrescarConversacionesResidente() {
 }
 
 async function openConversationDetail(conversationId) {
+  if (window.ResidentConversationsScreen?.openDetail) {
+    return window.ResidentConversationsScreen.openDetail(conversationId);
+  }
+
   try {
     const conversation = await cargarDetalleConversacion(conversationId);
     renderConversationDetail(conversation);
@@ -314,12 +395,20 @@ async function openConversationDetail(conversationId) {
 }
 
 function closeConversationDetail(event, overlay) {
+  if (window.ResidentConversationsScreen?.closeDetail) {
+    return window.ResidentConversationsScreen.closeDetail(event, overlay);
+  }
+
   if (event.target === overlay) {
     closeConversationDetailModal();
   }
 }
 
 function closeConversationDetailModal() {
+  if (window.ResidentConversationsScreen?.closeDetailModal) {
+    return window.ResidentConversationsScreen.closeDetailModal();
+  }
+
   const modal = document.getElementById('conversation-detail-modal');
   if (modal) {
     modal.style.display = 'none';
@@ -327,6 +416,10 @@ function closeConversationDetailModal() {
 }
 
 async function cargarTicketsDesdeApi() {
+  if (window.ResidentTicketsScreen?.fetchList) {
+    return window.ResidentTicketsScreen.fetchList();
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/tickets`, {
@@ -345,6 +438,10 @@ async function cargarTicketsDesdeApi() {
 }
 
 async function crearTicket(payload) {
+  if (window.ResidentTicketsScreen?.createTicket) {
+    return window.ResidentTicketsScreen.createTicket(payload);
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/tickets`, {
@@ -366,6 +463,10 @@ async function crearTicket(payload) {
 }
 
 async function cargarPagosDesdeApi() {
+  if (window.ResidentPaymentsScreen?.fetchData) {
+    return window.ResidentPaymentsScreen.fetchData();
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/payments`, {
@@ -383,6 +484,10 @@ async function cargarPagosDesdeApi() {
 }
 
 async function crearPago(payload) {
+  if (window.ResidentPaymentsScreen?.createPayment) {
+    return window.ResidentPaymentsScreen.createPayment(payload);
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/payments`, {
@@ -404,6 +509,10 @@ async function crearPago(payload) {
 }
 
 async function cargarReservasDesdeApi() {
+  if (window.ResidentReservationsScreen?.fetchList) {
+    return window.ResidentReservationsScreen.fetchList();
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/reservations`, {
@@ -422,6 +531,10 @@ async function cargarReservasDesdeApi() {
 }
 
 async function cargarAmenidadesDesdeApi() {
+  if (window.ResidentReservationsScreen?.fetchAmenities) {
+    return window.ResidentReservationsScreen.fetchAmenities();
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/amenities`, {
@@ -440,6 +553,10 @@ async function cargarAmenidadesDesdeApi() {
 }
 
 async function crearReserva(payload) {
+  if (window.ResidentReservationsScreen?.createReservation) {
+    return window.ResidentReservationsScreen.createReservation(payload);
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/reservations`, {
@@ -461,6 +578,10 @@ async function crearReserva(payload) {
 }
 
 function resetReservationAvailabilityState(message = '') {
+  if (window.ResidentReservationsScreen?.resetAvailabilityState) {
+    return window.ResidentReservationsScreen.resetAvailabilityState(message);
+  }
+
   const timeSlotSelect = document.getElementById('reservationTimeSlot');
   const slotsFeedback = document.getElementById('reservation-slots-feedback');
 
@@ -476,6 +597,10 @@ function resetReservationAvailabilityState(message = '') {
 }
 
 function setReservationAvailabilityLoadingState(message) {
+  if (window.ResidentReservationsScreen?.setLoadingAvailabilityState) {
+    return window.ResidentReservationsScreen.setLoadingAvailabilityState(message);
+  }
+
   const timeSlotSelect = document.getElementById('reservationTimeSlot');
   const slotsFeedback = document.getElementById('reservation-slots-feedback');
 
@@ -491,6 +616,10 @@ function setReservationAvailabilityLoadingState(message) {
 }
 
 async function cargarDisponibilidadAmenidad(amenityId, date) {
+  if (window.ResidentReservationsScreen?.fetchAvailability) {
+    return window.ResidentReservationsScreen.fetchAvailability(amenityId, date);
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/amenities/${encodeURIComponent(amenityId)}/availability?date=${encodeURIComponent(date)}`, {
@@ -509,6 +638,10 @@ async function cargarDisponibilidadAmenidad(amenityId, date) {
 }
 
 async function cargarVisitasDesdeApi() {
+  if (window.ResidentVisitsScreen?.fetchList) {
+    return window.ResidentVisitsScreen.fetchList();
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/visits`, {
@@ -527,6 +660,10 @@ async function cargarVisitasDesdeApi() {
 }
 
 async function crearVisita(payload) {
+  if (window.ResidentVisitsScreen?.createVisit) {
+    return window.ResidentVisitsScreen.createVisit(payload);
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/visits`, {
@@ -548,6 +685,10 @@ async function crearVisita(payload) {
 }
 
 async function cargarAvisosDesdeApi() {
+  if (window.ResidentNoticesScreen?.fetchActiveList) {
+    return window.ResidentNoticesScreen.fetchActiveList();
+  }
+
   const token = getToken();
 
   const response = await fetch(`${API_BASE_URL}/api/notices`, {
@@ -566,6 +707,10 @@ async function cargarAvisosDesdeApi() {
 }
 
 function cargarAvisos(notices) {
+  if (window.ResidentNoticesScreen?.renderList) {
+    return window.ResidentNoticesScreen.renderList(notices);
+  }
+
   const noticesContainer = document.getElementById('notices-list');
 
   if (!noticesContainer) {
@@ -595,6 +740,10 @@ function cargarAvisos(notices) {
 }
 
 function actualizarEstadoPagoVisual(summary) {
+  if (window.ResidentPaymentsScreen?.renderPaymentStatus) {
+    return window.ResidentPaymentsScreen.renderPaymentStatus(summary);
+  }
+
   const paymentStatus = document.getElementById('payment-status');
 
   if (!paymentStatus) {
@@ -615,6 +764,10 @@ function actualizarEstadoPagoVisual(summary) {
 }
 
 function renderResidentFinanceSummary(summary) {
+  if (window.ResidentPaymentsScreen?.renderFinanceSummary) {
+    return window.ResidentPaymentsScreen.renderFinanceSummary(summary);
+  }
+
   const container = document.getElementById('resident-finance-summary');
 
   if (!container) {
@@ -646,6 +799,10 @@ function renderResidentFinanceSummary(summary) {
 }
 
 function renderResidentPayments(payments) {
+  if (window.ResidentPaymentsScreen?.renderPayments) {
+    return window.ResidentPaymentsScreen.renderPayments(payments);
+  }
+
   const container = document.getElementById('resident-payments-list');
 
   if (!container) {
@@ -678,6 +835,10 @@ function renderResidentPayments(payments) {
 }
 
 function renderVisitPassCard(visit) {
+  if (window.ResidentVisitsScreen?.renderVisitPassCard) {
+    return window.ResidentVisitsScreen.renderVisitPassCard(visit);
+  }
+
   const visitResult = document.getElementById('visit-result');
 
   if (!visitResult) {
@@ -708,6 +869,10 @@ function renderVisitPassCard(visit) {
 }
 
 function renderVisitQr(containerId, visit) {
+  if (window.ResidentVisitsScreen?.renderVisitQr) {
+    return window.ResidentVisitsScreen.renderVisitQr(containerId, visit);
+  }
+
   const container = document.getElementById(containerId);
 
   if (!container || typeof QRCode === 'undefined') {
@@ -729,6 +894,10 @@ function renderVisitQr(containerId, visit) {
 }
 
 function renderResidentVisits(visits) {
+  if (window.ResidentVisitsScreen?.renderResidentVisits) {
+    return window.ResidentVisitsScreen.renderResidentVisits(visits);
+  }
+
   const container = document.getElementById('resident-visits-list');
 
   if (!container) {
@@ -761,6 +930,10 @@ function renderResidentVisits(visits) {
 }
 
 async function refrescarMovimientos() {
+  if (window.ResidentHomeScreen?.refreshDashboard) {
+    return window.ResidentHomeScreen.refreshDashboard();
+  }
+
   try {
     const tickets = await cargarTicketsDesdeApi();
     const paymentData = await cargarPagosDesdeApi();
@@ -813,6 +986,10 @@ async function refrescarMovimientos() {
 }
 //Cargar perfil
 function cargarPerfil(data) {
+  if (window.ResidentHomeScreen?.renderProfile) {
+    return window.ResidentHomeScreen.renderProfile(data);
+  }
+
   document.getElementById("user-name").innerText = "Hola," + data.nombre;
   document.getElementById("dept-name").innerText = data.departamento;
   document.getElementById("dept-owner").innerText = "Titular:" + data.nombre;
@@ -825,6 +1002,10 @@ function cargarPerfil(data) {
 }
 //Cargar Features
 function cargarFeatures(features) {
+  if (window.ResidentHomeScreen?.renderFeatures) {
+    return window.ResidentHomeScreen.renderFeatures(features);
+  }
+
   const container = document.getElementById("features-container");
   container.innerHTML = "";
   features.forEach((f) => {
@@ -838,6 +1019,10 @@ function cargarFeatures(features) {
 }
 //Servicios Activos
 function cargarServicios(servicios) {
+  if (window.ResidentHomeScreen?.renderServices) {
+    return window.ResidentHomeScreen.renderServices(servicios);
+  }
+
   const list = document.getElementById("services-list");
   list.innerHTML = "";
   servicios.forEach((s) => {
@@ -851,6 +1036,10 @@ function cargarServicios(servicios) {
 }
 
 function cargarAmenidadesEnSelector(amenities) {
+  if (window.ResidentReservationsScreen?.renderAmenitiesSelect) {
+    return window.ResidentReservationsScreen.renderAmenitiesSelect(amenities);
+  }
+
   const amenitySelect = document.getElementById('reservationAmenityId');
 
   if (!amenitySelect) {
@@ -888,6 +1077,10 @@ function actualizarSlotsDisponibles(amenityId) {
 }
 
 function refrescarDisponibilidadReserva() {
+  if (window.ResidentReservationsScreen?.refreshAvailability) {
+    return window.ResidentReservationsScreen.refreshAvailability();
+  }
+
   const amenitySelect = document.getElementById('reservationAmenityId');
   const reservationDateInput = document.getElementById('reservationDate');
 
@@ -912,6 +1105,10 @@ function refrescarDisponibilidadReserva() {
 }
 
 async function actualizarDisponibilidadPorFecha() {
+  if (window.ResidentReservationsScreen?.updateAvailabilityByDate) {
+    return window.ResidentReservationsScreen.updateAvailabilityByDate();
+  }
+
   const amenitySelect = document.getElementById('reservationAmenityId');
   const reservationDateInput = document.getElementById('reservationDate');
   const slotsFeedback = document.getElementById('reservation-slots-feedback');
@@ -958,6 +1155,10 @@ async function actualizarDisponibilidadPorFecha() {
 }
 //Movimientos Recientes
 function cargarMovimientos(movs) {
+  if (window.ResidentHomeScreen?.renderMovements) {
+    return window.ResidentHomeScreen.renderMovements(movs);
+  }
+
   const container = document.getElementById("activity-list");
   container.innerHTML = "";
 
@@ -979,18 +1180,30 @@ function cargarMovimientos(movs) {
 }
 //Modales
 function openModal(id){
+    if (window.ResidentShared?.openModal) {
+        return window.ResidentShared.openModal(id);
+    }
     document.getElementById(id).style.display = "flex";
 }
 function closeModal(event, overlay){
+    if (window.ResidentShared?.closeModal) {
+        return window.ResidentShared.closeModal(event, overlay);
+    }
     if(event.target === overlay){
         overlay.style.display = "none";
     }
 }
 function closeAllModals(){
+    if (window.ResidentShared?.closeAllModals) {
+        return window.ResidentShared.closeAllModals();
+    }
     document.querySelectorAll(".modal-overlay").forEach(m => m.style.display = "none");
 }
 
 function switchAssistantTab(tabName) {
+    if (window.ResidentShared?.switchAssistantTab) {
+        return window.ResidentShared.switchAssistantTab(tabName);
+    }
     document.querySelectorAll('.assistant-tab-btn').forEach((button) => {
         button.classList.toggle('active', button.dataset.tab === tabName);
     });
@@ -1008,6 +1221,9 @@ function switchAssistantTab(tabName) {
 }
 //Chat
 function toggleChat(){
+    if (window.ResidentShared?.toggleChat) {
+        return window.ResidentShared.toggleChat();
+    }
     const chat = document.getElementById("chat-window")
     if(chat.style.display === "flex"){
         chat.style.display = "none";
@@ -1017,6 +1233,9 @@ function toggleChat(){
     }
 }
 function mostrarRespuesta(tipo){
+    if (window.ResidentShared?.mostrarRespuesta) {
+        return window.ResidentShared.mostrarRespuesta(tipo);
+    }
     if(tipo === "wifi"){
         showFeedback("La clave del WiFi es: WIFI_CONDO_2026", 'info');
     }
@@ -1024,266 +1243,3 @@ function mostrarRespuesta(tipo){
         showFeedback("La basura se saca de 8pm a 10pm", 'info');
     }
 }
-//Inicio del Dashboard
-document.addEventListener("DOMContentLoaded", async () => {
-    const currentUser = await requireAuth('residente');
-
-    if (!currentUser) {
-        return;
-    }
-
-    const logoutLink = document.getElementById('logout-link');
-
-    if (logoutLink) {
-        logoutLink.addEventListener('click', (event) => {
-            event.preventDefault();
-            logout();
-        });
-    }
-
-    const cachedUser = getUser() || {
-        id: currentUser.sub,
-        email: currentUser.email,
-        name: currentUser.name,
-        role: currentUser.role,
-        condominioId: currentUser.condominioId,
-        propertyId: currentUser.propertyId || null
-    };
-
-    const residentViewModel = buildResidentViewModel(cachedUser);
-    cargarPerfil(residentViewModel);
-
-    setLoadingState('activity-list', 'Cargando movimientos...');
-    setLoadingState('notices-list', 'Cargando avisos...');
-
-    await refrescarMovimientos();
-
-    try {
-      const amenities = await cargarAmenidadesDesdeApi();
-      cargarAmenidadesEnSelector(amenities.filter((amenity) => amenity.status === 'activa'));
-      resetReservationAvailabilityState('Selecciona una amenidad para consultar horarios.');
-    } catch (error) {
-      showFeedback(error.message, 'error');
-    }
-
-    const ticketForm = document.getElementById('ticketForm');
-    const paymentForm = document.getElementById('paymentForm');
-    const reservationForm = document.getElementById('reservationForm');
-    const visitForm = document.getElementById('visitForm');
-    const visitResult = document.getElementById('visit-result');
-    const ticketFeedback = document.getElementById('ticket-feedback');
-    const paymentFeedback = document.getElementById('payment-feedback');
-    const reservationFeedback = document.getElementById('reservation-feedback');
-    const reservationSlotsFeedback = document.getElementById('reservation-slots-feedback');
-    const visitFeedback = document.getElementById('visit-feedback');
-    const conversationForm = document.getElementById('conversationForm');
-    const conversationFeedback = document.getElementById('conversation-feedback');
-    const conversationReplyForm = document.getElementById('conversation-reply-form');
-    const reservationAmenitySelect = document.getElementById('reservationAmenityId');
-    const reservationDateInput = document.getElementById('reservationDate');
-
-    if (ticketForm) {
-      ticketForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const title = document.getElementById('ticketTitle').value.trim();
-        const description = document.getElementById('ticketDescription').value.trim();
-
-        if (!title || !description) {
-          ticketFeedback.textContent = 'Título y descripción son requeridos';
-          ticketFeedback.className = 'modal-feedback error';
-          showFeedback('Título y descripción son requeridos', 'error');
-          return;
-        }
-
-        try {
-          ticketFeedback.textContent = '';
-          setButtonLoadingState(ticketForm.querySelector('button[type="submit"]'), true, 'Enviando...');
-          await crearTicket({ title, description });
-          ticketForm.reset();
-          closeAllModals();
-          await refrescarMovimientos();
-          showFeedback('Reporte enviado correctamente', 'success');
-        } catch (error) {
-          ticketFeedback.textContent = error.message;
-          ticketFeedback.className = 'modal-feedback error';
-          showFeedback(error.message, 'error');
-        } finally {
-          setButtonLoadingState(ticketForm.querySelector('button[type="submit"]'), false);
-        }
-      });
-    }
-
-    if (conversationForm) {
-      conversationForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const subject = document.getElementById('conversationSubject').value.trim();
-        const message = document.getElementById('conversationMessage').value.trim();
-
-        if (!subject || !message) {
-          conversationFeedback.textContent = 'Asunto y mensaje son requeridos';
-          conversationFeedback.className = 'modal-feedback error';
-          return;
-        }
-
-        try {
-          setButtonLoadingState(conversationForm.querySelector('button[type="submit"]'), true, 'Enviando...');
-          await crearConversacion({ subject, message });
-          conversationForm.reset();
-          closeAllModals();
-          await refrescarConversacionesResidente();
-          const chat = document.getElementById('chat-window');
-          if (chat) {
-            chat.style.display = 'flex';
-          }
-          switchAssistantTab('messages');
-          showFeedback('Consulta enviada correctamente', 'success');
-        } catch (error) {
-          conversationFeedback.textContent = error.message;
-          conversationFeedback.className = 'modal-feedback error';
-          showFeedback(error.message, 'error');
-        } finally {
-          setButtonLoadingState(conversationForm.querySelector('button[type="submit"]'), false);
-        }
-      });
-    }
-
-    if (conversationReplyForm) {
-      conversationReplyForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const activeConversation = window.__residentConversationDetail;
-        const message = document.getElementById('conversationReplyInput').value.trim();
-
-        if (!activeConversation || !message) {
-          return;
-        }
-
-        try {
-          setButtonLoadingState(conversationReplyForm.querySelector('button[type="submit"]'), true, 'Enviando...');
-          const updatedConversation = await responderConversacion(activeConversation.id, { message });
-          renderConversationDetail(updatedConversation);
-          await refrescarConversacionesResidente();
-          showFeedback('Respuesta enviada correctamente', 'success');
-        } catch (error) {
-          showFeedback(error.message, 'error');
-        } finally {
-          setButtonLoadingState(conversationReplyForm.querySelector('button[type="submit"]'), false);
-        }
-      });
-    }
-
-    if (paymentForm) {
-      paymentForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const concept = document.getElementById('paymentConcept').value.trim();
-        const amount = Number(document.getElementById('paymentAmount').value);
-
-        if (!concept || !Number.isFinite(amount) || amount <= 0) {
-          paymentFeedback.textContent = 'Concepto y monto válidos son requeridos';
-          paymentFeedback.className = 'modal-feedback error';
-          showFeedback('Concepto y monto válidos son requeridos', 'error');
-          return;
-        }
-
-        try {
-          paymentFeedback.textContent = '';
-          setButtonLoadingState(paymentForm.querySelector('button[type="submit"]'), true, 'Registrando...');
-          await crearPago({ concept, amount });
-          paymentForm.reset();
-          closeAllModals();
-          await refrescarMovimientos();
-          showFeedback('Pago registrado correctamente', 'success');
-        } catch (error) {
-          paymentFeedback.textContent = error.message;
-          paymentFeedback.className = 'modal-feedback error';
-          showFeedback(error.message, 'error');
-        } finally {
-          setButtonLoadingState(paymentForm.querySelector('button[type="submit"]'), false);
-        }
-      });
-    }
-
-    if (reservationForm) {
-      reservationForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const amenitySelect = document.getElementById('reservationAmenityId');
-        const amenityId = amenitySelect.value.trim();
-        const amenityName = amenitySelect.options[amenitySelect.selectedIndex]?.dataset.name || '';
-        const reservationDate = document.getElementById('reservationDate').value;
-        const timeSlot = document.getElementById('reservationTimeSlot').value.trim();
-
-        if (!amenityId || !amenityName || !reservationDate || !timeSlot) {
-          reservationFeedback.textContent = 'Todos los campos de reserva son requeridos';
-          reservationFeedback.className = 'modal-feedback error';
-          showFeedback('Todos los campos de reserva son requeridos', 'error');
-          return;
-        }
-
-        try {
-          reservationFeedback.textContent = '';
-          reservationSlotsFeedback.textContent = '';
-          setButtonLoadingState(reservationForm.querySelector('button[type="submit"]'), true, 'Solicitando...');
-          await crearReserva({ amenityId, amenityName, reservationDate, timeSlot });
-          reservationForm.reset();
-          resetReservationAvailabilityState('Selecciona una amenidad para consultar horarios.');
-          closeAllModals();
-          await refrescarMovimientos();
-          showFeedback('Reserva solicitada correctamente', 'success');
-        } catch (error) {
-          reservationFeedback.textContent = error.message;
-          reservationFeedback.className = 'modal-feedback error';
-          showFeedback(error.message, 'error');
-        } finally {
-          setButtonLoadingState(reservationForm.querySelector('button[type="submit"]'), false);
-        }
-      });
-    }
-
-    if (visitForm) {
-      visitForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const visitorName = document.getElementById('visitVisitorName').value.trim();
-        const visitDate = document.getElementById('visitDate').value;
-
-        if (!visitorName || !visitDate) {
-          visitFeedback.textContent = 'Nombre del visitante y fecha son requeridos';
-          visitFeedback.className = 'modal-feedback error';
-          showFeedback('Nombre del visitante y fecha son requeridos', 'error');
-          return;
-        }
-
-        try {
-          visitFeedback.textContent = '';
-          setButtonLoadingState(visitForm.querySelector('button[type="submit"]'), true, 'Generando...');
-          const visit = await crearVisita({ visitorName, visitDate });
-          visitForm.reset();
-          renderVisitPassCard(visit);
-          await refrescarMovimientos();
-          showFeedback('Pase generado correctamente', 'success');
-        } catch (error) {
-          visitFeedback.textContent = error.message;
-          visitFeedback.className = 'modal-feedback error';
-          showFeedback(error.message, 'error');
-        } finally {
-          setButtonLoadingState(visitForm.querySelector('button[type="submit"]'), false);
-        }
-      });
-    }
-
-    if (reservationAmenitySelect) {
-      reservationAmenitySelect.addEventListener('change', () => {
-        refrescarDisponibilidadReserva();
-      });
-    }
-
-    if (reservationDateInput) {
-      reservationDateInput.addEventListener('change', () => {
-        refrescarDisponibilidadReserva();
-      });
-    }
-})

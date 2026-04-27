@@ -32,8 +32,7 @@ function buildUserFromCognitoToken(token) {
     name: payload.name || payload.email?.split('@')[0] || 'Usuario',
     role: payload['custom:role'] || getRole() || 'residente',
     condominioId: payload['custom:condominioId'] || null,
-    propertyId: payload['custom:propertyId'] || null,
-    superadmin: payload['custom:superadmin'] === 'true' || payload.superadmin === true
+    propertyId: payload['custom:propertyId'] || null
   };
 }
 

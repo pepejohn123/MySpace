@@ -6,7 +6,7 @@
 
     <title>MySpace - Admin</title>
 
-    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../../css/Global.css" />
     <link rel="stylesheet" href="../../css/Admin.css" />
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -70,487 +70,17 @@
           </div>
         </div>
 
-        <div class="grid" id="propiedades-container">
-          </div>
-        </div>
+        <div id="admin-properties-host"></div>
 
-        <div class="admin-hidden messages-wrapper" id="messages-wrapper">
-          <section class="messages-section">
-            <div class="messages-section-header">
-              <div>
-                <h3 class="messages-section-title">Tickets activos</h3>
-                <p class="messages-section-copy">
-                  Da seguimiento a reportes abiertos por residentes.
-                </p>
-              </div>
-            </div>
-            <div class="messages-grid" id="tickets-container">
-              <!-- JS inserta tickets -->
-            </div>
-          </section>
+        <div id="admin-messages-host"></div>
 
-          <section class="messages-section">
-            <div class="messages-section-header">
-              <div>
-                <h3 class="messages-section-title">
-                  Tickets cerrados recientes
-                </h3>
-                <p class="messages-section-copy">
-                  Muestra tickets cerrados en los últimos 7 días.
-                </p>
-              </div>
-            </div>
-            <div class="messages-grid" id="closed-tickets-container">
-              <!-- JS inserta tickets cerrados recientes -->
-            </div>
-          </section>
-
-          <section class="messages-section">
-            <div class="messages-section-header">
-              <div>
-                <h3 class="messages-section-title">Avisos activos</h3>
-                <p class="messages-section-copy">
-                  Publica comunicaciones visibles para los residentes.
-                </p>
-              </div>
-              <button
-                class="admin-action-btn admin-toolbar-btn"
-                onclick="openNoticeModal()"
-              >
-                Publicar aviso
-              </button>
-            </div>
-            <div class="messages-grid" id="avisos-container">
-              <!-- JS inserta avisos -->
-            </div>
-          </section>
-
-          <section class="messages-section">
-            <div class="messages-section-header">
-              <div>
-                <h3 class="messages-section-title">Avisos archivados</h3>
-                <p class="messages-section-copy">
-                  Consulta y reactiva avisos que ya no están activos.
-                </p>
-              </div>
-            </div>
-            <div class="messages-grid" id="archived-avisos-container">
-              <!-- JS inserta avisos archivados -->
-            </div>
-          </section>
-
-          <section class="messages-section">
-            <div class="messages-section-header">
-              <div>
-                <h3 class="messages-section-title">Consultas de residentes</h3>
-                <p class="messages-section-copy">
-                  Responde conversaciones internas enviadas por los residentes.
-                </p>
-              </div>
-            </div>
-            <div class="messages-grid" id="admin-conversations-container"></div>
-          </section>
-        </div>
-
-        <div class="grid admin-hidden" id="reservas-container">
-          <!-- JS inserta reservas -->
-        </div>
-
-        <div class="admin-hidden visits-wrapper" id="visits-wrapper">
-          <section class="messages-section">
-            <div class="messages-section-header">
-              <div>
-                <h3 class="messages-section-title">Validar acceso</h3>
-                <p class="messages-section-copy">
-                  Ingresa un código de acceso para validar el pase de visita.
-                </p>
-              </div>
-            </div>
-            <div class="visit-validation-form">
-              <input
-                id="visit-access-code-input"
-                class="modal-input"
-                type="text"
-                placeholder="ACCESS-4001"
-              />
-              <button
-                id="validate-visit-btn"
-                class="admin-action-btn admin-toolbar-btn"
-              >
-                Validar acceso
-              </button>
-            </div>
-            <div id="visit-validation-result"></div>
-          </section>
-
-          <section class="messages-section">
-            <div class="messages-section-header">
-              <div>
-                <h3 class="messages-section-title">Visitas registradas</h3>
-                <p class="messages-section-copy">
-                  Consulta las visitas registradas en el condominio y su estado.
-                </p>
-              </div>
-            </div>
-            <div class="visit-filters">
-              <select id="visit-status-filter" class="modal-input">
-                <option value="all">Todos los estados</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="validada">Validada</option>
-                <option value="expirada">Expirada</option>
-              </select>
-              <input
-                id="visit-search-filter"
-                class="modal-input"
-                type="text"
-                placeholder="Buscar por visitante o código"
-              />
-            </div>
-            <div class="messages-grid" id="visits-container"></div>
-          </section>
-        </div>
-
-        <div class="grid admin-hidden" id="finanzas-container">
-          <!-- JS inserta pagos -->
-        </div>
-
-        <div class="admin-hidden history-wrapper" id="tickets-history-wrapper">
-          <section class="messages-section">
-            <div class="messages-section-header">
-              <div>
-                <h3 class="messages-section-title">Historial de tickets</h3>
-                <p class="messages-section-copy">
-                  Consulta tickets cerrados y activos con filtros
-                  administrativos.
-                </p>
-              </div>
-            </div>
-
-            <div class="history-filters" id="tickets-history-filters">
-              <select id="history-status-filter" class="modal-input">
-                <option value="all">Todos los estados</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="en_proceso">En proceso</option>
-                <option value="cerrado">Cerrado</option>
-              </select>
-              <select id="history-priority-filter" class="modal-input">
-                <option value="all">Todas las prioridades</option>
-                <option value="baja">Baja</option>
-                <option value="media">Media</option>
-                <option value="alta">Alta</option>
-              </select>
-              <select id="history-period-filter" class="modal-input">
-                <option value="all">Todos los periodos</option>
-                <option value="7d">Últimos 7 días</option>
-                <option value="30d">Últimos 30 días</option>
-                <option value="recent_closed">Cerrados recientes</option>
-              </select>
-              <input
-                id="history-search-filter"
-                class="modal-input"
-                type="text"
-                placeholder="Buscar por título o descripción"
-              />
-            </div>
-
-            <div class="messages-grid" id="tickets-history-container">
-              <!-- JS inserta historial de tickets -->
-            </div>
-          </section>
-        </div>
-
-        <div class="grid admin-hidden" id="servicios-container">
-          <!-- JS inserta amenidades -->
-        </div>
+        <div id="admin-reservations-host"></div>
+        <div id="admin-visits-host"></div>
+        <div id="admin-finances-host"></div>
+        <div id="admin-history-host"></div>
+        <div id="admin-amenities-host"></div>
       </section>
     </div>
-
-    <div
-      id="property-detail-modal"
-      class="modal-overlay"
-      onclick="closePropertyDetail(event, this)"
-    >
-      <div class="modal-box property-detail-modal">
-        <span class="close-btn" onclick="closePropertyDetailModal()"
-          >&times;</span
-        >
-        <div id="property-detail-content">
-          <div class="loading-state">Cargando detalle de propiedad...</div>
-        </div>
-      </div>
-    </div>
-
-    <div
-      id="amenity-modal"
-      class="modal-overlay"
-      onclick="closeAmenityModal(event, this)"
-    >
-      <div class="modal-box property-detail-modal">
-        <span class="close-btn" onclick="closeAmenityModal()">&times;</span>
-        <h3 class="property-detail-title" id="amenity-modal-title">
-          Nueva amenidad
-        </h3>
-        <form id="amenity-form" class="modal-form">
-          <div class="admin-form-grid">
-            <label class="admin-field">
-              <span>Nombre</span>
-              <input
-                id="amenity-name"
-                class="modal-input"
-                type="text"
-                placeholder="Nombre de la amenidad"
-                required
-              />
-            </label>
-            <label class="admin-field admin-field-full">
-              <span>Descripción</span>
-              <textarea
-                id="amenity-description"
-                class="modal-textarea"
-                placeholder="Descripción"
-              ></textarea>
-            </label>
-            <label class="admin-field admin-field-full">
-              <span>Estado</span>
-              <select id="amenity-status" class="modal-input">
-                <option value="activa">Activa</option>
-                <option value="mantenimiento">Mantenimiento</option>
-                <option value="inactiva">Inactiva</option>
-              </select>
-            </label>
-          </div>
-          <div class="modal-actions-row">
-            <button
-              type="button"
-              class="admin-secondary-btn"
-              onclick="closeAmenityModal()"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="admin-action-btn"
-              id="amenity-submit-btn"
-            >
-              Guardar amenidad
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div
-      id="property-form-modal"
-      class="modal-overlay"
-      onclick="closePropertyFormModal(event, this)"
-    >
-      <div class="modal-box property-detail-modal">
-        <span class="close-btn" onclick="closePropertyFormModal()"
-          >&times;</span
-        >
-        <h3 class="property-detail-title" id="property-form-title">
-          Nueva propiedad
-        </h3>
-        <form id="property-form" class="modal-form" onsubmit="handlePropertyFormSubmit(event)">
-          <div class="admin-form-grid">
-            <label class="admin-field admin-field-full">
-              <span>Nombre de la propiedad</span>
-              <input
-                id="property-form-name"
-                class="modal-input"
-                type="text"
-                placeholder="Ej. Casa 08 - Roble"
-                required
-              />
-            </label>
-            <label class="admin-field">
-              <span>Edificio / sección</span>
-              <input
-                id="property-form-building"
-                class="modal-input"
-                type="text"
-                placeholder="Ej. Torre A"
-              />
-            </label>
-            <label class="admin-field">
-              <span>Estado</span>
-              <select id="property-form-status" class="modal-input">
-                <option value="disponible">Disponible</option>
-                <option value="ocupada">Ocupada</option>
-                <option value="mantenimiento">Mantenimiento</option>
-                <option value="inactiva">Inactiva</option>
-              </select>
-            </label>
-          </div>
-          <div class="modal-actions-row">
-            <button
-              type="button"
-              class="admin-secondary-btn"
-              onclick="closePropertyFormModal()"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="admin-action-btn"
-              id="property-form-submit-btn"
-            >
-              Guardar propiedad
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div
-      id="assign-resident-modal"
-      class="modal-overlay"
-      onclick="closeAssignResidentModal(event, this)"
-    >
-      <div class="modal-box property-detail-modal">
-        <span class="close-btn" onclick="closeAssignResidentModal()"
-          >&times;</span
-        >
-        <h3 class="property-detail-title">Asignar residente</h3>
-        <form id="assign-resident-form" class="modal-form">
-          <input id="assign-resident-property-id" type="hidden" />
-          <label class="admin-field admin-field-full">
-            <span>ID del residente</span>
-            <select
-              id="assign-resident-id"
-              required
-              style="
-                width: 100%;
-                padding: 8px;
-                margin-top: 5px;
-                border-radius: 4px;
-                border: 1px solid #ccc;
-              "
-            >
-              <option value="">Cargando residentes...</option>
-            </select>
-          </label>
-          <div class="modal-actions-row">
-            <button
-              type="button"
-              class="admin-secondary-btn"
-              onclick="closeAssignResidentModal()"
-            >
-              Cancelar
-            </button>
-            <button
-              class="admin-secondary-btn"
-              onclick="confirmarAsignacionResidente(event)"
-            >
-              Asignar Residente
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div
-      id="notice-modal"
-      class="modal-overlay"
-      onclick="closeNoticeModal(event, this)"
-    >
-      <div class="modal-box property-detail-modal">
-        <span class="close-btn" onclick="closeNoticeModal()">&times;</span>
-        <h3 class="property-detail-title">Publicar aviso</h3>
-        <form id="notice-form" class="modal-form">
-          <input
-            id="notice-title"
-            class="modal-input"
-            type="text"
-            placeholder="Título del aviso"
-            required
-          />
-          <textarea
-            id="notice-message"
-            class="modal-textarea"
-            placeholder="Mensaje del aviso"
-            required
-          ></textarea>
-          <select id="notice-audience" class="modal-input">
-            <option value="general">General</option>
-            <option value="residentes">Residentes</option>
-          </select>
-          <button type="submit" class="admin-action-btn">Publicar aviso</button>
-        </form>
-      </div>
-    </div>
-
-    <div
-      id="admin-conversation-modal"
-      class="modal-overlay"
-      onclick="closeAdminConversationModal(event, this)"
-    >
-      <div class="modal-box property-detail-modal conversation-admin-modal">
-        <span class="close-btn" onclick="closeAdminConversationModal()"
-          >&times;</span
-        >
-        <h3 class="property-detail-title" id="admin-conversation-title">
-          Conversación
-        </h3>
-        <div
-          id="admin-conversation-status"
-          class="admin-conversation-status-row"
-        ></div>
-        <div
-          id="admin-conversation-messages"
-          class="conversation-messages"
-        ></div>
-        <form id="admin-conversation-reply-form" class="modal-form">
-          <textarea
-            id="adminConversationReplyInput"
-            class="modal-textarea"
-            placeholder="Responder conversación"
-            rows="3"
-          ></textarea>
-          <div class="modal-actions-row">
-            <button
-              type="button"
-              class="admin-secondary-btn"
-              id="admin-conversation-close-btn"
-            >
-              Cerrar conversación
-            </button>
-            <button type="submit" class="admin-action-btn">Responder</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div id="modal-reserva-action" class="modal-overlay" onclick="closeModal(event, this)">
-    <div class="modal-box property-detail-modal">
-        <span class="close-btn" onclick="document.getElementById('modal-reserva-action').style.display='none'">&times;</span>
-        <h3 class="property-detail-title"><i class="fa-solid fa-calendar-check" style="color:var(--brand)"></i> Detalle de Reserva</h3>
-
-        <div class="property-detail-grid" style="margin-top: 20px;">
-            <div class="property-detail-item">
-                <span class="property-detail-label">Área / Amenidad</span>
-                <span class="property-detail-value" id="res-area"></span>
-            </div>
-            <div class="property-detail-item">
-                <span class="property-detail-label">Residente (ID)</span>
-                <span class="property-detail-value" id="res-user"></span>
-            </div>
-            <div class="property-detail-item">
-                <span class="property-detail-label">Fecha y Horario</span>
-                <span class="property-detail-value" id="res-date"></span>
-            </div>
-            <div class="property-detail-item">
-                <span class="property-detail-label">Estado Actual</span>
-                <span class="property-detail-value" id="res-status" style="text-transform: capitalize;"></span>
-            </div>
-        </div>
-
-        <div class="modal-actions-row" style="margin-top: 30px;">
-            <button class="admin-secondary-btn" onclick="document.getElementById('modal-reserva-action').style.display='none'">Cerrar</button>
-            <button id="reserva-toggle-btn" class="admin-action-btn">Actualizar Estado</button>
-        </div>
-    </div>
-</div>
 
 <div id="modal-ticket-action" class="modal-overlay" onclick="closeModal(event, this)">
     <div class="modal-box property-detail-modal">
@@ -571,7 +101,7 @@
                 <label for="ticket-status-select" class="property-detail-label">Estado:</label>
                 <select id="ticket-status-select" class="admin-input" style="width: 100%;">
                     <option value="pendiente">Pendiente</option>
-                    <option value="en proceso">En Proceso</option>
+                    <option value="en_proceso">En Proceso</option>
                     <option value="cerrado">Cerrado</option>
                 </select>
             </div>
@@ -595,7 +125,23 @@
 
     <script src="../../js/config.js"></script>
     <script src="../../js/auth.js"></script>
+    <script src="../../js/api.js"></script>
+    <script src="../../js/mappers.js"></script>
     <script src="../../js/ui.js"></script>
+    <script src="../../js/admin/admin.store.js"></script>
+    <script src="../../js/admin/admin.shared.js"></script>
     <script src="../../js/Admin.js"></script>
+    <script src="../../js/admin/screens/properties.screen.js"></script>
+    <script src="../../js/admin/screens/reservations.screen.js"></script>
+    <script src="../../js/admin/screens/conversations.screen.js"></script>
+    <script src="../../js/admin/screens/notices.screen.js"></script>
+    <script src="../../js/admin/screens/tickets.screen.js"></script>
+    <script src="../../js/admin/screens/history.screen.js"></script>
+    <script src="../../js/admin/screens/visits.screen.js"></script>
+    <script src="../../js/admin/screens/finances.screen.js"></script>
+    <script src="../../js/admin/screens/amenities.screen.js"></script>
+    <script src="../../js/admin/admin.sections.js"></script>
+    <script src="../../js/admin/admin.tabs.js"></script>
+    <script src="../../js/admin/admin.bootstrap.js"></script>
   </body>
 </html>

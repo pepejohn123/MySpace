@@ -6,7 +6,7 @@
 
     <title>MySpace - Mi Hogar</title>
 
-    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../../css/Global.css" />
     <link rel="stylesheet" href="../../css/Residente.css" />
 
     <link
@@ -26,240 +26,25 @@
       </div>
     </nav>
 
-    <div class="container">
-      <div class="hero-card">
-        <img id="dept-image" src="" class="hero-image" />
-
-        <div class="hero-content">
-          <div class="unit-header">
-            <div>
-              <span class="unit-badge" id="dept-name">
-                Cargando departamento...
-              </span>
-
-              <h1 class="hero-title">
-                Mi Departamento
-              </h1>
-
-              <p class="hero-owner" id="dept-owner">
-                Cargando propietario...
-              </p>
-            </div>
-
-            <div class="status-pill" id="payment-status">Cargando...</div>
-          </div>
-
-          <div class="detail-features" id="features-container"></div>
-
-          <div class="services-section">
-            <h4>Servicios y Amenidades Incluidas:</h4>
-
-            <ul class="services-active-list" id="services-list"></ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="actions-grid">
-        <div class="action-btn" onclick="openModal('modal-pago')">
-          <i class="fa-solid fa-credit-card action-icon"></i>
-          <b>Pagar Cuota</b>
-        </div>
-
-        <div class="action-btn" onclick="openModal('modal-reserva')">
-          <i class="fa-solid fa-calendar-days action-icon"></i>
-          <b>Reservar Área</b>
-        </div>
-
-        <div class="action-btn" onclick="openModal('modal-visita')">
-          <i class="fa-solid fa-qrcode action-icon"></i>
-          <b>Acceso Visita</b>
-        </div>
-
-        <div class="action-btn" onclick="openModal('modal-falla')">
-          <i class="fa-solid fa-triangle-exclamation action-icon"></i>
-          <b>Reportar Falla</b>
-        </div>
-      </div>
-
-      <div class="section-block">
-        <h3 class="section-title">Resumen financiero</h3>
-        <div class="resident-finance-grid" id="resident-finance-summary"></div>
-      </div>
-
-      <div class="section-block">
-        <h3 class="section-title">Mis pagos</h3>
-        <div class="resident-payments-list" id="resident-payments-list"></div>
-      </div>
-
-      <div class="section-block">
-        <h3 class="section-title">Mis visitas</h3>
-        <div class="resident-visits-list" id="resident-visits-list"></div>
-      </div>
-
-      <h3 class="section-title">Movimientos Recientes</h3>
-
-      <div class="activity-list" id="activity-list"></div>
-
-      <div class="section-block">
-        <h3 class="section-title">Avisos del Condominio</h3>
-        <div class="activity-list" id="notices-list"></div>
-      </div>
-    </div>
-
-    <div id="modal-falla" class="modal-overlay" onclick="closeModal(event, this)">
-      <div class="modal-card">
-        <h3 class="modal-heading">Reportar Falla</h3>
-        <form id="ticketForm" class="modal-form">
-          <input id="ticketTitle" class="modal-input" type="text" placeholder="Título del problema" required />
-          <textarea id="ticketDescription" class="modal-textarea" placeholder="Describe la falla" rows="4" required></textarea>
-          <div id="ticket-feedback" class="modal-feedback"></div>
-          <button type="submit" class="modal-submit-btn">
-            Enviar reporte
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <div id="modal-pago" class="modal-overlay" onclick="closeModal(event, this)">
-      <div class="modal-card">
-        <h3 class="modal-heading">Registrar Pago</h3>
-        <form id="paymentForm" class="modal-form">
-          <p class="resident-payment-helper">Tu pago será registrado y aparecerá como <strong>en revisión</strong> hasta su validación.</p>
-          <input id="paymentConcept" class="modal-input" type="text" placeholder="Ej. Cuota de mantenimiento abril 2026" required />
-          <input id="paymentAmount" class="modal-input" type="number" min="1" step="0.01" placeholder="Monto del pago" required />
-          <div id="payment-feedback" class="modal-feedback"></div>
-          <button type="submit" class="modal-submit-btn">
-            Registrar pago
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <div id="modal-reserva" class="modal-overlay" onclick="closeModal(event, this)">
-      <div class="modal-card">
-        <h3 class="modal-heading">Solicitar Reserva</h3>
-        <form id="reservationForm" class="modal-form">
-          <select id="reservationAmenityId" class="modal-input" required>
-            <option value="">Selecciona una amenidad</option>
-          </select>
-          <input id="reservationDate" class="modal-input" type="date" required />
-          <select id="reservationTimeSlot" class="modal-input" required>
-            <option value="">Selecciona un horario</option>
-          </select>
-          <div id="reservation-slots-feedback" class="modal-feedback"></div>
-          <div id="reservation-feedback" class="modal-feedback"></div>
-          <button type="submit" class="modal-submit-btn">
-            Solicitar reserva
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <div id="modal-visita" class="modal-overlay" onclick="closeModal(event, this)">
-      <div class="modal-card">
-        <h3 class="modal-heading">Generar Pase de Visita</h3>
-        <form id="visitForm" class="modal-form">
-          <input id="visitVisitorName" class="modal-input" type="text" placeholder="Nombre del visitante" required />
-          <input id="visitDate" class="modal-input" type="date" required />
-          <div id="visit-feedback" class="modal-feedback"></div>
-          <button type="submit" class="modal-submit-btn">
-            Generar pase
-          </button>
-        </form>
-        <div id="visit-result" class="visit-result"></div>
-      </div>
-    </div>
-
-    <div id="modal-conversation" class="modal-overlay" onclick="closeModal(event, this)">
-      <div class="modal-card">
-        <h3 class="modal-heading">Nueva consulta</h3>
-        <form id="conversationForm" class="modal-form">
-          <input id="conversationSubject" class="modal-input" type="text" placeholder="Asunto" required />
-          <textarea id="conversationMessage" class="modal-textarea" placeholder="Escribe tu mensaje" rows="4" required></textarea>
-          <div id="conversation-feedback" class="modal-feedback"></div>
-          <button type="submit" class="modal-submit-btn">Enviar consulta</button>
-        </form>
-      </div>
-    </div>
-
-    <div id="conversation-detail-modal" class="modal-overlay" onclick="closeConversationDetail(event, this)">
-      <div class="modal-card modal-card-wide conversation-modal-card">
-        <h3 class="modal-heading" id="conversation-detail-title">Conversación</h3>
-        <div id="conversation-detail-status" class="resident-conversation-status-row"></div>
-        <div id="conversation-detail-messages" class="conversation-messages"></div>
-        <form id="conversation-reply-form" class="modal-form">
-          <textarea id="conversationReplyInput" class="modal-textarea" placeholder="Responder conversación" rows="3"></textarea>
-          <div class="conversation-actions-row">
-            <button type="button" class="admin-secondary-btn" onclick="closeConversationDetailModal()">Cerrar</button>
-            <button type="submit" class="modal-submit-btn">Responder</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div class="fab-resident" onclick="toggleChat()">
-      <i class="fa-regular fa-comment-dots"></i> Ayuda
-    </div>
-
-    <div id="chat-window" class="chat-window">
-
-      <div class="chat-header">
-        <span>Centro de ayuda</span>
-
-        <i
-          class="fa-solid fa-xmark chat-close-icon"
-          onclick="toggleChat()"
-        ></i>
-      </div>
-
-      <div class="assistant-tabs">
-        <button class="assistant-tab-btn active" data-tab="help" onclick="switchAssistantTab('help')">Ayuda</button>
-        <button class="assistant-tab-btn" data-tab="messages" onclick="switchAssistantTab('messages')">Mensajes</button>
-      </div>
-
-      <div id="assistant-tab-help" class="assistant-tab-panel active">
-        <div class="chat-body">
-
-          <div class="chat-search">
-            <input type="text" placeholder="Buscar ayuda..." />
-          </div>
-
-          <p class="faq-title">
-            Preguntas Frecuentes:
-          </p>
-
-          <div class="faq-item" onclick="mostrarRespuesta('wifi')">
-            ¿Cuál es la clave del Wifi?
-          </div>
-
-          <div class="faq-item" onclick="mostrarRespuesta('basura')">
-            ¿Horario de basura?
-          </div>
-
-        </div>
-
-        <div class="chat-footer">
-          <input type="text" class="chat-input" placeholder="Escribe tu duda..." />
-          <button class="chat-send-btn">
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
-        </div>
-      </div>
-
-      <div id="assistant-tab-messages" class="assistant-tab-panel">
-        <div class="assistant-messages-body">
-          <div class="assistant-messages-toolbar">
-            <span class="assistant-messages-title">Conversaciones con administración</span>
-            <button class="assistant-new-conversation-btn" onclick="openModal('modal-conversation')">Nueva consulta</button>
-          </div>
-          <div class="resident-conversations-list resident-conversations-compact" id="resident-conversations-list"></div>
-        </div>
-      </div>
-
-    </div>
+    <div id="resident-dashboard-host"></div>
+    <div id="resident-modals-host"></div>
+    <div id="resident-assistant-host"></div>
     <script src="../../js/config.js"></script>
     <script src="../../js/auth.js"></script>
+    <script src="../../js/api.js"></script>
+    <script src="../../js/mappers.js"></script>
     <script src="../../js/ui.js"></script>
     <script src="../../js/Residente.js"></script>
+    <script src="../../js/resident/resident.store.js"></script>
+    <script src="../../js/resident/resident.shared.js"></script>
+    <script src="../../js/resident/resident.sections.js"></script>
+    <script src="../../js/resident/screens/conversations.screen.js"></script>
+    <script src="../../js/resident/screens/tickets.screen.js"></script>
+    <script src="../../js/resident/screens/payments.screen.js"></script>
+    <script src="../../js/resident/screens/reservations.screen.js"></script>
+    <script src="../../js/resident/screens/visits.screen.js"></script>
+    <script src="../../js/resident/screens/notices.screen.js"></script>
+    <script src="../../js/resident/screens/home.screen.js"></script>
+    <script src="../../js/resident/resident.bootstrap.js"></script>
   </body>
 </html>

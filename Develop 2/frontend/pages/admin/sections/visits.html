@@ -1,0 +1,53 @@
+<div class="admin-hidden visits-wrapper" id="visits-wrapper">
+  <section class="messages-section">
+    <div class="messages-section-header">
+      <div>
+        <h3 class="messages-section-title">Validar acceso</h3>
+        <p class="messages-section-copy">
+          Ingresa un código de acceso para validar el pase de visita.
+        </p>
+      </div>
+    </div>
+    <div class="visit-validation-form">
+      <input
+        id="visit-access-code-input"
+        class="modal-input"
+        type="text"
+        placeholder="ACCESS-4001"
+      />
+      <button
+        id="validate-visit-btn"
+        class="admin-action-btn admin-toolbar-btn"
+      >
+        Validar acceso
+      </button>
+    </div>
+    <div id="visit-validation-result"></div>
+  </section>
+
+  <section class="messages-section">
+    <div class="messages-section-header">
+      <div>
+        <h3 class="messages-section-title">Visitas registradas</h3>
+        <p class="messages-section-copy">
+          Consulta las visitas registradas en el condominio y su estado.
+        </p>
+      </div>
+    </div>
+    <div class="visit-filters">
+      <select id="visit-status-filter" class="modal-input">
+        <option value="all">Todos los estados</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="validada">Validada</option>
+        <option value="expirada">Expirada</option>
+      </select>
+      <input
+        id="visit-search-filter"
+        class="modal-input"
+        type="text"
+        placeholder="Buscar por visitante o código"
+      />
+    </div>
+    <div class="messages-grid" id="visits-container"></div>
+  </section>
+</div>
