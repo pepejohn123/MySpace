@@ -1,0 +1,41 @@
+<div class="admin-hidden history-wrapper" id="tickets-history-wrapper">
+  <section class="messages-section">
+    <div class="messages-section-header">
+      <div>
+        <h3 class="messages-section-title">Historial de tickets</h3>
+        <p class="messages-section-copy">
+          Consulta tickets cerrados y activos con filtros administrativos.
+        </p>
+      </div>
+    </div>
+
+    <div class="history-filters" id="tickets-history-filters">
+      <select id="history-status-filter" class="modal-input">
+        <option value="all">Todos los estados</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="en_proceso">En proceso</option>
+        <option value="cerrado">Cerrado</option>
+      </select>
+      <select id="history-priority-filter" class="modal-input">
+        <option value="all">Todas las prioridades</option>
+        <option value="baja">Baja</option>
+        <option value="media">Media</option>
+        <option value="alta">Alta</option>
+      </select>
+      <select id="history-period-filter" class="modal-input">
+        <option value="all">Todos los periodos</option>
+        <option value="7d">Últimos 7 días</option>
+        <option value="30d">Últimos 30 días</option>
+        <option value="recent_closed">Cerrados recientes</option>
+      </select>
+      <input
+        id="history-search-filter"
+        class="modal-input"
+        type="text"
+        placeholder="Buscar por título o descripción"
+      />
+    </div>
+
+    <div class="messages-grid" id="tickets-history-container"></div>
+  </section>
+</div>

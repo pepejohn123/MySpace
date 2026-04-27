@@ -1,0 +1,29 @@
+[
+  {
+    "id": "AMENITY#SALON_USOS_MULTIPLES",
+    "condominioId": "CONDO#101",
+    "name": "Salón de usos múltiples",
+    "description": "Espacio para reuniones y eventos del condominio.",
+    "status": "activa",
+    "availableSlots": [
+      "18:00-20:00",
+      "20:00-22:00"
+    ],
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "AMENITY#ALBERCA",
+    "condominioId": "CONDO#101",
+    "name": "Alberca",
+    "description": "Área común para actividades recreativas.",
+    "status": "activa",
+    "availableSlots": [
+      "08:00-10:00",
+      "10:00-12:00",
+      "12:00-14:00"
+    ],
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  }
+]

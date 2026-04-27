@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>MySpace - Admin</title>
+
+    <link rel="stylesheet" href="../../css/Global.css" />
+    <link rel="stylesheet" href="../../css/Admin.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+      <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="logo-container">
+        <div class="logo"><i class="fa-solid fa-city"></i> MySpace</div>
+        <span class="badge-role">ADMIN</span>
+      </div>
+
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="changeTab('propiedades')">
+          Propiedades
+        </button>
+        <button class="nav-tab" onclick="changeTab('reservas')">
+          Reservas
+        </button>
+        <button class="nav-tab" onclick="changeTab('visitas')">Visitas</button>
+        <button class="nav-tab" onclick="changeTab('servicios')">
+          Servicios
+        </button>
+        <button class="nav-tab" onclick="changeTab('mensajes')">
+          Mensajes
+        </button>
+        <button class="nav-tab" onclick="changeTab('historial')">
+          Historial
+        </button>
+        <button class="nav-tab" onclick="changeTab('finanzas')">
+          Finanzas
+        </button>
+      </div>
+
+      <div class="nav-right">
+        <button class="logout-btn" id="logout-btn">Salir</button>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <section>
+        <div class="page-header-actions" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+          <h2 class="page-title" style="margin: 0;">Gestión de Inmuebles</h2>
+
+          <div>
+              <button
+                id="export-context-btn"
+                class="admin-action-btn admin-toolbar-btn admin-hidden"
+              >
+                Exportar
+              </button>
+
+              <button
+                class="admin-action-btn admin-toolbar-btn"
+                id="open-property-form-btn"
+              >
+                + Nueva propiedad
+              </button>
+          </div>
+        </div>
+
+        <div id="admin-properties-host"></div>
+
+        <div id="admin-messages-host"></div>
+
+        <div id="admin-reservations-host"></div>
+        <div id="admin-visits-host"></div>
+        <div id="admin-finances-host"></div>
+        <div id="admin-history-host"></div>
+        <div id="admin-amenities-host"></div>
+      </section>
+    </div>
+
+<div id="modal-ticket-action" class="modal-overlay" onclick="closeModal(event, this)">
+    <div class="modal-box property-detail-modal">
+        <span class="close-btn" onclick="document.getElementById('modal-ticket-action').style.display='none'">&times;</span>
+        <h3 class="property-detail-title"><i class="fa-solid fa-ticket" style="color:var(--brand)"></i> Detalle del Ticket</h3>
+
+        <div class="property-detail-grid" style="margin-top: 20px;">
+            <div class="property-detail-item" style="grid-column: span 2;">
+                <span class="property-detail-label">Asunto / Título</span>
+                <span class="property-detail-value" id="ticket-title"></span>
+            </div>
+            <div class="property-detail-item" style="grid-column: span 2;">
+                <span class="property-detail-label">Descripción</span>
+                <span class="property-detail-value" id="ticket-desc" style="white-space: pre-wrap; background: #f9fafb; padding: 10px; border-radius: 6px;"></span>
+            </div>
+
+            <div class="property-detail-item">
+                <label for="ticket-status-select" class="property-detail-label">Estado:</label>
+                <select id="ticket-status-select" class="admin-input" style="width: 100%;">
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_proceso">En Proceso</option>
+                    <option value="cerrado">Cerrado</option>
+                </select>
+            </div>
+
+            <div class="property-detail-item">
+                <label for="ticket-priority-select" class="property-detail-label">Prioridad:</label>
+                <select id="ticket-priority-select" class="admin-input" style="width: 100%;">
+                    <option value="baja">Baja</option>
+                    <option value="media">Media</option>
+                    <option value="alta">Alta</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="modal-actions-row" style="margin-top: 30px;">
+            <button class="admin-secondary-btn" onclick="document.getElementById('modal-ticket-action').style.display='none'">Cancelar</button>
+            <button type="button" id="ticket-save-btn" class="admin-action-btn">Guardar Cambios</button>
+        </div>
+    </div>
+</div>
+
+    <script src="../../js/config.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script src="../../js/api.js"></script>
+    <script src="../../js/mappers.js"></script>
+    <script src="../../js/ui.js"></script>
+    <script src="../../js/admin/admin.store.js"></script>
+    <script src="../../js/admin/admin.shared.js"></script>
+    <script src="../../js/Admin.js"></script>
+    <script src="../../js/admin/screens/properties.screen.js"></script>
+    <script src="../../js/admin/screens/reservations.screen.js"></script>
+    <script src="../../js/admin/screens/conversations.screen.js"></script>
+    <script src="../../js/admin/screens/notices.screen.js"></script>
+    <script src="../../js/admin/screens/tickets.screen.js"></script>
+    <script src="../../js/admin/screens/history.screen.js"></script>
+    <script src="../../js/admin/screens/visits.screen.js"></script>
+    <script src="../../js/admin/screens/finances.screen.js"></script>
+    <script src="../../js/admin/screens/amenities.screen.js"></script>
+    <script src="../../js/admin/admin.sections.js"></script>
+    <script src="../../js/admin/admin.tabs.js"></script>
+    <script src="../../js/admin/admin.bootstrap.js"></script>
+  </body>
+</html>

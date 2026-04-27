@@ -1,0 +1,139 @@
+<div class="admin-hidden messages-wrapper" id="messages-wrapper">
+  <section class="messages-section">
+    <div class="messages-section-header">
+      <div>
+        <h3 class="messages-section-title">Tickets activos</h3>
+        <p class="messages-section-copy">
+          Da seguimiento a reportes abiertos por residentes.
+        </p>
+      </div>
+    </div>
+    <div class="messages-grid" id="tickets-container"></div>
+  </section>
+
+  <section class="messages-section">
+    <div class="messages-section-header">
+      <div>
+        <h3 class="messages-section-title">Tickets cerrados recientes</h3>
+        <p class="messages-section-copy">
+          Muestra tickets cerrados en los últimos 7 días.
+        </p>
+      </div>
+    </div>
+    <div class="messages-grid" id="closed-tickets-container"></div>
+  </section>
+
+  <section class="messages-section">
+    <div class="messages-section-header">
+      <div>
+        <h3 class="messages-section-title">Avisos activos</h3>
+        <p class="messages-section-copy">
+          Publica comunicaciones visibles para los residentes.
+        </p>
+      </div>
+      <button
+        class="admin-action-btn admin-toolbar-btn"
+        onclick="openNoticeModal()"
+      >
+        Publicar aviso
+      </button>
+    </div>
+    <div class="messages-grid" id="avisos-container"></div>
+  </section>
+
+  <section class="messages-section">
+    <div class="messages-section-header">
+      <div>
+        <h3 class="messages-section-title">Avisos archivados</h3>
+        <p class="messages-section-copy">
+          Consulta y reactiva avisos que ya no están activos.
+        </p>
+      </div>
+    </div>
+    <div class="messages-grid" id="archived-avisos-container"></div>
+  </section>
+
+  <section class="messages-section">
+    <div class="messages-section-header">
+      <div>
+        <h3 class="messages-section-title">Consultas de residentes</h3>
+        <p class="messages-section-copy">
+          Responde conversaciones internas enviadas por los residentes.
+        </p>
+      </div>
+    </div>
+    <div class="messages-grid" id="admin-conversations-container"></div>
+  </section>
+</div>
+
+<div
+  id="notice-modal"
+  class="modal-overlay"
+  onclick="closeNoticeModal(event, this)"
+>
+  <div class="modal-box property-detail-modal">
+    <span class="close-btn" onclick="closeNoticeModal()">&times;</span>
+    <h3 class="property-detail-title">Publicar aviso</h3>
+    <form id="notice-form" class="modal-form">
+      <input
+        id="notice-title"
+        class="modal-input"
+        type="text"
+        placeholder="Título del aviso"
+        required
+      />
+      <textarea
+        id="notice-message"
+        class="modal-textarea"
+        placeholder="Mensaje del aviso"
+        required
+      ></textarea>
+      <select id="notice-audience" class="modal-input">
+        <option value="general">General</option>
+        <option value="residentes">Residentes</option>
+      </select>
+      <button type="submit" class="admin-action-btn">Publicar aviso</button>
+    </form>
+  </div>
+</div>
+
+<div
+  id="admin-conversation-modal"
+  class="modal-overlay"
+  onclick="closeAdminConversationModal(event, this)"
+>
+  <div class="modal-box property-detail-modal conversation-admin-modal">
+    <span class="close-btn" onclick="closeAdminConversationModal()"
+      >&times;</span
+    >
+    <h3 class="property-detail-title" id="admin-conversation-title">
+      Conversación
+    </h3>
+    <div
+      id="admin-conversation-status"
+      class="admin-conversation-status-row"
+    ></div>
+    <div
+      id="admin-conversation-messages"
+      class="conversation-messages"
+    ></div>
+    <form id="admin-conversation-reply-form" class="modal-form">
+      <textarea
+        id="adminConversationReplyInput"
+        class="modal-textarea"
+        placeholder="Responder conversación"
+        rows="3"
+      ></textarea>
+      <div class="modal-actions-row">
+        <button
+          type="button"
+          class="admin-secondary-btn"
+          id="admin-conversation-close-btn"
+        >
+          Cerrar conversación
+        </button>
+        <button type="submit" class="admin-action-btn">Responder</button>
+      </div>
+    </form>
+  </div>
+</div>

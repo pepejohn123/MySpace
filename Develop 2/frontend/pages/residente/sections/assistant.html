@@ -1,0 +1,56 @@
+<div class="fab-resident" onclick="toggleChat()">
+  <i class="fa-regular fa-comment-dots"></i> Ayuda
+</div>
+
+<div id="chat-window" class="chat-window">
+  <div class="chat-header">
+    <span>Centro de ayuda</span>
+
+    <i
+      class="fa-solid fa-xmark chat-close-icon"
+      onclick="toggleChat()"
+    ></i>
+  </div>
+
+  <div class="assistant-tabs">
+    <button class="assistant-tab-btn active" data-tab="help" onclick="switchAssistantTab('help')">Ayuda</button>
+    <button class="assistant-tab-btn" data-tab="messages" onclick="switchAssistantTab('messages')">Mensajes</button>
+  </div>
+
+  <div id="assistant-tab-help" class="assistant-tab-panel active">
+    <div class="chat-body">
+      <div class="chat-search">
+        <input type="text" placeholder="Buscar ayuda..." />
+      </div>
+
+      <p class="faq-title">
+        Preguntas Frecuentes:
+      </p>
+
+      <div class="faq-item" onclick="mostrarRespuesta('wifi')">
+        ¿Cuál es la clave del Wifi?
+      </div>
+
+      <div class="faq-item" onclick="mostrarRespuesta('basura')">
+        ¿Horario de basura?
+      </div>
+    </div>
+
+    <div class="chat-footer">
+      <input type="text" class="chat-input" placeholder="Escribe tu duda..." />
+      <button class="chat-send-btn">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <div id="assistant-tab-messages" class="assistant-tab-panel">
+    <div class="assistant-messages-body">
+      <div class="assistant-messages-toolbar">
+        <span class="assistant-messages-title">Conversaciones con administración</span>
+        <button class="assistant-new-conversation-btn" onclick="openModal('modal-conversation')">Nueva consulta</button>
+      </div>
+      <div class="resident-conversations-list resident-conversations-compact" id="resident-conversations-list"></div>
+    </div>
+  </div>
+</div>

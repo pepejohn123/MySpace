@@ -1,0 +1,90 @@
+<div id="modal-falla" class="modal-overlay" onclick="closeModal(event, this)">
+  <div class="modal-card">
+    <h3 class="modal-heading">Reportar Falla</h3>
+    <form id="ticketForm" class="modal-form">
+      <input id="ticketTitle" class="modal-input" type="text" placeholder="Título del problema" required />
+      <textarea id="ticketDescription" class="modal-textarea" placeholder="Describe la falla" rows="4" required></textarea>
+      <div id="ticket-feedback" class="modal-feedback"></div>
+      <button type="submit" class="modal-submit-btn">
+        Enviar reporte
+      </button>
+    </form>
+  </div>
+</div>
+
+<div id="modal-pago" class="modal-overlay" onclick="closeModal(event, this)">
+  <div class="modal-card">
+    <h3 class="modal-heading">Registrar Pago</h3>
+    <form id="paymentForm" class="modal-form">
+      <p class="resident-payment-helper">Tu pago será registrado y aparecerá como <strong>en revisión</strong> hasta su validación.</p>
+      <input id="paymentConcept" class="modal-input" type="text" placeholder="Ej. Cuota de mantenimiento abril 2026" required />
+      <input id="paymentAmount" class="modal-input" type="number" min="1" step="0.01" placeholder="Monto del pago" required />
+      <div id="payment-feedback" class="modal-feedback"></div>
+      <button type="submit" class="modal-submit-btn">
+        Registrar pago
+      </button>
+    </form>
+  </div>
+</div>
+
+<div id="modal-reserva" class="modal-overlay" onclick="closeModal(event, this)">
+  <div class="modal-card">
+    <h3 class="modal-heading">Solicitar Reserva</h3>
+    <form id="reservationForm" class="modal-form">
+      <select id="reservationAmenityId" class="modal-input" required>
+        <option value="">Selecciona una amenidad</option>
+      </select>
+      <input id="reservationDate" class="modal-input" type="date" required />
+      <select id="reservationTimeSlot" class="modal-input" required>
+        <option value="">Selecciona un horario</option>
+      </select>
+      <div id="reservation-slots-feedback" class="modal-feedback"></div>
+      <div id="reservation-feedback" class="modal-feedback"></div>
+      <button type="submit" class="modal-submit-btn">
+        Solicitar reserva
+      </button>
+    </form>
+  </div>
+</div>
+
+<div id="modal-visita" class="modal-overlay" onclick="closeModal(event, this)">
+  <div class="modal-card">
+    <h3 class="modal-heading">Generar Pase de Visita</h3>
+    <form id="visitForm" class="modal-form">
+      <input id="visitVisitorName" class="modal-input" type="text" placeholder="Nombre del visitante" required />
+      <input id="visitDate" class="modal-input" type="date" required />
+      <div id="visit-feedback" class="modal-feedback"></div>
+      <button type="submit" class="modal-submit-btn">
+        Generar pase
+      </button>
+    </form>
+    <div id="visit-result" class="visit-result"></div>
+  </div>
+</div>
+
+<div id="modal-conversation" class="modal-overlay" onclick="closeModal(event, this)">
+  <div class="modal-card">
+    <h3 class="modal-heading">Nueva consulta</h3>
+    <form id="conversationForm" class="modal-form">
+      <input id="conversationSubject" class="modal-input" type="text" placeholder="Asunto" required />
+      <textarea id="conversationMessage" class="modal-textarea" placeholder="Escribe tu mensaje" rows="4" required></textarea>
+      <div id="conversation-feedback" class="modal-feedback"></div>
+      <button type="submit" class="modal-submit-btn">Enviar consulta</button>
+    </form>
+  </div>
+</div>
+
+<div id="conversation-detail-modal" class="modal-overlay" onclick="closeConversationDetail(event, this)">
+  <div class="modal-card modal-card-wide conversation-modal-card">
+    <h3 class="modal-heading" id="conversation-detail-title">Conversación</h3>
+    <div id="conversation-detail-status" class="resident-conversation-status-row"></div>
+    <div id="conversation-detail-messages" class="conversation-messages"></div>
+    <form id="conversation-reply-form" class="modal-form">
+      <textarea id="conversationReplyInput" class="modal-textarea" placeholder="Responder conversación" rows="3"></textarea>
+      <div class="conversation-actions-row">
+        <button type="button" class="admin-secondary-btn" onclick="closeConversationDetailModal()">Cerrar</button>
+        <button type="submit" class="modal-submit-btn">Responder</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,36 @@
+/* ==============================
+    Variables Globales
+============================== */
+:root {
+    --brand: #4F46E5;
+    --brand-dark: #4338CA;
+    --text-dark: #111827;
+    --text-light: #6B7280;
+    --text-main: #111827;
+    --bg-body: #f9fafb;
+    --bg-input: #f3f4f6;
+    --white: #ffffff;
+    --border: #e5e7eb;
+    --overlay: rgba(0, 0, 0, 0.5);
+    --success: #059669;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+}
+
+/* ==============================
+    Reset Global
+============================== */
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ==============================
+    Body Global
+============================== */
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg-body);
+    color: var(--text-dark);
+}

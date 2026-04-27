@@ -1,0 +1,35 @@
+[
+  {
+    "id": "PROPERTY#A304",
+    "condominioId": "CONDO#101",
+    "type": "departamento",
+    "name": "Torre A - 304",
+    "imagen": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80",
+    "residentId": "user_residente_1",
+    "status": "ocupada",
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "PROPERTY#CASA08",
+    "condominioId": "CONDO#101",
+    "type": "casa",
+    "name": "Casa 08 - Roble",
+    "imagen": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
+    "residentId": null,
+    "status": "ok",
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "PROPERTY#B102",
+    "condominioId": "CONDO#101",
+    "type": "departamento",
+    "name": "Torre B - 102",
+    "imagen": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80",
+    "residentId": null,
+    "status": "mantenimiento",
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  }
+]

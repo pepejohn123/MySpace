@@ -1,0 +1,79 @@
+<div class="container">
+  <div class="hero-card">
+    <img id="dept-image" src="" class="hero-image" />
+
+    <div class="hero-content">
+      <div class="unit-header">
+        <div>
+          <span class="unit-badge" id="dept-name">
+            Cargando departamento...
+          </span>
+
+          <h1 class="hero-title">
+            Mi Departamento
+          </h1>
+
+          <p class="hero-owner" id="dept-owner">
+            Cargando propietario...
+          </p>
+        </div>
+
+        <div class="status-pill" id="payment-status">Cargando...</div>
+      </div>
+
+      <div class="detail-features" id="features-container"></div>
+
+      <div class="services-section">
+        <h4>Servicios y Amenidades Incluidas:</h4>
+
+        <ul class="services-active-list" id="services-list"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-grid">
+    <div class="action-btn" onclick="openModal('modal-pago')">
+      <i class="fa-solid fa-credit-card action-icon"></i>
+      <b>Pagar Cuota</b>
+    </div>
+
+    <div class="action-btn" onclick="openModal('modal-reserva')">
+      <i class="fa-solid fa-calendar-days action-icon"></i>
+      <b>Reservar Área</b>
+    </div>
+
+    <div class="action-btn" onclick="openModal('modal-visita')">
+      <i class="fa-solid fa-qrcode action-icon"></i>
+      <b>Acceso Visita</b>
+    </div>
+
+    <div class="action-btn" onclick="openModal('modal-falla')">
+      <i class="fa-solid fa-triangle-exclamation action-icon"></i>
+      <b>Reportar Falla</b>
+    </div>
+  </div>
+
+  <div class="section-block">
+    <h3 class="section-title">Resumen financiero</h3>
+    <div class="resident-finance-grid" id="resident-finance-summary"></div>
+  </div>
+
+  <div class="section-block">
+    <h3 class="section-title">Mis pagos</h3>
+    <div class="resident-payments-list" id="resident-payments-list"></div>
+  </div>
+
+  <div class="section-block">
+    <h3 class="section-title">Mis visitas</h3>
+    <div class="resident-visits-list" id="resident-visits-list"></div>
+  </div>
+
+  <h3 class="section-title">Movimientos Recientes</h3>
+
+  <div class="activity-list" id="activity-list"></div>
+
+  <div class="section-block">
+    <h3 class="section-title">Avisos del Condominio</h3>
+    <div class="activity-list" id="notices-list"></div>
+  </div>
+</div>
