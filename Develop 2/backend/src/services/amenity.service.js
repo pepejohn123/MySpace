@@ -10,13 +10,18 @@ function normalizeAmenityPayload(payload, { isUpdate = false } = {}) {
   const normalized = {
     condominioId: payload.condominioId,
     name: payload.name,
-    description: payload.description || '',
-    status: payload.status || 'activa'
+    description: payload.description,
+    status: payload.status,
+    availableSlots: Array.isArray(payload.availableSlots) ? payload.availableSlots.filter(Boolean) : undefined
   };
 
   if (isUpdate) {
     return Object.fromEntries(Object.entries(normalized).filter(([, value]) => value !== undefined));
   }
+
+  normalized.description = normalized.description || '';
+  normalized.status = normalized.status || 'activa';
+  normalized.availableSlots = normalized.availableSlots || [];
 
   if (!normalized.condominioId || !normalized.name) {
     throw createHttpError(400, 'condominioId y name son requeridos');

@@ -18,11 +18,85 @@
     }
   }
 
+  function parseVisitQrPayload(text) {
+    const raw = String(text || '').trim();
+    if (!raw) return '';
+    if (raw.startsWith('VISIT|')) {
+      return raw.split('|')[2] || '';
+    }
+    return raw;
+  }
+
+  function readQrFromImageFile(file) {
+    return new Promise((resolve, reject) => {
+      if (!file) {
+        reject(new Error('Selecciona una imagen QR'));
+        return;
+      }
+
+      if (typeof jsQR !== 'function') {
+        reject(new Error('El lector QR no está disponible'));
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const image = new Image();
+        image.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = image.naturalWidth || image.width;
+          canvas.height = image.naturalHeight || image.height;
+          const context = canvas.getContext('2d');
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+          const qr = jsQR(imageData.data, imageData.width, imageData.height);
+          if (!qr?.data) {
+            reject(new Error('No se pudo leer un QR válido en la imagen'));
+            return;
+          }
+          resolve(qr.data);
+        };
+        image.onerror = () => reject(new Error('No se pudo cargar la imagen'));
+        image.src = reader.result;
+      };
+      reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function bindVisitQrControls() {
+    const input = document.getElementById('visit-qr-image-input');
+    const button = document.getElementById('decode-visit-qr-btn');
+    const feedback = document.getElementById('visit-qr-feedback');
+    const codeInput = document.getElementById('visit-access-code-input');
+
+    if (!input || !button || button.dataset.boundAdminTabs === 'true') return;
+
+    button.addEventListener('click', async () => {
+      try {
+        if (feedback) feedback.textContent = 'Leyendo QR...';
+        const qrText = await readQrFromImageFile(input.files?.[0]);
+        const accessCode = parseVisitQrPayload(qrText);
+        debug('Tab visitas QR payload', { qrText, accessCode });
+        if (!accessCode) throw new Error('El QR no contiene código de acceso');
+        if (codeInput) codeInput.value = accessCode;
+        if (feedback) feedback.textContent = `Código detectado: ${accessCode}`;
+      } catch (error) {
+        debug('Tab visitas QR error', error, { message: error.message });
+        if (feedback) feedback.textContent = error.message;
+        showFeedback(error.message, 'error');
+      }
+    });
+
+    button.dataset.boundAdminTabs = 'true';
+  }
+
   function bindVisitControls() {
     const validateVisitButton = document.getElementById('validate-visit-btn');
     const visitAccessCodeInput = document.getElementById('visit-access-code-input');
     const visitStatusFilter = document.getElementById('visit-status-filter');
     const visitSearchFilter = document.getElementById('visit-search-filter');
+    bindVisitQrControls();
 
     if (validateVisitButton && visitAccessCodeInput && validateVisitButton.dataset.boundAdminTabs !== 'true') {
       validateVisitButton.addEventListener('click', async () => {
@@ -75,7 +149,8 @@
           condominioId: 'CONDO#101',
           name: document.getElementById('amenity-name').value.trim(),
           description: document.getElementById('amenity-description').value.trim(),
-          status: document.getElementById('amenity-status').value
+          status: document.getElementById('amenity-status').value,
+          availableSlots: typeof getSelectedAmenitySlots === 'function' ? getSelectedAmenitySlots() : []
         };
 
         debug('Tab servicios submit amenidad payload', payload);

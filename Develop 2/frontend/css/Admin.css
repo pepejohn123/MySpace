@@ -1523,3 +1523,38 @@
     .chat-layout { grid-template-columns: 1fr; }
     .chat-sidebar { display: none; /* En móvil solo se vería el chat activo por ahora */ }
 }
+
+.amenity-slots-field {
+  border: 1px solid rgba(79, 70, 229, 0.18);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(79, 70, 229, 0.04);
+}
+
+.amenity-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.amenity-slots-grid label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.visit-qr-reader {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 14px;
+}
+
+.finance-payment-note {
+  margin-top: 12px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}

@@ -1,14 +1,5 @@
 (function initAdminFinancesScreen() {
   function mapPayment(payment) {
-    const statusTransitions = {
-      pendiente: { next: 'pagado', label: 'Pagado' },
-      en_revision: { next: 'pagado', label: 'Pagado' },
-      pagado: { next: 'rechazado', label: 'Rechazado' },
-      rechazado: { next: 'pagado', label: 'Pagado' }
-    };
-
-    const transition = statusTransitions[payment.status] || statusTransitions.pagado;
-
     return {
       id: payment.id,
       concepto: payment.concept,
@@ -18,9 +9,7 @@
       propiedadNombre: payment.propertyName || payment.propertyId || 'Sin propiedad',
       residenteId: payment.residentId || null,
       residenteNombre: payment.residentName || payment.residentId || 'Sin residente',
-      fecha: payment.paymentDate || payment.createdAt || 'Sin fecha',
-      siguienteEstado: transition.next,
-      siguienteEstadoLabel: transition.label
+      fecha: payment.paymentDate || payment.createdAt || 'Sin fecha'
     };
   }
 

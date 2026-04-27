@@ -579,9 +579,7 @@ function cargarPagos(data, summary) {
           <h3>${pago.concepto}</h3>
           <p><strong>Monto:</strong> $${pago.monto}</p>
           <p><strong>Estado:</strong> ${pago.estado}</p>
-          <button class="admin-action-btn" onclick="actualizarEstadoPago('${pago.id}', '${pago.siguienteEstado}')">
-            Marcar como ${pago.siguienteEstadoLabel}
-          </button>
+          <p class="finance-payment-note">Validación automática / externa</p>
         </div>
       </div>
     `;
@@ -691,6 +689,7 @@ function cargarAmenidades(data) {
         <div class="service-card-body">
           <p class="service-card-description">${amenity.description || 'Sin descripción'}</p>
           <p class="service-card-meta"><strong>ID:</strong> ${amenity.id}</p>
+          <p class="service-card-meta"><strong>Horarios:</strong> ${(amenity.availableSlots || []).join(', ') || 'Sin horarios'}</p>
         </div>
         <div class="service-card-actions">
           <button class="admin-secondary-btn" onclick="openAmenityModal('edit', '${amenity.id}')">Editar</button>
@@ -751,15 +750,6 @@ function mapVisitToAdminCard(visit) {
 }
 
 function mapPaymentToCard(payment) {
-  const statusTransitions = {
-    pendiente: { next: 'pagado', label: 'Pagado' },
-    en_revision: { next: 'pagado', label: 'Pagado' },
-    pagado: { next: 'rechazado', label: 'Rechazado' },
-    rechazado: { next: 'pagado', label: 'Pagado' }
-  };
-
-  const transition = statusTransitions[payment.status] || statusTransitions.pagado;
-
   return {
     id: payment.id,
     concepto: payment.concept,
@@ -769,11 +759,10 @@ function mapPaymentToCard(payment) {
     propiedadNombre: payment.propertyName || payment.propertyId || 'Sin propiedad',
     residenteId: payment.residentId || null,
     residenteNombre: payment.residentName || payment.residentId || 'Sin residente',
-    fecha: payment.paymentDate || payment.createdAt || 'Sin fecha',
-    siguienteEstado: transition.next,
-    siguienteEstadoLabel: transition.label
+    fecha: payment.paymentDate || payment.createdAt || 'Sin fecha'
   };
 }
+
 
 function getFinanceExportFilters() {
   return {
@@ -1032,9 +1021,7 @@ function renderFinanceResults(filteredPayments) {
           <p><strong>Fecha:</strong> ${pago.fecha}</p>
           <p><strong>Monto:</strong> $${pago.monto}</p>
           <p><strong>Estado:</strong> ${pago.estado}</p>
-          <button class="admin-action-btn" onclick="actualizarEstadoPago('${pago.id}', '${pago.siguienteEstado}')">
-            Marcar como ${pago.siguienteEstadoLabel}
-          </button>
+          <p class="finance-payment-note">Validación automática / externa</p>
         </div>
       </div>
     `;
@@ -1804,6 +1791,7 @@ function openPropertyFormModal(mode = 'create', propertyId = null) {
   if (form) {
     form.reset();
   }
+  setSelectedAmenitySlots([]);
 
   if (title) {
     title.textContent = mode === 'edit' ? 'Editar propiedad' : 'Nueva propiedad';
@@ -2066,6 +2054,18 @@ function closePropertyDetailModal() {
   }
 }
 
+
+function getSelectedAmenitySlots() {
+  return Array.from(document.querySelectorAll('.amenity-slot-checkbox:checked')).map((input) => input.value);
+}
+
+function setSelectedAmenitySlots(slots = []) {
+  const selected = new Set(Array.isArray(slots) ? slots : []);
+  document.querySelectorAll('.amenity-slot-checkbox').forEach((input) => {
+    input.checked = selected.has(input.value);
+  });
+}
+
 function openAmenityModal(mode = 'create', amenityId = null) {
   const modal = document.getElementById('amenity-modal');
   const title = document.getElementById('amenity-modal-title');
@@ -2099,6 +2099,7 @@ function openAmenityModal(mode = 'create', amenityId = null) {
       document.getElementById('amenity-name').value = amenity.name || '';
       document.getElementById('amenity-description').value = amenity.description || '';
       document.getElementById('amenity-status').value = amenity.status || 'activa';
+      setSelectedAmenitySlots(amenity.availableSlots || []);
     }).catch((error) => {
       showFeedback(error.message, 'error');
     });
