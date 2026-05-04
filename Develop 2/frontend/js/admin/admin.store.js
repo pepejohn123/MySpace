@@ -7,7 +7,6 @@
     visits: [],
     payments: [],
     financeSummary: null,
-    conversations: [],
     amenities: []
   };
 
@@ -47,7 +46,6 @@
         visits: [...state.visits],
         payments: [...state.payments],
         financeSummary: state.financeSummary ? { ...state.financeSummary } : null,
-        conversations: [...state.conversations],
         amenities: [...state.amenities]
       };
     }

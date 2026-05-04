@@ -204,7 +204,7 @@
       <div class="service-card-actions" style="margin-top:20px;">
         <button class="admin-secondary-btn" onclick="openPropertyFormModal('edit', '${property.id}')">Editar</button>
         <button class="admin-secondary-btn" onclick="openAssignResidentModal('${property.id}')">Asignar residente</button>
-        <button class="admin-danger-btn" onclick="confirmarEliminarPropiedad('${property.id}')">Eliminar</button>
+        <button class="admin-danger-btn" onclick="confirmarEliminarPropiedad('${property.id}')">Desactivar</button>
       </div>
     `;
   }
@@ -401,15 +401,15 @@
   }
 
   async function confirmDelete(propertyId) {
-    if (!window.confirm('¿Seguro que quieres dar de baja esta propiedad?')) {
+    if (!window.confirm('¿Seguro que quieres desactivar esta propiedad? Se quitará el residente asignado.')) {
       return;
     }
 
     try {
-      await apiDelete(`/api/properties/${encodeURIComponent(propertyId)}`, 'No se pudo eliminar la propiedad');
+      await apiDelete(`/api/properties/${encodeURIComponent(propertyId)}`, 'No se pudo desactivar la propiedad');
       closeDetail();
       await reloadProperties();
-      showFeedback('Propiedad actualizada correctamente', 'success');
+      showFeedback('Propiedad desactivada correctamente', 'success');
     } catch (error) {
       showFeedback(error.message, 'error');
     }

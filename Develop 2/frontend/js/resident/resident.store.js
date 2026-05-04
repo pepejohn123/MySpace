@@ -8,8 +8,7 @@
     reservations: [],
     amenities: [],
     visits: [],
-    notices: [],
-    conversations: []
+    notices: []
   };
 
   function cloneValue(value) {
@@ -42,8 +41,7 @@
         reservations: [...state.reservations],
         amenities: [...state.amenities],
         visits: [...state.visits],
-        notices: [...state.notices],
-        conversations: [...state.conversations]
+        notices: [...state.notices]
       };
     }
   };

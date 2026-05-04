@@ -1,13 +1,17 @@
 (function initAdminTicketsScreen() {
+  function isClosed(ticket) {
+    return (ticket.estado || ticket.status) === 'cerrado';
+  }
+
   function renderList(data) {
     const ticketsContainer = document.getElementById('tickets-container');
     if (!ticketsContainer) return;
 
-    const tickets = Array.isArray(data) ? data : [];
+    const tickets = (Array.isArray(data) ? data : []).filter((ticket) => !isClosed(ticket));
     ticketsContainer.innerHTML = '';
 
     if (!tickets.length) {
-      ticketsContainer.innerHTML = '<div class="admin-empty-state">No hay tickets registrados todavía.</div>';
+      ticketsContainer.innerHTML = '<div class="admin-empty-state">No hay tickets activos.</div>';
       return;
     }
 
@@ -44,9 +48,7 @@
         en_proceso: { next: 'cerrado', label: 'Cerrado' },
         cerrado: null
       };
-
       const transition = statusTransitions[ticket.status] || null;
-
       return {
         id: ticket.id,
         titulo: ticket.title,
@@ -76,10 +78,7 @@
     const tickets = Array.isArray(data) ? data : [];
     const now = new Date();
     const recentClosedTickets = tickets.filter((ticket) => {
-      if (ticket.estado !== 'cerrado' || !ticket.closedAt) {
-        return false;
-      }
-
+      if (!isClosed(ticket) || !ticket.closedAt) return false;
       const closedDate = new Date(ticket.closedAt);
       const diffInDays = (now - closedDate) / (1000 * 60 * 60 * 24);
       return diffInDays <= 7;
@@ -98,7 +97,6 @@
           <div class="card-info">
             <h3>${ticket.titulo}</h3>
             <p>${ticket.descripcion}</p>
-            <p><strong>Estado:</strong> ${ticket.estado}</p>
             <p><strong>Prioridad:</strong> ${ticket.prioridad}</p>
             <p><strong>Cerrado:</strong> ${ticket.closedAt}</p>
             <span class="ticket-status-badge ticket-status-cerrado">Cerrado</span>
@@ -110,18 +108,11 @@
 
   function openModal(ticketId) {
     const tickets = window.AdminStore?.get('tickets') || [];
-    const ticketsHistory = window.AdminStore?.get('ticketsHistory') || [];
-    let ticket = tickets.find((item) => item.id === ticketId) || ticketsHistory.find((item) => item.id === ticketId);
-
-    if (!ticket) {
-      console.error('❌ No se encontró el ticket en ninguna caché. ID buscado:', ticketId);
-      return;
-    }
+    const ticket = tickets.find((item) => item.id === ticketId);
+    if (!ticket || isClosed(ticket)) return;
 
     const modal = document.getElementById('modal-ticket-action');
-    if (!modal) {
-      return;
-    }
+    if (!modal) return;
 
     document.getElementById('ticket-title').textContent = ticket.titulo || ticket.title || 'Sin título';
     document.getElementById('ticket-desc').textContent = ticket.descripcion || ticket.description || 'Sin descripción';
@@ -145,9 +136,7 @@
         window.AdminStore?.patch({ tickets: freshTickets, ticketsHistory: freshTickets });
         renderList(freshTickets);
         renderClosedRecent(freshTickets);
-        if (window.AdminHistoryScreen?.refresh) {
-          window.AdminHistoryScreen.refresh();
-        }
+        window.AdminHistoryScreen?.refresh?.();
         modal.style.display = 'none';
         showFeedback('Ticket actualizado correctamente', 'success');
       } catch (error) {

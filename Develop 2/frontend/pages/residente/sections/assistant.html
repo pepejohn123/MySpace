@@ -12,11 +12,6 @@
     ></i>
   </div>
 
-  <div class="assistant-tabs">
-    <button class="assistant-tab-btn active" data-tab="help" onclick="switchAssistantTab('help')">Ayuda</button>
-    <button class="assistant-tab-btn" data-tab="messages" onclick="switchAssistantTab('messages')">Mensajes</button>
-  </div>
-
   <div id="assistant-tab-help" class="assistant-tab-panel active">
     <div class="chat-body">
       <div class="chat-search">
@@ -44,13 +39,4 @@
     </div>
   </div>
 
-  <div id="assistant-tab-messages" class="assistant-tab-panel">
-    <div class="assistant-messages-body">
-      <div class="assistant-messages-toolbar">
-        <span class="assistant-messages-title">Conversaciones con administración</span>
-        <button class="assistant-new-conversation-btn" onclick="openModal('modal-conversation')">Nueva consulta</button>
-      </div>
-      <div class="resident-conversations-list resident-conversations-compact" id="resident-conversations-list"></div>
-    </div>
-  </div>
 </div>

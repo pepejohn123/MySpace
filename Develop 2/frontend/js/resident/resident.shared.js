@@ -32,10 +32,6 @@
     }[status] || '#6B7280';
   }
 
-  function getConversationStatusClass(status) {
-    return `conversation-status-${status || 'abierta'}`;
-  }
-
   function openModal(id) {
     const modal = document.getElementById(id);
     if (modal) modal.style.display = 'flex';
@@ -91,7 +87,6 @@
     buildPaymentColor,
     buildReservationColor,
     buildVisitColor,
-    getConversationStatusClass,
     openModal,
     closeModal,
     closeAllModals,

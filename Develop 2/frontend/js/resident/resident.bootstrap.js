@@ -68,9 +68,6 @@
     const reservationFeedback = document.getElementById('reservation-feedback');
     const reservationSlotsFeedback = document.getElementById('reservation-slots-feedback');
     const visitFeedback = document.getElementById('visit-feedback');
-    const conversationForm = document.getElementById('conversationForm');
-    const conversationFeedback = document.getElementById('conversation-feedback');
-    const conversationReplyForm = document.getElementById('conversation-reply-form');
     const reservationAmenitySelect = document.getElementById('reservationAmenityId');
     const reservationDateInput = document.getElementById('reservationDate');
 
@@ -101,62 +98,6 @@
           showFeedback(error.message, 'error');
         } finally {
           setButtonLoadingState(ticketForm.querySelector('button[type="submit"]'), false);
-        }
-      });
-    }
-
-    if (conversationForm) {
-      conversationForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const subject = document.getElementById('conversationSubject').value.trim();
-        const message = document.getElementById('conversationMessage').value.trim();
-
-        if (!subject || !message) {
-          conversationFeedback.textContent = 'Asunto y mensaje son requeridos';
-          conversationFeedback.className = 'modal-feedback error';
-          return;
-        }
-
-        try {
-          setButtonLoadingState(conversationForm.querySelector('button[type="submit"]'), true, 'Enviando...');
-          await ResidentConversationsScreen.createConversation({ subject, message });
-          conversationForm.reset();
-          ResidentShared.closeAllModals();
-          await ResidentConversationsScreen.refreshList();
-          const chat = document.getElementById('chat-window');
-          if (chat) chat.style.display = 'flex';
-          ResidentShared.switchAssistantTab('messages');
-          showFeedback('Consulta enviada correctamente', 'success');
-        } catch (error) {
-          conversationFeedback.textContent = error.message;
-          conversationFeedback.className = 'modal-feedback error';
-          showFeedback(error.message, 'error');
-        } finally {
-          setButtonLoadingState(conversationForm.querySelector('button[type="submit"]'), false);
-        }
-      });
-    }
-
-    if (conversationReplyForm) {
-      conversationReplyForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const activeConversation = window.__residentConversationDetail;
-        const message = document.getElementById('conversationReplyInput').value.trim();
-
-        if (!activeConversation || !message) {
-          return;
-        }
-
-        try {
-          setButtonLoadingState(conversationReplyForm.querySelector('button[type="submit"]'), true, 'Enviando...');
-          const updatedConversation = await ResidentConversationsScreen.reply(activeConversation.id, { message });
-          ResidentConversationsScreen.renderDetail(updatedConversation);
-          await ResidentConversationsScreen.refreshList();
-          showFeedback('Respuesta enviada correctamente', 'success');
-        } catch (error) {
-          showFeedback(error.message, 'error');
-        } finally {
-          setButtonLoadingState(conversationReplyForm.querySelector('button[type="submit"]'), false);
         }
       });
     }

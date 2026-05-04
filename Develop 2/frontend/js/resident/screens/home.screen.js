@@ -116,7 +116,6 @@
       ResidentPaymentsScreen.renderPayments(paymentData.payments || []);
       ResidentVisitsScreen.renderResidentVisits(visits);
       ResidentNoticesScreen.renderList(notices);
-      await ResidentConversationsScreen.refreshList();
 
       if (!movimientos.length) {
         renderMovements([

@@ -4,7 +4,7 @@
   }
 
   function bindHistoryControls() {
-    ['history-status-filter', 'history-priority-filter', 'history-period-filter'].forEach((id) => {
+    ['history-priority-filter', 'history-period-filter'].forEach((id) => {
       const element = document.getElementById(id);
       if (!element || element.dataset.boundAdminTabs === 'true') return;
       element.addEventListener('change', actualizarHistorialTickets);
@@ -177,8 +177,6 @@
 
   function bindMessageForms() {
     const noticeForm = document.getElementById('notice-form');
-    const adminConversationReplyForm = document.getElementById('admin-conversation-reply-form');
-    const adminConversationCloseButton = document.getElementById('admin-conversation-close-btn');
 
     if (noticeForm && noticeForm.dataset.boundAdminTabs !== 'true') {
       noticeForm.addEventListener('submit', async (event) => {
@@ -203,52 +201,6 @@
       });
       noticeForm.dataset.boundAdminTabs = 'true';
     }
-
-    if (adminConversationReplyForm && adminConversationReplyForm.dataset.boundAdminTabs !== 'true') {
-      adminConversationReplyForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const activeConversation = window.__adminConversationDetail;
-        const message = document.getElementById('adminConversationReplyInput').value.trim();
-
-        if (!activeConversation || !message) return;
-
-        try {
-          setButtonLoadingState(adminConversationReplyForm.querySelector('button[type="submit"]'), true, 'Enviando...');
-          const updatedConversation = await responderConversacionAdmin(activeConversation.id, { message });
-          renderAdminConversationDetail(updatedConversation);
-          conversationsAdminCache = await cargarConversacionesAdminDesdeApi();
-          renderAdminConversations(conversationsAdminCache);
-          showFeedback('Respuesta enviada correctamente', 'success');
-        } catch (error) {
-          debug('Tab mensajes responder conversación error', error, { message: error.message });
-          showFeedback(error.message, 'error');
-        } finally {
-          setButtonLoadingState(adminConversationReplyForm.querySelector('button[type="submit"]'), false);
-        }
-      });
-      adminConversationReplyForm.dataset.boundAdminTabs = 'true';
-    }
-
-    if (adminConversationCloseButton && adminConversationCloseButton.dataset.boundAdminTabs !== 'true') {
-      adminConversationCloseButton.addEventListener('click', async () => {
-        const activeConversation = window.__adminConversationDetail;
-        if (!activeConversation) return;
-
-        try {
-          await cerrarConversacionAdmin(activeConversation.id);
-          const updatedConversation = await cargarDetalleConversacionAdmin(activeConversation.id);
-          renderAdminConversationDetail(updatedConversation);
-          conversationsAdminCache = await cargarConversacionesAdminDesdeApi();
-          renderAdminConversations(conversationsAdminCache);
-          showFeedback('Conversación cerrada correctamente', 'success');
-        } catch (error) {
-          debug('Tab mensajes cerrar conversación error', error, { message: error.message });
-          showFeedback(error.message, 'error');
-        }
-      });
-      adminConversationCloseButton.dataset.boundAdminTabs = 'true';
-    }
   }
 
   async function changeTab(tabName) {
@@ -267,7 +219,6 @@
     let avisosContainer = document.getElementById('avisos-container');
     let serviciosContainer = document.getElementById('servicios-container');
     let archivedAvisosContainer = document.getElementById('archived-avisos-container');
-    let conversationsContainer = document.getElementById('admin-conversations-container');
     let messagesWrapper = document.getElementById('messages-wrapper');
     let closedTicketsContainer = document.getElementById('closed-tickets-container');
     let ticketsHistoryWrapper = document.getElementById('tickets-history-wrapper');
@@ -347,16 +298,15 @@
     }
 
     if (tabName === 'mensajes') {
-      if ((!messagesWrapper || !ticketsContainer || !avisosContainer || !archivedAvisosContainer || !conversationsContainer || !closedTicketsContainer) && window.AdminSections?.load) {
+      if ((!messagesWrapper || !ticketsContainer || !avisosContainer || !archivedAvisosContainer || !closedTicketsContainer) && window.AdminSections?.load) {
         await window.AdminSections.load('mensajes');
         messagesWrapper = document.getElementById('messages-wrapper');
         ticketsContainer = document.getElementById('tickets-container');
         avisosContainer = document.getElementById('avisos-container');
         archivedAvisosContainer = document.getElementById('archived-avisos-container');
-        conversationsContainer = document.getElementById('admin-conversations-container');
         closedTicketsContainer = document.getElementById('closed-tickets-container');
       }
-      if (!messagesWrapper || !ticketsContainer || !avisosContainer || !archivedAvisosContainer || !conversationsContainer || !closedTicketsContainer) return;
+      if (!messagesWrapper || !ticketsContainer || !avisosContainer || !archivedAvisosContainer || !closedTicketsContainer) return;
 
       title.textContent = 'Mensajes y Avisos';
       bindMessageForms();
@@ -366,8 +316,7 @@
         ticketsContainer,
         closedTicketsContainer,
         avisosContainer,
-        archivedAvisosContainer,
-        conversationsContainer
+        archivedAvisosContainer
       ].forEach((container) => container?.classList.remove('admin-hidden'));
 
       if (typeof setLoadingState === 'function') {
@@ -376,19 +325,16 @@
         setLoadingState('archived-avisos-container', 'Cargando avisos archivados...');
       }
 
-      Promise.all([cargarTicketsDesdeApi(), cargarAvisosDesdeApi(), cargarConversacionesAdminDesdeApi()])
-        .then(([tickets, avisos, conversations]) => {
-          debug('Tab mensajes payload', { tickets, avisos, conversations }, {
+      Promise.all([cargarTicketsDesdeApi(), cargarAvisosDesdeApi()])
+        .then(([tickets, avisos]) => {
+          debug('Tab mensajes payload', { tickets, avisos }, {
             tickets: tickets.length,
-            avisos: avisos.length,
-            conversations: conversations.length
+            avisos: avisos.length
           });
-          if (typeof conversationsAdminCache !== 'undefined') conversationsAdminCache = conversations;
           cargarTickets(tickets);
           cargarTicketsCerradosRecientes(tickets);
           cargarAvisos(avisos);
           cargarAvisosArchivados(avisos);
-          renderAdminConversations(conversations);
         })
         .catch((error) => {
           debug('Tab mensajes error', error, { message: error.message });
@@ -396,7 +342,6 @@
           closedTicketsContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
           avisosContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
           archivedAvisosContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-          conversationsContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
         });
       return;
     }

@@ -62,29 +62,3 @@
   </div>
 </div>
 
-<div id="modal-conversation" class="modal-overlay" onclick="closeModal(event, this)">
-  <div class="modal-card">
-    <h3 class="modal-heading">Nueva consulta</h3>
-    <form id="conversationForm" class="modal-form">
-      <input id="conversationSubject" class="modal-input" type="text" placeholder="Asunto" required />
-      <textarea id="conversationMessage" class="modal-textarea" placeholder="Escribe tu mensaje" rows="4" required></textarea>
-      <div id="conversation-feedback" class="modal-feedback"></div>
-      <button type="submit" class="modal-submit-btn">Enviar consulta</button>
-    </form>
-  </div>
-</div>
-
-<div id="conversation-detail-modal" class="modal-overlay" onclick="closeConversationDetail(event, this)">
-  <div class="modal-card modal-card-wide conversation-modal-card">
-    <h3 class="modal-heading" id="conversation-detail-title">Conversación</h3>
-    <div id="conversation-detail-status" class="resident-conversation-status-row"></div>
-    <div id="conversation-detail-messages" class="conversation-messages"></div>
-    <form id="conversation-reply-form" class="modal-form">
-      <textarea id="conversationReplyInput" class="modal-textarea" placeholder="Responder conversación" rows="3"></textarea>
-      <div class="conversation-actions-row">
-        <button type="button" class="admin-secondary-btn" onclick="closeConversationDetailModal()">Cerrar</button>
-        <button type="submit" class="modal-submit-btn">Responder</button>
-      </div>
-    </form>
-  </div>
-</div>

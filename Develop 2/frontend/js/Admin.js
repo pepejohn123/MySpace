@@ -11,7 +11,6 @@ let reservationsCache = [];
 let propertiesCache = [];
 let reservationsAmenitiesCache = [];
 let paymentsFinanzasCache = [];
-let conversationsAdminCache = [];
 let currentFinanceFilters = {
   property: 'all',
   resident: 'all',
@@ -76,10 +75,6 @@ function getTicketPriorityClass(priority) {
   return window.AdminShared?.getTicketPriorityClass?.(priority) || `ticket-priority-${priority || 'media'}`;
 }
 
-function getConversationStatusClass(status) {
-  return window.AdminShared?.getConversationStatusClass?.(status) || `conversation-status-${status || 'abierta'}`;
-}
-
 function buildPropertyStatusClass(status) {
   return window.AdminShared?.buildPropertyStatusClass?.(status) || 'bg-green';
 }
@@ -87,155 +82,6 @@ function buildPropertyStatusClass(status) {
 function getApiErrorMessage(errorData, fallbackMessage) {
   return window.AdminShared?.getApiErrorMessage?.(errorData, fallbackMessage) || errorData?.error || errorData?.message || fallbackMessage;
 }
-
-async function cargarConversacionesAdminDesdeApi() {
-  if (window.AdminConversationsScreen?.fetchList) {
-    return window.AdminConversationsScreen.fetchList();
-  }
-  const data = await apiGet('/api/conversations', 'No se pudieron cargar las conversaciones');
-  return data.conversations || [];
-}
-
-async function cargarDetalleConversacionAdmin(conversationId) {
-  if (window.AdminConversationsScreen?.fetchDetail) {
-    return window.AdminConversationsScreen.fetchDetail(conversationId);
-  }
-  const data = await apiGet(`/api/conversations/${encodeURIComponent(conversationId)}`, 'No se pudo cargar la conversación');
-  return data.conversation;
-}
-
-async function responderConversacionAdmin(conversationId, payload) {
-  if (window.AdminConversationsScreen?.reply) {
-    return window.AdminConversationsScreen.reply(conversationId, payload);
-  }
-  const data = await apiPost(`/api/conversations/${encodeURIComponent(conversationId)}/messages`, payload, 'No se pudo responder la conversación');
-  return data.conversation;
-}
-
-async function cerrarConversacionAdmin(conversationId) {
-  if (window.AdminConversationsScreen?.closeConversation) {
-    return window.AdminConversationsScreen.closeConversation(conversationId);
-  }
-  const data = await apiPatch(`/api/conversations/${encodeURIComponent(conversationId)}/status`, { status: 'cerrada' }, 'No se pudo cerrar la conversación');
-  return data.conversation;
-}
-
-function renderAdminConversations(conversations) {
-  if (window.AdminConversationsScreen?.renderList) {
-    return window.AdminConversationsScreen.renderList(conversations);
-  }
-  const container = document.getElementById('admin-conversations-container');
-
-  if (!container) {
-    return;
-  }
-
-  container.innerHTML = '';
-
-  if (!conversations.length) {
-    container.innerHTML = '<div class="admin-empty-state">No hay consultas de residentes todavía.</div>';
-    return;
-  }
-
-  conversations.forEach((conversation) => {
-    const lastMessage = conversation.messages?.[conversation.messages.length - 1];
-
-    container.innerHTML += `
-      <div class="admin-conversation-card">
-        <div class="admin-conversation-header">
-          <div>
-            <h4 class="admin-conversation-title-text">${conversation.subject}</h4>
-            <div class="admin-conversation-meta">
-              <span><strong>Residente:</strong> ${conversation.residentName}</span>
-              <span><strong>Actualizado:</strong> ${conversation.updatedAt || conversation.createdAt}</span>
-            </div>
-          </div>
-          <span class="conversation-status-badge ${getConversationStatusClass(conversation.status)}">${conversation.status}</span>
-        </div>
-        <p class="admin-conversation-preview">${lastMessage?.body || 'Sin mensajes'}</p>
-        <div class="service-card-actions">
-          <button class="admin-action-btn admin-toolbar-btn" onclick="openAdminConversationModal('${conversation.id}')">Ver conversación</button>
-        </div>
-      </div>
-    `;
-  });
-}
-
-function renderAdminConversationDetail(conversation) {
-  if (window.AdminConversationsScreen?.renderDetail) {
-    return window.AdminConversationsScreen.renderDetail(conversation);
-  }
-  const title = document.getElementById('admin-conversation-title');
-  const status = document.getElementById('admin-conversation-status');
-  const messages = document.getElementById('admin-conversation-messages');
-  const closeButton = document.getElementById('admin-conversation-close-btn');
-  const replyForm = document.getElementById('admin-conversation-reply-form');
-  const replyInput = document.getElementById('adminConversationReplyInput');
-
-  window.__adminConversationDetail = conversation;
-
-  if (title) {
-    title.textContent = conversation.subject;
-  }
-
-  if (status) {
-    status.innerHTML = `<span class="conversation-status-badge ${getConversationStatusClass(conversation.status)}">${conversation.status}</span>`;
-  }
-
-  if (messages) {
-    messages.innerHTML = '';
-    conversation.messages.forEach((message) => {
-      const isMine = message.senderRole === 'admin';
-      messages.innerHTML += `
-        <div class="conversation-message ${isMine ? 'mine' : ''}">
-          <div class="conversation-message-header">
-            <strong>${message.senderName}</strong>
-            <span>${message.createdAt}</span>
-          </div>
-          <p class="conversation-message-body">${message.body}</p>
-        </div>
-      `;
-    });
-  }
-
-  if (replyInput) {
-    replyInput.value = '';
-  }
-
-  if (closeButton) {
-    closeButton.style.display = conversation.status === 'cerrada' ? 'none' : 'inline-flex';
-  }
-
-  if (replyForm) {
-    replyForm.style.display = conversation.status === 'cerrada' ? 'none' : 'block';
-  }
-}
-
-async function openAdminConversationModal(conversationId) {
-  if (window.AdminConversationsScreen?.openModal) {
-    return window.AdminConversationsScreen.openModal(conversationId);
-  }
-  try {
-    const conversation = await cargarDetalleConversacionAdmin(conversationId);
-    renderAdminConversationDetail(conversation);
-    document.getElementById('admin-conversation-modal').style.display = 'flex';
-  } catch (error) {
-    showFeedback(error.message, 'error');
-  }
-}
-
-function closeAdminConversationModal(event, overlay) {
-  if (window.AdminConversationsScreen?.closeModal) {
-    return window.AdminConversationsScreen.closeModal(event, overlay);
-  }
-  if (!event || event.target === overlay) {
-    const modal = document.getElementById('admin-conversation-modal');
-    if (modal) {
-      modal.style.display = 'none';
-    }
-  }
-}
-
 
 function cargarTickets(data) {
     if (window.AdminTicketsScreen?.renderList) {
@@ -497,7 +343,6 @@ function actualizarHistorialTickets() {
   }
 
   const filters = {
-    status: document.getElementById('history-status-filter')?.value || 'all',
     priority: document.getElementById('history-priority-filter')?.value || 'all',
     period: document.getElementById('history-period-filter')?.value || 'all',
     search: document.getElementById('history-search-filter')?.value || ''
@@ -775,7 +620,6 @@ function getFinanceExportFilters() {
 
 function getHistoryExportFilters() {
   return {
-    status: document.getElementById('history-status-filter')?.value || 'all',
     priority: document.getElementById('history-priority-filter')?.value || 'all',
     period: document.getElementById('history-period-filter')?.value || 'all',
     search: document.getElementById('history-search-filter')?.value || ''
@@ -1435,207 +1279,7 @@ async function actualizarEstadoPago(paymentId, nextStatus) {
 }
 
 function changeTab(tabName) {
-  if (window.AdminTabs?.changeTab) {
-    return window.AdminTabs.changeTab(tabName);
-  }
-
-  const tabs = document.querySelectorAll('.nav-tab');
-  tabs.forEach((tab) => tab.classList.remove('active'));
-
-  const activeButton = Array.from(tabs).find((tab) => tab.textContent.trim().toLowerCase() === tabName.toLowerCase());
-
-  if (activeButton) {
-    activeButton.classList.add('active');
-  }
-
-  const title = document.querySelector('.page-title');
-  const propertyContainer = document.getElementById('propiedades-container');
-  const ticketsContainer = document.getElementById('tickets-container');
-  const reservasContainer = document.getElementById('reservas-container');
-  const finanzasContainer = document.getElementById('finanzas-container');
-  const visitsWrapper = document.getElementById('visits-wrapper');
-  const avisosContainer = document.getElementById('avisos-container');
-  const serviciosContainer = document.getElementById('servicios-container');
-  const archivedAvisosContainer = document.getElementById('archived-avisos-container');
-  const conversationsContainer = document.getElementById('admin-conversations-container');
-  const messagesWrapper = document.getElementById('messages-wrapper');
-  const closedTicketsContainer = document.getElementById('closed-tickets-container');
-  const ticketsHistoryWrapper = document.getElementById('tickets-history-wrapper');
-  const propertyFiltersWrapper = document.getElementById('property-filters-wrapper');
-  const openPropertyFormButton = document.getElementById('open-property-form-btn');
-
-  if (!title || !propertyContainer || !ticketsContainer || !reservasContainer || !finanzasContainer || !visitsWrapper || !avisosContainer || !serviciosContainer || !archivedAvisosContainer || !conversationsContainer || !messagesWrapper || !closedTicketsContainer || !ticketsHistoryWrapper) {
-    return;
-  }
-
-  updateExportButtonForTab(tabName);
-
-  propertyContainer.classList.add('admin-hidden');
-  ticketsContainer.classList.add('admin-hidden');
-  reservasContainer.classList.add('admin-hidden');
-  finanzasContainer.classList.add('admin-hidden');
-  visitsWrapper.classList.add('admin-hidden');
-  avisosContainer.classList.add('admin-hidden');
-  serviciosContainer.classList.add('admin-hidden');
-  archivedAvisosContainer.classList.add('admin-hidden');
-  messagesWrapper.classList.add('admin-hidden');
-  closedTicketsContainer.classList.add('admin-hidden');
-  ticketsHistoryWrapper.classList.add('admin-hidden');
-  if (propertyFiltersWrapper) {
-    propertyFiltersWrapper.classList.add('admin-hidden');
-  }
-
-  if (openPropertyFormButton) {
-    if (tabName === 'propiedades') {
-      openPropertyFormButton.classList.remove('admin-hidden');
-    } else {
-      openPropertyFormButton.classList.add('admin-hidden');
-    }
-  }
-
-  if (tabName === 'servicios') {
-    title.textContent = 'Gestión de Servicios';
-    serviciosContainer.classList.remove('admin-hidden');
-    setLoadingState('servicios-container', 'Cargando amenidades...');
-    cargarAmenidadesDesdeApi()
-      .then(cargarAmenidades)
-      .catch((error) => {
-        serviciosContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-      });
-    return;
-  }
-
-
-  if (tabName === 'propiedades') {
-    title.textContent = 'Gestión de Inmuebles';
-    propertyContainer.classList.remove('admin-hidden');
-    if (propertyFiltersWrapper) {
-      propertyFiltersWrapper.classList.remove('admin-hidden');
-    }
-    setLoadingState('propiedades-container', 'Cargando propiedades...');
-    cargarPropiedadesDesdeApi()
-      .then((properties) => {
-        propertiesCache = properties;
-        cargarPropiedades(properties);
-        bindPropertyFilters();
-      })
-      .catch((error) => {
-        propertyContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-      });
-    return;
-  }
-
-  if (tabName === 'mensajes') {
-    title.textContent = 'Mensajes y Avisos';
-    messagesWrapper.classList.remove('admin-hidden');
-    setLoadingState('tickets-container', 'Cargando tickets...');
-    setLoadingState('avisos-container', 'Cargando avisos...');
-    setLoadingState('archived-avisos-container', 'Cargando avisos archivados...');
-    Promise.all([cargarTicketsDesdeApi(), cargarAvisosDesdeApi(), cargarConversacionesAdminDesdeApi()])
-      .then(([tickets, avisos, conversations]) => {
-        conversationsAdminCache = conversations;
-        cargarTickets(tickets);
-        cargarTicketsCerradosRecientes(tickets);
-        cargarAvisos(avisos);
-        cargarAvisosArchivados(avisos);
-        renderAdminConversations(conversations);
-      })
-      .catch((error) => {
-        ticketsContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-        closedTicketsContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-        avisosContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-        archivedAvisosContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-        conversationsContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-      });
-    return;
-  }
-
-  if (tabName === 'reservas') {
-    title.textContent = 'Gestión de Reservas';
-    reservasContainer.classList.remove('admin-hidden');
-    setLoadingState('reservas-container', 'Cargando reservas...');
-    Promise.all([
-      cargarReservasDesdeApi(),
-      cargarAmenidadesDesdeApi().catch(() => [])
-    ])
-      .then(([reservations, amenities]) => {
-        reservationsAmenitiesCache = Array.isArray(amenities)
-          ? amenities.map((amenity) => ({ id: amenity.id, name: amenity.name }))
-          : [];
-        cargarReservas(reservations);
-      })
-      .catch((error) => {
-        reservasContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-      });
-    return;
-  }
-
-  if (tabName === 'visitas') {
-    title.textContent = 'Control de Visitas';
-    visitsWrapper.classList.remove('admin-hidden');
-    const visitsContainer = document.getElementById('visits-container');
-    if (visitsContainer) {
-      setLoadingState('visits-container', 'Cargando visitas...');
-    }
-
-    cargarVisitasDesdeApi()
-      .then((visits) => {
-        visitsCache = visits;
-        actualizarVistaVisitas();
-      })
-      .catch((error) => {
-        if (visitsContainer) {
-          visitsContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-        }
-      });
-    return;
-  }
-
-  if (tabName === 'finanzas') {
-    title.textContent = 'Panel Financiero';
-    finanzasContainer.classList.remove('admin-hidden');
-    setLoadingState('finanzas-container', 'Cargando finanzas...');
-    cargarPagosDesdeApi()
-      .then(({ payments, summary }) => {
-        paymentsFinanzasCache = payments;
-        window.__financeSummaryCache = summary;
-        actualizarVistaFinanzas();
-      })
-      .catch((error) => {
-        finanzasContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-      });
-    return;
-  }
-
-  if (tabName === 'historial') {
-    title.textContent = 'Historial de Tickets';
-    ticketsHistoryWrapper.classList.remove('admin-hidden');
-    const historyContainer = document.getElementById('tickets-history-container');
-    if (historyContainer) {
-      setLoadingState('tickets-history-container', 'Cargando historial de tickets...');
-    }
-
-    cargarTicketsDesdeApi()
-      .then((tickets) => {
-        ticketsHistoryCache = tickets;
-        actualizarHistorialTickets();
-      })
-      .catch((error) => {
-        if (historyContainer) {
-          historyContainer.innerHTML = `<div class="admin-error-state">${error.message}</div>`;
-        }
-      });
-    return;
-  }
-
-  const tabLabels = {
-    servicios: 'Gestión de Servicios',
-    mensajes: 'Mensajes y Avisos'
-  };
-
-  title.textContent = tabLabels[tabName] || 'Panel de Administración';
-  propertyContainer.classList.remove('admin-hidden');
-  propertyContainer.innerHTML = `<div class="admin-empty-state">La sección <strong>${title.textContent}</strong> se conectará en el siguiente paso.</div>`;
+  return window.AdminTabs?.changeTab?.(tabName);
 }
 
 // ===============================
@@ -1710,7 +1354,7 @@ async function actualizarPropiedad(propertyId, payload) {
 }
 
 async function eliminarPropiedad(propertyId) {
-  return apiDelete(`/api/properties/${encodeURIComponent(propertyId)}`, 'No se pudo eliminar la propiedad');
+  return apiDelete(`/api/properties/${encodeURIComponent(propertyId)}`, 'No se pudo desactivar la propiedad');
 }
 
 async function asignarResidentePropiedad(propertyId, residentId, residentName) {
@@ -1770,7 +1414,7 @@ function renderDetallePropiedad(property) {
     <div class="service-card-actions" style="margin-top:20px;">
       <button class="admin-secondary-btn" onclick="openPropertyFormModal('edit', '${property.id}')">Editar</button>
       <button class="admin-secondary-btn" onclick="openAssignResidentModal('${property.id}', '${property.residentId || ''}')">Asignar residente</button>
-      <button class="admin-danger-btn" onclick="confirmarEliminarPropiedad('${property.id}')">Eliminar</button>
+      <button class="admin-danger-btn" onclick="confirmarEliminarPropiedad('${property.id}')">Desactivar</button>
     </div>
   `;
 }
@@ -1987,7 +1631,7 @@ async function confirmarEliminarPropiedad(propertyId) {
     return window.AdminPropertiesScreen.confirmDelete(propertyId);
   }
 
-  if (!window.confirm('¿Seguro que quieres dar de baja esta propiedad?')) {
+  if (!window.confirm('¿Seguro que quieres desactivar esta propiedad? Se quitará el residente asignado.')) {
     return;
   }
 
@@ -1998,7 +1642,7 @@ async function confirmarEliminarPropiedad(propertyId) {
     propertiesCache = propiedades;
     populatePropertyFilters();
     actualizarPropiedadesConFiltros();
-    showFeedback('Propiedad actualizada correctamente', 'success');
+    showFeedback('Propiedad desactivada correctamente', 'success');
   } catch (error) {
     showFeedback(error.message, 'error');
   }

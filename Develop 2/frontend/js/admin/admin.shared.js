@@ -7,10 +7,6 @@
     return `ticket-priority-${priority || 'media'}`;
   }
 
-  function getConversationStatusClass(status) {
-    return `conversation-status-${status || 'abierta'}`;
-  }
-
   function buildPropertyStatusClass(status) {
     if (status === 'ocupada') return 'bg-yellow';
     if (status === 'mantenimiento' || status === 'inactiva') return 'bg-red';
@@ -49,7 +45,6 @@
   window.AdminShared = {
     getAmenityStatusClass,
     getTicketPriorityClass,
-    getConversationStatusClass,
     buildPropertyStatusClass,
     getApiErrorMessage,
     formatearFechaLegible,
