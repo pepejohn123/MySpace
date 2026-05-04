@@ -25,7 +25,7 @@
   }
 
   function renderProfile(data) {
-    document.getElementById('user-name').innerText = `Hola,${data.nombre}`;
+    document.getElementById('user-name').innerText = `Hola, ${data.nombre}`;
     document.getElementById('dept-name').innerText = data.departamento;
     document.getElementById('dept-owner').innerText = `Titular:${data.nombre}`;
     document.getElementById('dept-image').src = data.imagen;

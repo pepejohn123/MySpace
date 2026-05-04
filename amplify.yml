@@ -1,13 +1,37 @@
 version: 1
 frontend:
   phases:
+    preBuild:
+      commands:
+        # ── ESLint: frontend JS quality check ─────────────────────────────
+        # Catches undefined globals, unused vars, and JS errors in browser code.
+        # || true prevents ESLint warnings from blocking the deploy.
+        # Change || true to nothing if you want warnings to block deploys.
+        - cd "Develop 2/frontend"
+        - npm init -y --silent
+        - npm install --save-dev eslint --silent
+        - npx eslint "js/**/*.js" --env browser,es2021 --rule '{"no-undef":"error","no-unused-vars":"warn"}' || true
+        - cd ../..
+
+        # ── SonarCloud: frontend JS static analysis ────────────────────────
+        # Requires SONAR_TOKEN in Amplify > App settings > Environment variables.
+        - npm install -g sonar-scanner --silent
+        - |
+          sonar-scanner \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.branch.name=$AWS_BRANCH
+
     build:
       commands:
         - echo "Static frontend - no build needed"
         - test -f "Develop 2/frontend/index.html"
+
   artifacts:
     baseDirectory: "Develop 2/frontend"
     files:
       - "**/*"
+
   cache:
-    paths: []
+    paths:
+      - .sonar/cache/**/*
