@@ -713,3 +713,81 @@
         gap: 6px;
     }
 }
+
+/* Stripe 2-step payment modal */
+.stripe-step2-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.stripe-back-btn {
+  background: none;
+  border: none;
+  color: var(--brand);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.stripe-back-btn:hover { background: #f3f4f6; }
+#stripe-payment-element { min-height: 60px; }
+.stripe-secure-note {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 12px;
+}
+
+/* Payment window hint & disabled button */
+.payment-window-hint {
+  display: block;
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+#btn-pagar-cuota[disabled],
+.action-btn-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+/* Payment type selection (step 0) */
+.payment-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+.payment-type-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-dark, #111827);
+}
+.payment-type-btn i {
+  font-size: 1.5rem;
+  color: var(--brand);
+}
+.payment-type-btn small {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #6b7280;
+}
+.payment-type-btn:hover:not(:disabled) {
+  border-color: var(--brand);
+  background: #f0f4ff;
+}
+.payment-type-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

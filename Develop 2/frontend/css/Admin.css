@@ -1558,3 +1558,73 @@
   color: #6b7280;
   font-size: 0.9rem;
 }
+
+/* Create resident modal – payment window row */
+.payment-window-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.payment-day-input {
+  width: 64px !important;
+  text-align: center;
+}
+.admin-field-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* ── Shared modal form styles ── */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-input,
+.modal-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: #fff;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  box-sizing: border-box;
+}
+
+.modal-input:focus,
+.modal-textarea:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.modal-input::placeholder,
+.modal-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.modal-textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.modal-feedback {
+  font-size: 0.88rem;
+  padding: 2px 0;
+  min-height: 1.2em;
+  color: #374151;
+}
+
+.modal-feedback.error {
+  color: #dc2626;
+}
+
+.modal-feedback.success {
+  color: #059669;
+}

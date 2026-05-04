@@ -25,6 +25,13 @@ function buildUserFromCognitoToken(token) {
     return null;
   }
 
+  const paymentDayStart = payload['custom:paymentDayStart']
+    ? Number(payload['custom:paymentDayStart'])
+    : null;
+  const paymentDayEnd = payload['custom:paymentDayEnd']
+    ? Number(payload['custom:paymentDayEnd'])
+    : null;
+
   return {
     id: payload.sub || payload['cognito:username'] || null,
     sub: payload.sub || null,
@@ -32,7 +39,9 @@ function buildUserFromCognitoToken(token) {
     name: payload.name || payload.email?.split('@')[0] || 'Usuario',
     role: payload['custom:role'] || getRole() || 'residente',
     condominioId: payload['custom:condominioId'] || null,
-    propertyId: payload['custom:propertyId'] || null
+    propertyId: payload['custom:propertyId'] || null,
+    paymentDayStart,
+    paymentDayEnd
   };
 }
 

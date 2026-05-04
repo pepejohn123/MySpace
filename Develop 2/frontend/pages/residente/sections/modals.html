@@ -14,16 +14,56 @@
 
 <div id="modal-pago" class="modal-overlay" onclick="closeModal(event, this)">
   <div class="modal-card">
-    <h3 class="modal-heading">Registrar Pago</h3>
-    <form id="paymentForm" class="modal-form">
-      <p class="resident-payment-helper">Tu pago será registrado y aparecerá como <strong>en revisión</strong> hasta su validación.</p>
-      <input id="paymentConcept" class="modal-input" type="text" placeholder="Ej. Cuota de mantenimiento abril 2026" required />
-      <input id="paymentAmount" class="modal-input" type="number" min="1" step="0.01" placeholder="Monto del pago" required />
-      <div id="payment-feedback" class="modal-feedback"></div>
-      <button type="submit" class="modal-submit-btn">
-        Registrar pago
+    <h3 class="modal-heading">Pagar Cuota</h3>
+
+    <!-- Step 0: payment type selection -->
+    <div id="stripe-step-0">
+      <p class="resident-payment-helper">¿Qué deseas pagar?</p>
+      <div class="payment-type-grid">
+        <button type="button" class="payment-type-btn" id="pay-rent-btn">
+          <i class="fa-solid fa-house"></i>
+          <span>Renta</span>
+          <small id="pay-rent-amount-label">Cargando...</small>
+        </button>
+        <button type="button" class="payment-type-btn" id="pay-service-btn">
+          <i class="fa-solid fa-wrench"></i>
+          <span>Servicio / Otro</span>
+          <small>Ingresa el monto</small>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 1: concept + amount (services only) -->
+    <div id="stripe-step-1" style="display:none;">
+      <div class="stripe-step2-header">
+        <button type="button" class="stripe-back-btn" id="stripe-step1-back-btn">
+          <i class="fa-solid fa-arrow-left"></i> Volver
+        </button>
+      </div>
+      <p class="resident-payment-helper">Indica el concepto y monto de tu pago.</p>
+      <form id="paymentForm" class="modal-form">
+        <input id="paymentConcept" class="modal-input" type="text" placeholder="Ej. Cuota de mantenimiento mayo 2026" required />
+        <input id="paymentAmount" class="modal-input" type="number" min="1" step="0.01" placeholder="Monto del pago (MXN)" required />
+        <div id="payment-feedback" class="modal-feedback"></div>
+        <button type="submit" class="modal-submit-btn">Continuar al pago</button>
+      </form>
+    </div>
+
+    <!-- Step 2: Stripe card element -->
+    <div id="stripe-step-2" style="display:none;">
+      <div class="stripe-step2-header">
+        <button type="button" class="stripe-back-btn" id="stripe-back-btn">
+          <i class="fa-solid fa-arrow-left"></i> Volver
+        </button>
+        <p class="resident-payment-helper" id="stripe-payment-summary"></p>
+      </div>
+      <div id="stripe-payment-element"></div>
+      <div id="stripe-error-message" class="modal-feedback error" style="display:none;"></div>
+      <button type="button" class="modal-submit-btn" id="stripe-pay-btn" style="margin-top:16px;">
+        <i class="fa-solid fa-lock"></i> Pagar ahora
       </button>
-    </form>
+      <p class="stripe-secure-note"><i class="fa-solid fa-shield-halved"></i> Pago procesado de forma segura por Stripe</p>
+    </div>
   </div>
 </div>
 

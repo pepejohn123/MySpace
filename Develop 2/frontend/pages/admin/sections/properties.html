@@ -78,6 +78,18 @@
             <option value="inactiva">Inactiva</option>
           </select>
         </label>
+        <label class="admin-field">
+          <span>Renta mensual (MXN)</span>
+          <input
+            id="property-form-rent"
+            class="modal-input"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="Ej. 8500"
+          />
+          <small class="admin-field-hint">Monto fijo que el residente verá al pagar su renta.</small>
+        </label>
       </div>
       <div class="modal-actions-row">
         <button
@@ -115,14 +127,8 @@
         <span>ID del residente</span>
         <select
           id="assign-resident-id"
+          class="modal-input"
           required
-          style="
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-          "
         >
           <option value="">Cargando residentes...</option>
         </select>
@@ -141,6 +147,50 @@
         >
           Asignar Residente
         </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="create-resident-modal" class="modal-overlay" onclick="closeCreateResidentModal(event, this)">
+  <div class="modal-box property-detail-modal">
+    <span class="close-btn" onclick="closeCreateResidentModal()">&times;</span>
+    <h3 class="property-detail-title">
+      <i class="fa-solid fa-user-plus" style="color:var(--brand)"></i> Nuevo Residente
+    </h3>
+    <form id="create-resident-form" class="modal-form" onsubmit="handleCreateResidentSubmit(event)">
+      <div class="admin-form-grid">
+        <label class="admin-field admin-field-full">
+          <span>Nombre completo</span>
+          <input id="create-resident-name" class="modal-input" type="text" placeholder="Nombre del residente" required />
+        </label>
+        <label class="admin-field admin-field-full">
+          <span>Correo electrónico</span>
+          <input id="create-resident-email" class="modal-input" type="email" placeholder="correo@ejemplo.com" required />
+        </label>
+        <label class="admin-field">
+          <span>Rol</span>
+          <select id="create-resident-role" class="modal-input">
+            <option value="residente">Residente</option>
+            <option value="guardia">Guardia</option>
+          </select>
+        </label>
+        <label class="admin-field admin-field-full">
+          <span>Ventana de pago</span>
+          <div class="payment-window-row">
+            <span>Días del</span>
+            <input id="create-resident-payment-start" class="modal-input payment-day-input" type="number" min="1" max="28" placeholder="1" />
+            <span>al</span>
+            <input id="create-resident-payment-end" class="modal-input payment-day-input" type="number" min="1" max="28" placeholder="5" />
+            <span>de cada mes</span>
+          </div>
+          <small class="admin-field-hint">Días del mes en los que el residente puede realizar su pago. Si no aplica, deja en blanco.</small>
+        </label>
+      </div>
+      <div id="create-resident-feedback" class="modal-feedback"></div>
+      <div class="modal-actions-row">
+        <button type="button" class="admin-secondary-btn" onclick="closeCreateResidentModal()">Cancelar</button>
+        <button type="submit" class="admin-action-btn" id="create-resident-submit-btn">Crear residente</button>
       </div>
     </form>
   </div>

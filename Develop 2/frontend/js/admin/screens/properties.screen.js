@@ -200,6 +200,10 @@
           <span class="property-detail-label">Actualizado</span>
           <span class="property-detail-value">${fechaActualizacion}</span>
         </div>
+        <div class="property-detail-item">
+          <span class="property-detail-label">Renta mensual</span>
+          <span class="property-detail-value">${property.rentAmount != null ? `$${Number(property.rentAmount).toLocaleString('es-MX')} MXN` : 'No configurada'}</span>
+        </div>
       </div>
       <div class="service-card-actions" style="margin-top:20px;">
         <button class="admin-secondary-btn" onclick="openPropertyFormModal('edit', '${property.id}')">Editar</button>
@@ -262,6 +266,8 @@
           document.getElementById('property-form-name').value = property.name || '';
           document.getElementById('property-form-building').value = property.building || '';
           document.getElementById('property-form-status').value = property.status || 'disponible';
+          const rentInput = document.getElementById('property-form-rent');
+          if (rentInput) rentInput.value = property.rentAmount != null ? property.rentAmount : '';
         })
         .catch((error) => showFeedback(error.message, 'error'));
     }
@@ -281,10 +287,12 @@
   async function submitForm(event) {
     if (event) event.preventDefault();
 
+    const rentRaw = document.getElementById('property-form-rent')?.value;
     const payload = {
       name: document.getElementById('property-form-name').value,
       building: document.getElementById('property-form-building').value || 'General',
-      status: document.getElementById('property-form-status').value || 'disponible'
+      status: document.getElementById('property-form-status').value || 'disponible',
+      ...(rentRaw !== '' && rentRaw != null ? { rentAmount: Number(rentRaw) } : {})
     };
 
     try {
@@ -323,12 +331,43 @@
     selectElement.disabled = true;
 
     try {
-      const data = await apiGet('/api/residents?unassigned=true', 'Error al cargar residentes');
-      const residents = data.residents || [];
+      const [residentsData, propertiesData] = await Promise.all([
+        apiGet('/api/residents', 'Error al cargar residentes'),
+        apiGet('/api/properties', 'Error al cargar propiedades')
+      ]);
+
+      const residents = residentsData.residents || [];
+      const allProperties = Array.isArray(propertiesData) ? propertiesData : (propertiesData.properties || []);
+
+      console.debug('[AssignResident] residents:', residents.map((r) => ({ id: r.id, name: r.name, propertyId: r.propertyId })));
+      console.debug('[AssignResident] properties:', allProperties.map((p) => ({ id: p.id, residentId: p.residentId })));
 
       if (!residents.length) {
         selectElement.innerHTML = `
-          <option value="">No hay residentes disponibles</option>
+          <option value="">No hay residentes registrados</option>
+          <option value="UNASSIGN">-- Sin residente (Desasignar) --</option>
+        `;
+        return;
+      }
+
+      // Build set of resident IDs already assigned to OTHER properties
+      const assignedResidentIds = new Set(
+        allProperties
+          .filter((p) => p.residentId && p.id !== propertyId)
+          .map((p) => p.residentId)
+      );
+
+      console.debug('[AssignResident] assignedResidentIds:', [...assignedResidentIds]);
+
+      const unassigned = residents.filter(
+        (r) => r.id && r.name && r.name !== 'undefined' && !assignedResidentIds.has(r.id)
+      );
+
+      console.debug('[AssignResident] unassigned:', unassigned.map((r) => r.name));
+
+      if (!unassigned.length) {
+        selectElement.innerHTML = `
+          <option value="">No hay residentes disponibles sin propiedad</option>
           <option value="UNASSIGN">-- Sin residente (Desasignar) --</option>
         `;
         return;
@@ -339,8 +378,7 @@
         <option value="UNASSIGN">-- Sin residente (Desasignar) --</option>
       `;
 
-      residents.forEach((resident) => {
-        if (!resident.id || !resident.name || resident.name === 'undefined') return;
+      unassigned.forEach((resident) => {
         const option = document.createElement('option');
         option.value = resident.id;
         option.textContent = resident.name;
@@ -387,6 +425,7 @@
       }, 'No se pudo actualizar la propiedad');
 
       closeAssignResident();
+      await new Promise((resolve) => setTimeout(resolve, 400));
       await reloadProperties();
 
       const detailModal = getPropertyDetailModal();
@@ -444,6 +483,62 @@
     confirmDelete,
     reloadProperties
   };
+
+  function getCreateResidentModal() {
+    return document.getElementById('create-resident-modal');
+  }
+
+  function openCreateResident() {
+    const modal = getCreateResidentModal();
+    const form = document.getElementById('create-resident-form');
+    const feedback = document.getElementById('create-resident-feedback');
+    if (form) form.reset();
+    if (feedback) { feedback.textContent = ''; feedback.className = 'modal-feedback'; }
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeCreateResident(event, overlay) {
+    if (event && overlay && event.target !== overlay) return;
+    const modal = getCreateResidentModal();
+    if (modal) modal.style.display = 'none';
+  }
+
+  async function submitCreateResident(event) {
+    if (event) event.preventDefault();
+    const name = document.getElementById('create-resident-name')?.value.trim();
+    const email = document.getElementById('create-resident-email')?.value.trim();
+    const role = document.getElementById('create-resident-role')?.value || 'residente';
+    const paymentDayStart = document.getElementById('create-resident-payment-start')?.value;
+    const paymentDayEnd = document.getElementById('create-resident-payment-end')?.value;
+    const feedback = document.getElementById('create-resident-feedback');
+    const submitBtn = document.getElementById('create-resident-submit-btn');
+
+    if (!name || !email) {
+      if (feedback) { feedback.textContent = 'Nombre y correo son requeridos'; feedback.className = 'modal-feedback error'; }
+      return;
+    }
+
+    const payload = { name, email, role };
+    if (paymentDayStart) payload.paymentDayStart = Number(paymentDayStart);
+    if (paymentDayEnd) payload.paymentDayEnd = Number(paymentDayEnd);
+
+    try {
+      if (feedback) { feedback.textContent = ''; feedback.className = 'modal-feedback'; }
+      if (typeof setButtonLoadingState === 'function') setButtonLoadingState(submitBtn, true, 'Creando...');
+      await apiPost('/api/residents', payload, 'No se pudo crear el residente');
+      closeCreateResident();
+      showFeedback('Residente creado correctamente. Se le enviará un correo con sus credenciales.', 'success');
+    } catch (error) {
+      if (feedback) { feedback.textContent = error.message; feedback.className = 'modal-feedback error'; }
+      showFeedback(error.message, 'error');
+    } finally {
+      if (typeof setButtonLoadingState === 'function') setButtonLoadingState(submitBtn, false);
+    }
+  }
+
+  window.openCreateResidentModal = openCreateResident;
+  window.closeCreateResidentModal = closeCreateResident;
+  window.handleCreateResidentSubmit = submitCreateResident;
 
   window.verDetallePropiedad = openDetail;
   window.closePropertyDetail = closeDetail;

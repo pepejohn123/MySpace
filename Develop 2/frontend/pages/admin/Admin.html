@@ -62,6 +62,10 @@
                 Exportar
               </button>
 
+              <button class="admin-action-btn admin-toolbar-btn" id="open-create-resident-btn" onclick="openCreateResidentModal()">
+                + Nuevo residente
+              </button>
+
               <button
                 class="admin-action-btn admin-toolbar-btn"
                 id="open-property-form-btn"
@@ -100,7 +104,7 @@
 
             <div class="property-detail-item">
                 <label for="ticket-status-select" class="property-detail-label">Estado:</label>
-                <select id="ticket-status-select" class="admin-input" style="width: 100%;">
+                <select id="ticket-status-select" class="modal-input" style="width: 100%;">
                     <option value="pendiente">Pendiente</option>
                     <option value="en_proceso">En Proceso</option>
                     <option value="cerrado">Cerrado</option>
@@ -109,7 +113,7 @@
 
             <div class="property-detail-item">
                 <label for="ticket-priority-select" class="property-detail-label">Prioridad:</label>
-                <select id="ticket-priority-select" class="admin-input" style="width: 100%;">
+                <select id="ticket-priority-select" class="modal-input" style="width: 100%;">
                     <option value="baja">Baja</option>
                     <option value="media">Media</option>
                     <option value="alta">Alta</option>

@@ -32,9 +32,10 @@
   </div>
 
   <div class="actions-grid">
-    <div class="action-btn" onclick="openModal('modal-pago')">
+    <div class="action-btn" id="btn-pagar-cuota" onclick="if(!this.hasAttribute('disabled')){window.resetPaymentModal?.();openModal('modal-pago')}">
       <i class="fa-solid fa-credit-card action-icon"></i>
       <b>Pagar Cuota</b>
+      <small class="payment-window-hint" id="payment-window-hint"></small>
     </div>
 
     <div class="action-btn" onclick="openModal('modal-reserva')">
