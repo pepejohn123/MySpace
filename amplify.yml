@@ -4,23 +4,18 @@ frontend:
     preBuild:
       commands:
         # ── ESLint: frontend JS quality check ─────────────────────────────
-        # Catches undefined globals, unused vars, and JS errors in browser code.
-        # || true prevents ESLint warnings from blocking the deploy.
-        # Change || true to nothing if you want warnings to block deploys.
-        - cd "Develop 2/frontend"
-        - npm init -y --silent
-        - npm install --save-dev eslint --silent
-        - npx eslint "js/**/*.js" --env browser,es2021 --rule '{"no-undef":"error","no-unused-vars":"warn"}' || true
-        - cd ../..
+        # Pinned to v8 because ESLint v9 removed the --env CLI flag.
+        # || true means findings are logged but never block the deploy.
+        - npm install -g eslint@8 --silent
+        - eslint "Develop 2/frontend/js/**/*.js" --env browser --env es2021 --rule '{"no-undef":"error","no-unused-vars":"warn"}' || true
 
         # ── SonarCloud: frontend JS static analysis ────────────────────────
-        # Requires SONAR_TOKEN in Amplify > App settings > Environment variables.
+        # sonar-scanner npm package requires Java. Install Amazon Corretto first.
+        # Requires SONAR_TOKEN set in Amplify Console > App settings > Environment variables.
+        # || true means a missing token or scan error never blocks the deploy.
+        - yum install -y java-17-amazon-corretto-headless -q
         - npm install -g sonar-scanner --silent
-        - |
-          sonar-scanner \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.branch.name=$AWS_BRANCH
+        - sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${SONAR_TOKEN:-missing_token} -Dsonar.branch.name=$AWS_BRANCH || true
 
     build:
       commands:
