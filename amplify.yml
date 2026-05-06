@@ -7,14 +7,14 @@ frontend:
         # Pinned to v8 because ESLint v9 removed the --env CLI flag.
         # || true means findings are logged but never block the deploy.
         - npm install -g eslint@8 --silent
-        - eslint "Develop 2/frontend/js/**/*.js" --env browser --env es2021 --rule '{"no-undef":"error","no-unused-vars":"warn"}' || true
+        - eslint "Develop 2/frontend/js/**/*.js" --env browser --env es2021 --rule '{"no-undef":"error","no-unused-vars":"warn"}' --global getToken --global getRole --global getUser --global saveSession --global logout --global requireAuth --global apiGet --global apiPost --global apiPatch --global apiDelete --global API_BASE_URL --global showFeedback --global setLoadingState --global setButtonLoadingState --global AmazonCognitoIdentity --global Stripe --global QRCode --global jsQR --global ResidentStore --global ResidentShared --global ResidentHomeScreen --global ResidentTicketsScreen --global ResidentPaymentsScreen --global ResidentReservationsScreen --global ResidentVisitsScreen --global ResidentNoticesScreen --global mapAwsPropertyToCard --global buildPropertyStatusClass --global changeTab || true
 
         # ── SonarCloud: frontend JS static analysis ────────────────────────
         # sonar-scanner npm package requires Java. Install Amazon Corretto first.
         # Requires SONAR_TOKEN set in Amplify Console > App settings > Environment variables.
         # || true means a missing token or scan error never blocks the deploy.
-        - yum install -y java-17-amazon-corretto-headless -q
-        - npm install -g sonar-scanner --silent
+        - yum install -y java-17-amazon-corretto-headless -q || true
+        - npm install -g sonar-scanner --silent || true
         - sonar-scanner -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${SONAR_TOKEN:-missing_token} -Dsonar.branch.name=$AWS_BRANCH || true
 
     build:
