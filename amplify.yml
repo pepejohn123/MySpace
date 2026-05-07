@@ -66,3 +66,17 @@ frontend:
     baseDirectory: "Develop 2/frontend"
     files:
       - "**/*"
+
+  customHeaders:
+    - pattern: '**/*.js'
+      headers:
+        - key: 'Cache-Control'
+          value: 'no-cache, must-revalidate'
+    - pattern: '**/*.css'
+      headers:
+        - key: 'Cache-Control'
+          value: 'no-cache, must-revalidate'
+    - pattern: '**/*.html'
+      headers:
+        - key: 'Cache-Control'
+          value: 'no-cache, must-revalidate'
