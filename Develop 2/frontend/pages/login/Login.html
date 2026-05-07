@@ -35,7 +35,41 @@
       </button>
 
       <div id="login-feedback" class="login-feedback"></div>
+
+      <button type="button" id="forgotPasswordLink" class="btn-link">¿Olvidaste tu contraseña?</button>
     </form>
+
+    <!-- Forgot / first-login password panel (hidden by default) -->
+    <div id="forgotPasswordPanel" style="display:none">
+
+      <!-- Step 1: enter email to receive code -->
+      <div id="forgot-step-1">
+        <p class="subtitle">Te enviaremos un código de verificación a tu correo.</p>
+        <div class="input-group">
+          <label for="forgotEmailInput">Correo Electrónico</label>
+          <input type="email" id="forgotEmailInput" class="input-field" placeholder="Correo@gmail.com">
+        </div>
+        <button type="button" id="sendCodeBtn" class="btn btn-primary">Enviar código</button>
+        <div id="forgot-feedback-1" class="login-feedback"></div>
+      </div>
+
+      <!-- Step 2: enter code + new password -->
+      <div id="forgot-step-2" style="display:none">
+        <p class="subtitle" id="forgot-step-2-msg">Ingresa el código que recibiste y tu nueva contraseña.</p>
+        <div class="input-group" id="code-group">
+          <label for="verificationCode">Código de verificación</label>
+          <input type="text" id="verificationCode" class="input-field" placeholder="123456" autocomplete="one-time-code">
+        </div>
+        <div class="input-group">
+          <label for="newPasswordInput">Nueva contraseña</label>
+          <input type="password" id="newPasswordInput" class="input-field" placeholder="••••••••">
+        </div>
+        <button type="button" id="confirmPasswordBtn" class="btn btn-primary">Confirmar contraseña</button>
+        <div id="forgot-feedback-2" class="login-feedback"></div>
+      </div>
+
+      <button type="button" id="backToLoginBtn" class="btn-link">← Volver al inicio de sesión</button>
+    </div>
   </div>
 
   <div class="right-panel"></div>

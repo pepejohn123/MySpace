@@ -247,3 +247,17 @@
     max-width: 100%;
   }
 }
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-top: 12px;
+  padding: 0;
+  text-decoration: underline;
+  width: 100%;
+  text-align: center;
+}
+.btn-link:hover { color: #343a40; }
