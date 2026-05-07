@@ -38,7 +38,7 @@ async function parseApiResponse(response, fallbackMessage) {
   return data;
 }
 
-async function apiRequest(path, { method = 'GET', body, headers = {}, fallbackMessage = 'Error en la petición' } = {}) {
+async function apiRequest(path, { method = 'GET', body, headers = {}, fallbackMessage = 'Error en la petición', retries = 3, backoff = 500 } = {}) {
   const startedAt = performance.now();
   const requestOptions = {
     method,
@@ -51,15 +51,36 @@ async function apiRequest(path, { method = 'GET', body, headers = {}, fallbackMe
   }
 
   const url = buildApiUrl(path);
+  const debug = localStorage.getItem('myspaceDebug') !== 'false';
 
-  if (localStorage.getItem('myspaceDebug') !== 'false') {
+  if (debug) {
     console.debug('[MySpace API][request]', { method, path, url, body });
   }
 
-  const response = await fetch(url, requestOptions);
+  let response;
+  let attempt = 0;
+
+  while (true) {
+    response = await fetch(url, requestOptions);
+
+    if (response.status !== 429 || attempt >= retries) break;
+
+    const wait = backoff * Math.pow(2, attempt);
+    console.warn(`[MySpace API] 429 Throttling. Reintentando en ${wait}ms... (intento ${attempt + 1}/${retries})`);
+    await new Promise(resolve => setTimeout(resolve, wait));
+    attempt++;
+  }
+
+  if (response.status === 429) {
+    throw Object.assign(
+      new Error('El sistema está experimentando alta demanda. Por favor, intenta de nuevo en unos minutos.'),
+      { status: 429 }
+    );
+  }
+
   const data = await parseApiResponse(response, fallbackMessage);
 
-  if (localStorage.getItem('myspaceDebug') !== 'false') {
+  if (debug) {
     console.debug('[MySpace API][response]', {
       method,
       path,
