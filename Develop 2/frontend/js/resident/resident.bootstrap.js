@@ -238,8 +238,10 @@
           setButtonLoadingState(stripePayBtn, true, 'Procesando...');
           if (errDiv) errDiv.style.display = 'none';
           await ResidentPaymentsScreen.confirmPayment();
-          // Wait for Stripe webhook to update payment status before refreshing
-          await new Promise(resolve => setTimeout(resolve, 2500));
+          // Sync payment status directly from Stripe in case webhook is delayed
+          if (activePaymentId) {
+            try { await apiGet(`/api/payments/${encodeURIComponent(activePaymentId)}`, ''); } catch (_) {}
+          }
           resetPaymentModal();
           ResidentShared.closeAllModals();
           await ResidentHomeScreen.refreshDashboard();
