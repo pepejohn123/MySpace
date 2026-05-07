@@ -40,6 +40,16 @@
       propertyId: currentUser.propertyId || null
     };
 
+    // JWT does not include propertyId — fetch the real assignment from the API
+    try {
+      const propData = await apiGet('/api/properties', '');
+      const property = (propData.properties || [])[0];
+      if (property?.id) {
+        cachedUser.propertyId = property.id;
+        localStorage.setItem('user', JSON.stringify(cachedUser));
+      }
+    } catch (_) {}
+
     ResidentStore.set('currentUser', cachedUser);
     const residentViewModel = ResidentHomeScreen.buildResidentViewModel(cachedUser);
     ResidentStore.set('residentViewModel', residentViewModel);
@@ -228,9 +238,8 @@
           setButtonLoadingState(stripePayBtn, true, 'Procesando...');
           if (errDiv) errDiv.style.display = 'none';
           await ResidentPaymentsScreen.confirmPayment();
-          if (activePaymentId) {
-            try { await apiGet(`/api/payments/${encodeURIComponent(activePaymentId)}`); } catch (_) {}
-          }
+          // Wait for Stripe webhook to update payment status before refreshing
+          await new Promise(resolve => setTimeout(resolve, 2500));
           resetPaymentModal();
           ResidentShared.closeAllModals();
           await ResidentHomeScreen.refreshDashboard();
