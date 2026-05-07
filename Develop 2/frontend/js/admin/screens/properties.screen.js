@@ -421,7 +421,8 @@
     try {
       await apiPatch(`/api/properties/${encodeURIComponent(propertyId)}`, {
         residentId,
-        residentName
+        residentName,
+        status: residentId ? 'ocupado' : 'disponible'
       }, 'No se pudo actualizar la propiedad');
 
       closeAssignResident();
