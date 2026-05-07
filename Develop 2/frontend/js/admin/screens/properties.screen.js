@@ -421,8 +421,7 @@
     try {
       await apiPatch(`/api/properties/${encodeURIComponent(propertyId)}`, {
         residentId,
-        residentName,
-        status: residentId ? 'ocupado' : 'disponible'
+        residentName
       }, 'No se pudo actualizar la propiedad');
 
       closeAssignResident();
@@ -448,6 +447,7 @@
     try {
       await apiDelete(`/api/properties/${encodeURIComponent(propertyId)}`, 'No se pudo desactivar la propiedad');
       closeDetail();
+      await new Promise((resolve) => setTimeout(resolve, 400));
       await reloadProperties();
       showFeedback('Propiedad desactivada correctamente', 'success');
     } catch (error) {
