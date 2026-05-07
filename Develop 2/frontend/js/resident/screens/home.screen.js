@@ -1,18 +1,24 @@
 (function initResidentHomeScreen() {
   function buildResidentViewModel(user) {
-    const propertyId = user.propertyId || 'SIN-ASIGNAR';
-    const propertyLabel = propertyId.replace('PROPERTY#', '').replace(/([A-Z])([0-9])/g, '$1 $2');
+    const propertyId = user.propertyId;
+    const hasProperty = propertyId && propertyId !== 'SIN-ASIGNAR' && propertyId !== 'N/A';
+    const propertyLabel = hasProperty
+      ? propertyId.replace('PROPERTY#', '').replace(/([A-Z])([0-9])/g, '$1 $2')
+      : 'Sin propiedad asignada';
+    const condominioLabel = user.condominioId
+      ? `Condominio ${user.condominioId.replace('CONDO#', '')}`
+      : 'Sin condominio';
 
     return {
       nombre: user.name || 'Residente',
-      departamento: propertyLabel,
+      departamento: hasProperty ? propertyLabel : 'Sin asignar',
       imagen: window.DEFAULT_DEPT_IMAGE || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
       estado_pago: 'Pendiente de sincronizar',
       caracteristicas: [
-        { icono: 'fa-solid fa-house', texto: 'Propiedad activa' },
+        { icono: 'fa-solid fa-house', texto: hasProperty ? 'Propiedad activa' : 'Sin propiedad asignada' },
         { icono: 'fa-solid fa-id-card', texto: user.role || 'residente' },
-        { icono: 'fa-solid fa-building', texto: user.condominioId || 'Sin condominio' },
-        { icono: 'fa-solid fa-key', texto: propertyId }
+        { icono: 'fa-solid fa-building', texto: hasProperty ? propertyLabel : 'Sin unidad asignada' },
+        { icono: 'fa-solid fa-key', texto: condominioLabel }
       ],
       servicios: [
         'Mantenimiento de Áreas Comunes',
@@ -27,7 +33,7 @@
   function renderProfile(data) {
     document.getElementById('user-name').innerText = `Hola, ${data.nombre}`;
     document.getElementById('dept-name').innerText = data.departamento;
-    document.getElementById('dept-owner').innerText = `Titular:${data.nombre}`;
+    document.getElementById('dept-owner').innerText = `Titular: ${data.nombre}`;
     document.getElementById('dept-image').src = data.imagen;
     document.getElementById('payment-status').innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.estado_pago}`;
     renderFeatures(data.caracteristicas);
