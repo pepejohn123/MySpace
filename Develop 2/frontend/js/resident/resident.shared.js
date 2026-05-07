@@ -49,39 +49,6 @@
     });
   }
 
-  function switchAssistantTab(tabName) {
-    document.querySelectorAll('.assistant-tab-btn').forEach((button) => {
-      button.classList.toggle('active', button.dataset.tab === tabName);
-    });
-
-    const helpPanel = document.getElementById('assistant-tab-help');
-    const messagesPanel = document.getElementById('assistant-tab-messages');
-
-    if (helpPanel) helpPanel.classList.toggle('active', tabName === 'help');
-    if (messagesPanel) messagesPanel.classList.toggle('active', tabName === 'messages');
-  }
-
-  function toggleChat() {
-    const chat = document.getElementById('chat-window');
-    if (!chat) return;
-
-    if (chat.style.display === 'flex') {
-      chat.style.display = 'none';
-    } else {
-      chat.style.display = 'flex';
-      switchAssistantTab('help');
-    }
-  }
-
-  function mostrarRespuesta(tipo) {
-    if (tipo === 'wifi') {
-      showFeedback('La clave del WiFi es: WIFI_CONDO_2026', 'info');
-    }
-    if (tipo === 'basura') {
-      showFeedback('La basura se saca de 8pm a 10pm', 'info');
-    }
-  }
-
   window.ResidentShared = {
     buildTicketColor,
     buildPaymentColor,
@@ -89,16 +56,10 @@
     buildVisitColor,
     openModal,
     closeModal,
-    closeAllModals,
-    switchAssistantTab,
-    toggleChat,
-    mostrarRespuesta
+    closeAllModals
   };
 
   window.openModal = openModal;
   window.closeModal = closeModal;
   window.closeAllModals = closeAllModals;
-  window.switchAssistantTab = switchAssistantTab;
-  window.toggleChat = toggleChat;
-  window.mostrarRespuesta = mostrarRespuesta;
 })();

@@ -7,10 +7,6 @@
     modals: {
       hostId: 'resident-modals-host',
       path: './sections/modals.html'
-    },
-    assistant: {
-      hostId: 'resident-assistant-host',
-      path: './sections/assistant.html'
     }
   };
 
@@ -42,7 +38,6 @@
   async function loadAll() {
     await load('dashboard');
     await load('modals');
-    await load('assistant');
   }
 
   window.ResidentSections = {

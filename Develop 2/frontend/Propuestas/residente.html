@@ -74,15 +74,6 @@
         .payment-option span { font-weight: 500; color: var(--text-dark); }
         .card-preview { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* CHAT */
-        .fab-resident { position: fixed; bottom: 30px; right: 30px; background: var(--text-dark); color: white; padding: 15px 25px; border-radius: 50px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: pointer; display: flex; gap: 10px; z-index: 100; transition: 0.3s; }
-        .fab-resident:hover { transform: scale(1.05); }
-        .chat-window { position: fixed; bottom: 100px; right: 30px; width: 350px; height: 500px; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999; display: none; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; }
-        .chat-header { background: var(--brand); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .chat-body { flex: 1; padding: 15px; overflow-y: auto; background: #f9fafb; }
-        .chat-search input { width: 100%; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none; margin-bottom: 10px; }
-        .chat-footer { padding: 15px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; }
-        .chat-input { flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 8px 15px; outline: none; }
     </style>
 </head>
 <body>
@@ -154,8 +145,6 @@
             </div>
         </div>
     </div>
-
-    <div class="fab-resident" onclick="toggleChat()"><i class="fa-regular fa-comment-dots"></i> Ayuda</div>
 
     <div id="modal-pago" class="modal-overlay" onclick="closeModal(event, this)">
         <div class="modal-box">
@@ -247,22 +236,10 @@
         <div class="modal-box"><span class="close-modal" onclick="closeAllModals()">&times;</span><h2><i class="fa-solid fa-triangle-exclamation"></i> Reportar Problema</h2><select class="form-select"><option>Fuga de Agua</option><option>Gas</option><option>Luz</option></select><textarea class="form-textarea" placeholder="Describe el problema..."></textarea><button class="primary-btn" onclick="alert('Reporte Enviado')">Enviar Reporte</button></div>
     </div>
 
-    <div id="chat-window" class="chat-window">
-        <div class="chat-header"><span>Asistente Virtual</span><i class="fa-solid fa-xmark" onclick="toggleChat()" style="cursor:pointer"></i></div>
-        <div class="chat-body">
-            <div class="chat-search"><input type="text" placeholder="Buscar ayuda..."></div>
-            <p style="font-weight:bold; font-size:0.9rem; color:#666;">Preguntas Frecuentes:</p>
-            <div style="background:white; border:1px solid #eee; padding:10px; border-radius:8px; margin-bottom:5px; cursor:pointer;" onclick="alert('La clave es: WIFI_CONDO_2026')">¿Cuál es la clave del Wifi?</div>
-            <div style="background:white; border:1px solid #eee; padding:10px; border-radius:8px; margin-bottom:5px; cursor:pointer;" onclick="alert('La basura se saca de 8pm a 10pm')">¿Horario de basura?</div>
-        </div>
-        <div class="chat-footer"><input type="text" class="chat-input" placeholder="Escribe tu duda..."><button style="background:var(--brand); border:none; color:white; border-radius:50%; width:30px; height:30px;"><i class="fa-solid fa-paper-plane"></i></button></div>
-    </div>
-
     <script>
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
         function closeModal(e, el) { if(e.target === el) el.style.display = 'none'; }
-        function toggleChat() { const c = document.getElementById('chat-window'); c.style.display = c.style.display === 'flex' ? 'none' : 'flex'; }
 
         // LÓGICA DEL SELECTOR DE PAGO
         function togglePaymentMethod(method) {
