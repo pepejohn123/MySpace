@@ -61,7 +61,7 @@ async function apiRequest(path, { method = 'GET', body, headers = {}, fallbackMe
   let attempt = 0;
 
   while (true) {
-    response = await fetch(url, requestOptions);
+    response = await fetch(url, { ...requestOptions, cache: 'no-store' });
 
     if (response.status !== 429 || attempt >= retries) break;
 
