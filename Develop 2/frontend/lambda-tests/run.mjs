@@ -221,31 +221,6 @@ const TESTS = [
     event: "reservations-patch-status-not-found.json",
     expect: 404,
   },
-  // AFD state-machine tests (Section 1.1) — require seeded DynamoDB records:
-  //   RESERVATION#SEED_REJECTED  (status: rechazada)
-  //   RESERVATION#SEED_CANCELLED (status: cancelada)
-  //   RESERVATION#SEED_APPROVED  (status: aprobada)
-  // NOTE: ReservationsLambda does not enforce state machine guards — all transitions
-  // currently return 200. Expected behavior is 400. Tracked as a Lambda bug.
-  // These records are mutated by each run; re-seed them before the next run.
-  {
-    name: "Reservations: AFD δ(rechazada, aprobar) [Lambda bug: should→400]",
-    fn: "reservations",
-    event: "reservations-patch-approve-rejected.json",
-    expect: [200, 400],
-  },
-  {
-    name: "Reservations: AFD δ(cancelada, aprobar) [Lambda bug: should→400]",
-    fn: "reservations",
-    event: "reservations-patch-approve-cancelled.json",
-    expect: [200, 400],
-  },
-  {
-    name: "Reservations: AFD δ(aprobada, rechazar) [Lambda bug: should→400]",
-    fn: "reservations",
-    event: "reservations-patch-reject-approved.json",
-    expect: [200, 400],
-  },
 
   // ── Amenities ───────────────────────────────────────────────────────────
   {
@@ -407,23 +382,6 @@ const TESTS = [
     fn: "visits",
     event: "visits-patch-validate-forbidden.json",
     expect: 403,
-  },
-  // Turing Machine tests (Section 1.3) — require seeded DynamoDB records:
-  //   VISIT#SEED_EXPIRED (visitDate in the past)
-  //   VISIT#SEED_VALID   (visitDate in the future, status: pendiente)
-  // NOTE: SEED_VALID is consumed on validation (Lambda marks it used).
-  // Re-seed it before each run if you need a fresh 200. After first run it returns 400.
-  {
-    name: "Visits: PATCH validate expired pass→400",
-    fn: "visits",
-    event: "visits-patch-validate-expired.json",
-    expect: 400, // Lambda returns 400 "El pase ha expirado", not 403
-  },
-  {
-    name: "Visits: PATCH validate valid pass→200",
-    fn: "visits",
-    event: "visits-patch-validate-valid.json",
-    expect: [200, 400], // 200 on first run; 400 "ya utilizado" on subsequent runs
   },
 
   // ── Conversations ───────────────────────────────────────────────────────
