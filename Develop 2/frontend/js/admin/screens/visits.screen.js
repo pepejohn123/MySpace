@@ -108,8 +108,9 @@
     try {
       const visit = await validateByCode(accessCode);
       renderValidationResult(visit);
-      const freshVisits = await fetchList();
-      window.AdminStore?.set('visits', freshVisits);
+      const visits = window.AdminStore?.get('visits') || [];
+      const updatedVisits = visits.map((v) => (v.codigo === accessCode ? visit : v));
+      window.AdminStore?.set('visits', updatedVisits);
       refresh();
       showFeedback('Acceso validado correctamente', 'success');
     } catch (error) {

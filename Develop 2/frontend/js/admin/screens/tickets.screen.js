@@ -65,7 +65,7 @@
   }
 
   async function updateStatus(ticketId, nextStatus, nextPriority) {
-    await apiPatch(`/api/tickets/${encodeURIComponent(ticketId)}/status`, {
+    return await apiPatch(`/api/tickets/${encodeURIComponent(ticketId)}/status`, {
       status: nextStatus,
       priority: nextPriority
     }, 'Error al actualizar');
@@ -131,11 +131,28 @@
 
       try {
         setButtonLoadingState(saveBtn, true, 'Guardando...');
-        await updateStatus(ticket.id, newStatus, newPriority);
-        const freshTickets = await fetchList();
-        window.AdminStore?.patch({ tickets: freshTickets, ticketsHistory: freshTickets });
-        renderList(freshTickets);
-        renderClosedRecent(freshTickets);
+        const updated = await updateStatus(ticket.id, newStatus, newPriority);
+        const statusTransitions = {
+          pendiente: { next: 'en_proceso', label: 'En Proceso' },
+          en_proceso: { next: 'cerrado', label: 'Cerrado' },
+          cerrado: null
+        };
+        const freshStatus = updated?.status || newStatus;
+        const transition = statusTransitions[freshStatus] || null;
+        const updatedTicket = {
+          ...ticket,
+          estado: freshStatus,
+          prioridad: updated?.priority || newPriority,
+          closedAt: updated?.closedAt || ticket.closedAt,
+          updatedAt: updated?.updatedAt || new Date().toISOString(),
+          siguienteEstado: transition?.next || null,
+          siguienteEstadoLabel: transition?.label || null
+        };
+        const allTickets = window.AdminStore?.get('tickets') || [];
+        const updatedTickets = allTickets.map((t) => (t.id === ticket.id ? updatedTicket : t));
+        window.AdminStore?.patch({ tickets: updatedTickets, ticketsHistory: updatedTickets });
+        renderList(updatedTickets);
+        renderClosedRecent(updatedTickets);
         window.AdminHistoryScreen?.refresh?.();
         modal.style.display = 'none';
         showFeedback('Ticket actualizado correctamente', 'success');
